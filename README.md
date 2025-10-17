@@ -33,39 +33,144 @@ Una plataforma de tokenización de activos físicos de streetwear construida en 
 - Anchor Framework v0.32+
 - Node.js 16+
 
-### Instalación
+### Instalación Completa (Guía Paso a Paso)
 
-1. **Clonar el repositorio**
+#### 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/tu-usuario/streetwear-tokenizer.git
-cd streetwear-tokenizer
+git clone https://github.com/MarxMad/UnboX.git
+cd UnboX/streetwear-tokenizer
 ```
 
-2. **Instalar dependencias**
+#### 2. **Instalar Solana CLI**
 ```bash
-npm install
+# Instalar Solana (macOS/Linux)
+sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+
+# Agregar al PATH
+export PATH="/Users/$USER/.local/share/solana/install/active_release/bin:$PATH"
+
+# Verificar instalación
+solana --version
 ```
 
-3. **Configurar Solana CLI**
+#### 3. **Instalar Anchor CLI**
 ```bash
-# Configurar para devnet
+# Instalar Anchor
+cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+avm install 0.32.1
+avm use 0.32.1
+
+# Verificar instalación
+anchor --version
+```
+
+#### 4. **Configurar Solana para Devnet**
+```bash
+# Configurar cluster
 solana config set --url https://api.devnet.solana.com
+
+# Verificar configuración
+solana config get
 
 # Crear wallet (si no tienes una)
 solana-keygen new
 
-# Fondear wallet
+# Ver tu dirección pública
+solana address
+
+# Fondear wallet con SOL de devnet
 solana airdrop 3
 ```
 
-4. **Compilar el programa**
+#### 5. **Instalar dependencias del proyecto**
 ```bash
+# Instalar dependencias npm
+npm install
+
+# O con yarn
+yarn install
+```
+
+#### 6. **Compilar el programa**
+```bash
+# Agregar feature idl-build al Cargo.toml si es necesario
+# Compilar con Anchor
 anchor build
 ```
 
-5. **Desplegar en devnet**
+#### 7. **Desplegar en Devnet**
 ```bash
+# Desplegar el programa
 anchor deploy
+
+# El output mostrará:
+# - Program ID
+# - Transaction signature
+# - IDL account
+```
+
+#### 8. **Verificar el Deployment**
+```bash
+# Ver información del programa
+solana program show <PROGRAM_ID>
+
+# Ver la transacción en el explorer
+# https://explorer.solana.com/address/<PROGRAM_ID>?cluster=devnet
+```
+
+### 🔧 Solución de Problemas Comunes
+
+#### Error: "no such command: build-sbf"
+**Solución:**
+```bash
+# Asegúrate de tener las herramientas de Solana en el PATH
+export PATH="/Users/$USER/.local/share/solana/install/active_release/bin:$PATH"
+
+# Agrégalo permanentemente a tu shell
+echo 'export PATH="/Users/$USER/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Error: "Building IDL failed"
+**Solución:**
+Agrega el feature `idl-build` en `Cargo.toml`:
+```toml
+[features]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+```
+
+#### Error: "Insufficient funds"
+**Solución:**
+```bash
+# Verifica tu balance
+solana balance
+
+# Solicita más SOL de devnet
+solana airdrop 2
+```
+
+### 📱 Conectar tu Aplicación al Programa
+
+Una vez desplegado, puedes conectarte al programa desde tu aplicación:
+
+```typescript
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { StreetwearTokenizer } from "./target/types/streetwear_tokenizer";
+
+// Configurar provider
+const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
+
+// Cargar el programa
+const programId = new anchor.web3.PublicKey("DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho");
+const program = anchor.workspace.StreetwearTokenizer as Program<StreetwearTokenizer>;
+
+// Ahora puedes interactuar con el programa
+const tx = await program.methods
+  .tokenizeStreetwear(/* parámetros */)
+  .accounts({/* cuentas */})
+  .rpc();
 ```
 
 ## 📖 Uso del Programa
@@ -154,10 +259,26 @@ npm test
 
 ## 📊 Especificaciones Técnicas
 
-### Program ID
+### 🚀 Deployment en Devnet
+
+**Program ID (Devnet):**
 ```
 DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho
 ```
+
+**IDL Account:**
+```
+8B4Jx6WDYQjdf38UnyFVWjLu8EwQ5L7dLMHZetF6KSam
+```
+
+**Deployment Transaction:**
+```
+377qPx9UpueBE3MvNPaXY6GTMwocX8KHPxKsz5PMWgv1LbJtyQUcPk3TuVuTVCsX29VS7877L9trGwpAfJeHj3u5
+```
+
+**Explorer Links:**
+- [Ver Programa en Solana Explorer](https://explorer.solana.com/address/DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho?cluster=devnet)
+- [Ver Transacción de Deployment](https://explorer.solana.com/tx/377qPx9UpueBE3MvNPaXY6GTMwocX8KHPxKsz5PMWgv1LbJtyQUcPk3TuVuTVCsX29VS7877L9trGwpAfJeHj3u5?cluster=devnet)
 
 ### Dependencias
 - `anchor-lang`: Framework principal

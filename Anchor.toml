@@ -8,11 +8,14 @@ skip-lint = false
 [programs.localnet]
 streetwear_tokenizer = "DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho"
 
+[programs.devnet]
+streetwear_tokenizer = "DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
