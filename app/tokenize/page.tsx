@@ -1,425 +1,311 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { Upload, Shirt, AlertCircle, ExternalLink, Wifi, WifiOff } from 'lucide-react';
-import { useTokenizeStreetwear } from '../hooks/useTokenizeStreetwear';
-import { useProgram } from '../hooks/useProgram';
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Upload, Camera, Sparkles } from "lucide-react"
+import { Header } from "@/components/header"
+import { useAuth } from "@/lib/auth-context"
+import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
 
 export default function TokenizePage() {
-  const wallet = useWallet();
-  const { provider } = useProgram();
-  const { tokenize, loading, error } = useTokenizeStreetwear();
+  const [images, setImages] = useState<string[]>([])
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
-    name: '',
-    brand: '',
-    model: '',
-    size: '',
-    condition: 'New',
+    name: "",
+    brand: "",
+    model: "",
+    size: "",
+    condition: "",
     year: new Date().getFullYear(),
-    rarity: 'Common',
-    image: null as File | null,
-  });
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [txSignature, setTxSignature] = useState<string>('');
-  const [mintAddress, setMintAddress] = useState<string>('');
-  const [isDevnet, setIsDevnet] = useState<boolean | null>(null);
-  const [checkingNetwork, setCheckingNetwork] = useState(false);
+    rarity: "Common",
+    description: ""
+  })
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+  const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
 
-  // Verificar si estamos en Devnet
   useEffect(() => {
-    const checkNetwork = async () => {
-      if (!provider?.connection) return;
-      
-      setCheckingNetwork(true);
-      try {
-        const endpoint = provider.connection.rpcEndpoint;
-        const isDevnetEndpoint = endpoint.includes('devnet');
-        setIsDevnet(isDevnetEndpoint);
-      } catch (error) {
-        console.error('Error checking network:', error);
-        setIsDevnet(false);
-      } finally {
-        setCheckingNetwork(false);
-      }
-    };
-
-    checkNetwork();
-  }, []);
-
-  // Función para cambiar a Devnet
-  const switchToDevnet = async () => {
-    try {
-      // Intentar cambiar la red del wallet
-      if (wallet && 'connect' in wallet) {
-        await wallet.disconnect();
-        // El usuario necesitará cambiar manualmente en su wallet
-        alert('Por favor cambia tu wallet a Devnet y reconecta');
-      }
-    } catch (error) {
-      console.error('Error switching to Devnet:', error);
+    if (!isLoading && !user) {
+      router.push("/login")
     }
-  };
+  }, [user, isLoading, router])
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, image: file });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  if (isLoading || !user) {
+    return null
+  }
+  // </CHANGE>
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      const file = files[0]
+      setSelectedFile(file)
+      const newImages = Array.from(files).map((file) => URL.createObjectURL(file))
+      setImages([...images, ...newImages])
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     
-    if (!wallet.connected) {
-      alert('Por favor conecta tu wallet primero');
-      return;
+    if (!selectedFile) {
+      alert("Please select an image")
+      return
     }
 
-    if (!formData.image) {
-      alert('Por favor selecciona una imagen');
-      return;
+    if (!formData.name || !formData.brand || !formData.condition) {
+      alert("Please fill in all required fields")
+      return
     }
 
     try {
-      const result = await tokenize({
+      await tokenize({
         name: formData.name,
         brand: formData.brand,
-        model: formData.model,
+        model: formData.model || formData.name,
         size: formData.size,
         condition: formData.condition,
         year: formData.year,
         rarity: formData.rarity,
-        image: formData.image,
-      });
-
-      setTxSignature(result.signature);
-      setMintAddress(result.mint);
+        image: selectedFile
+      })
       
-      // Resetear formulario
-      setFormData({
-        name: '',
-        brand: '',
-        model: '',
-        size: '',
-        condition: 'New',
-        year: new Date().getFullYear(),
-        rarity: 'Common',
-        image: null,
-      });
-      setImagePreview('');
+      // Redirect to profile or feed after successful tokenization
+      router.push("/profile")
     } catch (error) {
-      console.error('Error tokenizing:', error);
+      console.error("Tokenization failed:", error)
     }
-  };
+  }
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Tokeniza tu Streetwear
-        </h1>
-        <p className="text-gray-300 text-lg">
-          Convierte tu artículo físico en un NFT y demuestra su autenticidad on-chain
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+      {/* </CHANGE> */}
 
-      {/* Network Warning */}
-      {isDevnet === false && (
-        <div className="glass-card p-6 border-red-500/50 bg-red-500/5 space-y-4">
-          <div className="flex items-center space-x-3">
-            <WifiOff className="w-6 h-6 text-red-400" />
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Tokenize Your Item</h1>
+          <p className="text-muted-foreground">
+            Upload photos and details to create an on-chain certificate for your collectible
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left Column - Images */}
+          <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-red-400">⚠️ Red Incorrecta</h3>
-              <p className="text-red-200">
-                Tu wallet está conectado a <strong>Mainnet</strong>, pero este programa está en <strong>Devnet</strong>
+              <Label className="text-base font-semibold mb-3 block">Photos</Label>
+              <p className="text-sm text-muted-foreground mb-4">Upload at least 3 photos from different angles</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {images.map((image, index) => (
+                  <Card key={index} className="aspect-square overflow-hidden border-border">
+                    <img
+                      src={image || "/placeholder.svg"}
+                      alt={`Upload ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </Card>
+                ))}
+
+                {images.length < 6 && (
+                  <label className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors bg-muted/20">
+                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">Upload Photo</span>
+                  </label>
+                )}
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" size="sm" className="flex-1 gap-2 bg-transparent">
+                  <Camera className="h-4 w-4" />
+                  Take Photo
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 gap-2 bg-transparent">
+                  <Upload className="h-4 w-4" />
+                  Upload from Device
+                </Button>
+              </div>
+            </div>
+
+            {/* Preview Card */}
+            <Card className="p-4 bg-muted/30 border-border">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                NFT Preview
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Your item will be minted as an NFT on Solana with all details stored on-chain
               </p>
-            </div>
-          </div>
-          
-          <div className="bg-black/30 p-4 rounded-lg space-y-3">
-            <p className="text-sm text-gray-300">
-              <strong>Para solucionarlo:</strong>
-            </p>
-            <ol className="text-sm text-gray-300 space-y-1 ml-4">
-              <li>1. Abre tu wallet (Phantom/Solflare)</li>
-              <li>2. Ve a Configuración → Red</li>
-              <li>3. Cambia a <strong>Devnet</strong></li>
-              <li>4. Reconecta tu wallet</li>
-            </ol>
+            </Card>
           </div>
 
-          <button
-            onClick={switchToDevnet}
-            className="w-full bg-gradient-to-r from-red-500 to-orange-500 px-6 py-3 rounded-lg font-semibold hover:from-red-600 hover:to-orange-600 transition-all flex items-center justify-center space-x-2"
-          >
-            <Wifi className="w-5 h-5" />
-            <span>Cambiar a Devnet</span>
-          </button>
-        </div>
-      )}
-
-      {/* Network Status */}
-      {isDevnet === true && (
-        <div className="glass-card p-4 flex items-center space-x-3 border-green-500/50 bg-green-500/5">
-          <Wifi className="w-5 h-5 text-green-400" />
-          <p className="text-green-200">
-            ✅ Conectado a Devnet - Listo para tokenizar
-          </p>
-        </div>
-      )}
-
-      {/* Checking Network */}
-      {checkingNetwork && (
-        <div className="glass-card p-4 flex items-center space-x-3 border-blue-500/50">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
-          <p className="text-blue-200">Verificando red...</p>
-        </div>
-      )}
-
-      {/* Wallet Connection Warning */}
-      {!wallet.connected && (
-        <div className="glass-card p-4 flex items-center space-x-3 border-yellow-500/50">
-          <AlertCircle className="w-5 h-5 text-yellow-400" />
-          <p className="text-yellow-200">
-            Debes conectar tu wallet para tokenizar artículos
-          </p>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {txSignature && (
-        <div className="glass-card p-8 border-2 border-green-500/50 bg-green-500/5 space-y-6 animate-in">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center animate-bounce">
-              <Shirt className="w-8 h-8 text-green-400" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-green-400">¡NFT Tokenizado Exitosamente! 🎉</h3>
-              <p className="text-gray-300">Tu artículo ha sido convertido en NFT en la blockchain de Solana</p>
-            </div>
-          </div>
-          
-          <div className="bg-black/30 p-6 rounded-lg space-y-4">
-            <div>
-              <div className="text-sm text-gray-400 mb-2">📦 Mint Address (NFT)</div>
-              <div className="font-mono text-sm bg-black/50 p-3 rounded border border-green-500/30 break-all">
-                {mintAddress}
+          {/* Right Column - Details */}
+          <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="item-name">Item Name *</Label>
+                <Input 
+                  id="item-name" 
+                  placeholder="e.g., Supreme Box Logo Hoodie" 
+                  className="bg-muted/50"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  required
+                />
               </div>
-            </div>
-            
-            <div>
-              <div className="text-sm text-gray-400 mb-2">🔗 Transaction Hash</div>
-              <div className="font-mono text-sm bg-black/50 p-3 rounded border border-purple-500/30 break-all">
-                {txSignature}
+
+              <div className="space-y-2">
+                <Label htmlFor="brand">Brand *</Label>
+                <Input 
+                  id="brand" 
+                  placeholder="e.g., Supreme, Nike, KAWS" 
+                  className="bg-muted/50"
+                  value={formData.brand}
+                  onChange={(e) => handleInputChange("brand", e.target.value)}
+                  required
+                />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="model">Model (Optional)</Label>
+                <Input 
+                  id="model" 
+                  placeholder="e.g., Box Logo Hoodie, Air Jordan 1" 
+                  className="bg-muted/50"
+                  value={formData.model}
+                  onChange={(e) => handleInputChange("model", e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="year">Year *</Label>
+                  <Input 
+                    id="year" 
+                    type="number" 
+                    placeholder="2024" 
+                    className="bg-muted/50"
+                    value={formData.year}
+                    onChange={(e) => handleInputChange("year", parseInt(e.target.value))}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="rarity">Rarity</Label>
+                  <Select value={formData.rarity} onValueChange={(value) => handleInputChange("rarity", value)}>
+                    <SelectTrigger id="rarity" className="bg-muted/50">
+                      <SelectValue placeholder="Select rarity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Common">Common</SelectItem>
+                      <SelectItem value="Uncommon">Uncommon</SelectItem>
+                      <SelectItem value="Rare">Rare</SelectItem>
+                      <SelectItem value="Epic">Epic</SelectItem>
+                      <SelectItem value="Legendary">Legendary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="condition">Condition *</Label>
+                <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
+                  <SelectTrigger id="condition" className="bg-muted/50">
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="New">New - Never Worn</SelectItem>
+                    <SelectItem value="Used - Excellent">Used - Excellent</SelectItem>
+                    <SelectItem value="Used - Good">Used - Good</SelectItem>
+                    <SelectItem value="Used - Fair">Used - Fair</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (Optional)</Label>
+                <Input 
+                  id="size" 
+                  placeholder="e.g., US 10, L, One Size" 
+                  className="bg-muted/50"
+                  value={formData.size}
+                  onChange={(e) => handleInputChange("size", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Add any additional details about your item..."
+                  rows={4}
+                  className="bg-muted/50 resize-none"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                />
+              </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="purchase-price">Purchase Price (Optional)</Label>
+              <Input id="purchase-price" type="number" placeholder="USD" className="bg-muted/50" />
+              <p className="text-xs text-muted-foreground">This helps track your collection value</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <a
-                href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
-              >
-                <ExternalLink className="w-5 h-5" />
-                <span>Ver en Solana Explorer</span>
-              </a>
+            <Card className="p-4 bg-primary/10 border-primary/30">
+              <h3 className="font-semibold mb-2">Minting Details</h3>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Network</span>
+                  <span className="font-medium">Solana</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Estimated Fee</span>
+                  <span className="font-medium">~0.01 SOL</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Storage</span>
+                  <span className="font-medium">IPFS</span>
+                </div>
+              </div>
+            </Card>
 
-              <a
-                href={`https://solscan.io/tx/${txSignature}?cluster=devnet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center space-x-2 bg-white/5 border border-white/10 px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all"
-              >
-                <ExternalLink className="w-5 h-5" />
-                <span>Ver en Solscan</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center pt-4 border-t border-white/10">
-            <div className="text-sm text-gray-400">
-              💡 Puedes ver tu NFT en la sección <a href="/dashboard" className="text-purple-400 hover:underline">Mi Colección</a>
-            </div>
-            <button
-              onClick={() => {
-                setTxSignature('');
-                setMintAddress('');
-              }}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all"
+            <Button 
+              type="submit"
+              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              disabled={tokenizeLoading}
             >
-              Tokenizar Otro
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="glass-card p-4 flex items-center space-x-3 border-red-500/50">
-          <AlertCircle className="w-5 h-5 text-red-400" />
-          <p className="text-red-200">{error}</p>
-        </div>
-      )}
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="glass-card p-8 space-y-6">
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">Imagen del Artículo *</label>
-          <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-purple-500/50 transition-colors cursor-pointer relative">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              required
-            />
-            {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded-lg" />
-            ) : (
-              <div className="space-y-3">
-                <Upload className="w-12 h-12 mx-auto text-gray-400" />
-                <p className="text-gray-400">Haz clic o arrastra una imagen aquí</p>
-                <p className="text-xs text-gray-500">PNG, JPG o WEBP (máx. 10MB)</p>
+              <Sparkles className="h-5 w-5" />
+              {tokenizeLoading ? "Minting..." : "Mint NFT"}
+            </Button>
+            
+            {error && (
+              <div className="text-red-500 text-sm text-center">
+                Error: {error}
               </div>
             )}
+            </form>
           </div>
         </div>
-
-        {/* Basic Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold mb-2">Nombre del Artículo *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: Air Jordan 1 Retro High"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Marca *</label>
-            <input
-              type="text"
-              value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-              placeholder="Ej: Nike"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Modelo *</label>
-            <input
-              type="text"
-              value={formData.model}
-              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-              placeholder="Ej: Jordan 1"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Talla *</label>
-            <input
-              type="text"
-              value={formData.size}
-              onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-              placeholder="Ej: US 10, M, L"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Año *</label>
-            <input
-              type="number"
-              value={formData.year}
-              onChange={(e) => {
-                const year = parseInt(e.target.value);
-                const maxYear = Math.max(new Date().getFullYear(), 2025);
-                if (year >= 1990 && year <= maxYear) {
-                  setFormData({ ...formData, year });
-                }
-              }}
-              min="1990"
-              max={Math.max(new Date().getFullYear(), 2025)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Debe estar entre 1990 y {Math.max(new Date().getFullYear(), 2025)}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Condición *</label>
-            <select
-              value={formData.condition}
-              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="Deadstock">Deadstock (DS)</option>
-              <option value="New">Nuevo (New)</option>
-              <option value="Used">Usado (Used)</option>
-              <option value="Vintage">Vintage</option>
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold mb-2">Rareza *</label>
-            <select
-              value={formData.rarity}
-              onChange={(e) => setFormData({ ...formData, rarity: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="Common">Común (Common)</option>
-              <option value="Uncommon">Poco Común (Uncommon)</option>
-              <option value="Rare">Raro (Rare)</option>
-              <option value="Epic">Épico (Epic)</option>
-              <option value="Legendary">Legendario (Legendary)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={!wallet.connected || loading}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Tokenizando...</span>
-            </>
-          ) : (
-            <>
-              <Shirt className="w-5 h-5" />
-              <span>Tokenizar Artículo</span>
-            </>
-          )}
-        </button>
-
-        <p className="text-xs text-gray-400 text-center">
-          Al tokenizar, aceptas que la información proporcionada es precisa y verificable
-        </p>
-      </form>
+      </main>
     </div>
-  );
+  )
 }
-

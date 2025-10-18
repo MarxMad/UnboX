@@ -1,125 +1,310 @@
-'use client';
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Box, Sparkles, Shield, Users, TrendingUp, Wallet } from "lucide-react"
+import { Header } from "@/components/header"
+import Link from "next/link"
 
-import { Store, TrendingUp, Sparkles, RefreshCw } from 'lucide-react';
-import { NFTCard } from './components/NFTCard';
-import { useAllNFTs } from './hooks/useAllNFTs';
+export default function LandingPage() {
+  const carouselImages = [
+    "/streetwear-sneakers-.jpg",
+    "/art-toys-kaws-bearbrick-.jpg",
+    "/luxury-watches-streetwear-.jpg",
+    "/supreme-hoodie-streetwear.jpg",
+    "/jordan-sneakers-collection.jpg",
+  ]
 
-export default function Home() {
-  const { allNFTs, loading, error, refetch } = useAllNFTs();
+  const row1Order = [0, 3, 1, 4, 2, 0, 3, 1, 4, 2, 0, 3]
+  const row2Order = [2, 0, 4, 1, 3, 2, 0, 4, 1, 3, 2, 0]
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen bg-background">
+      <Header />
+
       {/* Hero Section */}
-      <section className="text-center py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-3xl"></div>
-        <div className="relative z-10">
-          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent animate-pulse">
-            Tokeniza tu Streetwear
-          </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-            Convierte tus artículos de streetwear en NFTs, demuestra su autenticidad
-            y únete al marketplace del futuro.
-          </p>
-          <div className="flex items-center justify-center space-x-8 text-sm">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-green-400" />
-              <span>0% Comisión de Marketplace</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Sparkles className="w-5 h-5 text-yellow-400" />
-              <span>Autenticidad Verificada</span>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 z-0 flex flex-col justify-center gap-4 py-8">
+          {/* Row 1 - Scrolling Right */}
+          <div className="flex gap-4 animate-scroll-right">
+            {row1Order.map((imgIndex, i) => (
+              <div key={`row1-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
+                <img
+                  src={carouselImages[imgIndex] || "/placeholder.svg"}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+            {/* Duplicate for seamless loop */}
+            {row1Order.map((imgIndex, i) => (
+              <div key={`row1-dup-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
+                <img
+                  src={carouselImages[imgIndex] || "/placeholder.svg"}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Row 2 - Scrolling Left */}
+          <div className="flex gap-4 animate-scroll-left">
+            {row2Order.map((imgIndex, i) => (
+              <div key={`row2-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
+                <img
+                  src={carouselImages[imgIndex] || "/placeholder.svg"}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+            {/* Duplicate for seamless loop */}
+            {row2Order.map((imgIndex, i) => (
+              <div key={`row2-dup-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
+                <img
+                  src={carouselImages[imgIndex] || "/placeholder.svg"}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="absolute inset-0 backdrop-blur-md bg-background/70" />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance leading-tight drop-shadow-lg">
+              Tokenize Your <span className="text-primary">Streetwear</span>
+              <br />
+              Own Your Legacy
+            </h1>
+            <p className="text-xl md:text-2xl text-foreground/90 font-medium max-w-2xl mx-auto text-balance leading-relaxed drop-shadow-md">
+              Transform your physical collectibles into verified NFTs. Showcase your collection, prove authenticity, and
+              trade with confidence on the blockchain.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link href="/login">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
+                  Start Tokenizing
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button size="lg" variant="outline" className="text-base px-8 bg-background/80 backdrop-blur-sm">
+                  Explore Collections
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-purple-400">{allNFTs.length}</div>
-          <div className="text-gray-400 mt-2">NFTs Tokenizados</div>
-        </div>
-        <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-pink-400">{allNFTs.filter(nft => nft.isListed).length}</div>
-          <div className="text-gray-400 mt-2">En Venta</div>
-        </div>
-        <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-blue-400">{allNFTs.filter(nft => nft.isListed).reduce((sum, nft) => sum + (nft.price || 0), 0).toFixed(1)} SOL</div>
-          <div className="text-gray-400 mt-2">Valor Total</div>
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          {[
+            { label: "Items Tokenized", value: "10K+" },
+            { label: "Active Collectors", value: "2.5K+" },
+            { label: "Trading Volume", value: "$500K+" },
+            { label: "Verified Brands", value: "50+" },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center space-y-2">
+              <div className="text-3xl md:text-4xl font-bold text-primary">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Listings Section */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold flex items-center space-x-3">
-            <Store className="w-8 h-8 text-purple-400" />
-            <span>Artículos en Venta</span>
-          </h2>
-          <div className="flex items-center space-x-4">
-            <select className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-              <option>Todos</option>
-              <option>Nike</option>
-              <option>Supreme</option>
-              <option>Off-White</option>
-            </select>
-            <button
-              onClick={refetch}
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 hover:bg-white/10 transition-colors flex items-center space-x-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Actualizar</span>
-            </button>
-          </div>
+      {/* Features Grid */}
+      <section id="features" className="container mx-auto px-4 py-20">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Why Choose UnboX</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            The complete platform for streetwear collectors in web3
+          </p>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-            <p className="mt-4 text-gray-400">Cargando artículos desde la blockchain...</p>
-          </div>
-        ) : error ? (
-          <div className="glass-card p-12 text-center">
-            <div className="text-red-400 text-lg mb-4">❌ Error cargando NFTs</div>
-            <p className="text-gray-400 mb-4">{error}</p>
-            <button
-              onClick={refetch}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : allNFTs.length === 0 ? (
-          <div className="glass-card p-12 text-center">
-            <Store className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No hay NFTs tokenizados aún</p>
-            <p className="text-gray-500 text-sm mt-2">¡Sé el primero en tokenizar tu streetwear!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allNFTs.map((nft) => (
-              <NFTCard key={nft.mint} nft={nft} />
-            ))}
-          </div>
-        )}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {[
+            {
+              icon: Shield,
+              title: "Verified Authenticity",
+              description: "On-chain certificates eliminate fakes and build trust in every transaction",
+            },
+            {
+              icon: TrendingUp,
+              title: "Instant Liquidity",
+              description: "Trade your collectibles P2P with transparent pricing and secure transactions",
+            },
+            {
+              icon: Users,
+              title: "Social Community",
+              description: "Connect with collectors, share your collection, and discover trending items",
+            },
+            {
+              icon: Wallet,
+              title: "Web3 Native",
+              description: "Built on Solana for fast, low-cost transactions and true digital ownership",
+            },
+            {
+              icon: Sparkles,
+              title: "Digital Provenance",
+              description: "Complete ownership history tracked on-chain for every tokenized item",
+            },
+            {
+              icon: Box,
+              title: "Easy Tokenization",
+              description: "Upload photos, add details, and mint your NFT in minutes",
+            },
+          ].map((feature) => (
+            <Card key={feature.title} className="p-6 bg-card border-border hover:border-primary/50 transition-colors">
+              <feature.icon className="h-10 w-10 text-primary mb-4" />
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="container mx-auto px-4 py-20">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Get Started in Minutes</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Simple steps to tokenize your first collectible
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {[
+            {
+              step: "01",
+              title: "Connect Wallet",
+              description: "Sign in with your Solana wallet or create a new account with email",
+            },
+            {
+              step: "02",
+              title: "Upload & Verify",
+              description: "Take photos of your item, add details like brand, year, and condition",
+            },
+            {
+              step: "03",
+              title: "Mint NFT",
+              description: "Generate your on-chain certificate and showcase it to the community",
+            },
+          ].map((step) => (
+            <div key={step.step} className="relative">
+              <div className="text-6xl font-bold text-primary/20 mb-4">{step.step}</div>
+              <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* CTA Section */}
-      <section className="glass-card p-12 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10"></div>
-        <div className="relative z-10">
-          <h3 className="text-3xl font-bold mb-4">¿Tienes streetwear auténtico?</h3>
-          <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            Tokeniza tus artículos en minutos y comienza a venderlos en nuestro marketplace
-          </p>
-          <a
-            href="/tokenize"
-            className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105"
-          >
-            Tokenizar Ahora
-          </a>
-        </div>
+      <section className="container mx-auto px-4 py-20">
+        <Card className="bg-gradient-to-br from-primary/20 via-secondary/20 to-background border-primary/30 p-12 md:p-16 text-center">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-balance">
+              Ready to Tokenize Your Collection?
+            </h2>
+            <p className="text-lg text-muted-foreground text-balance">
+              Join thousands of collectors showcasing and trading their streetwear on Solana
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
+                Launch App
+              </Button>
+              <Button size="lg" variant="outline" className="text-base px-8 bg-transparent">
+                View Documentation
+              </Button>
+            </div>
+          </div>
+        </Card>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Box className="h-6 w-6 text-primary" />
+                <span className="text-xl font-bold">UnboX</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Tokenize streetwear, art toys, and luxury collectibles on Solana
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Roadmap
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Community</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Discord
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Twitter
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Instagram
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-foreground transition-colors">
+                    Support
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border/50 mt-12 pt-8 text-center text-sm text-muted-foreground">
+            <p>© 2025 UnboX. Built for Frutero Jam Hackathon on Solana.</p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }
