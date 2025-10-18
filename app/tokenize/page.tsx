@@ -40,7 +40,7 @@ export default function TokenizePage() {
     description: ""
   })
   const { user, isLoading } = useAuth()
-  const { isPinSet, verifyPin } = usePin()
+  const { isPinSet, verifyPin, setUserPin } = usePin()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
   const { tokenize, loading: tokenizeLoading, error } = useSimpleMint()
