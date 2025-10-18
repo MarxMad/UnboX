@@ -263,21 +263,35 @@ export function useTokenizeStreetwear() {
           };
           const rarityBuffer = Buffer.from([rarityMap[params.rarity] || 0]);
           
-          // Crear el buffer de datos completo
+          // Crear el buffer de datos completo con serialización correcta
+          // Usar Borsh serialization para strings (4 bytes length + data)
+          const serializeString = (str: string) => {
+            const strBuffer = Buffer.from(str, 'utf8');
+            const lengthBuffer = Buffer.alloc(4);
+            lengthBuffer.writeUInt32LE(strBuffer.length, 0);
+            return Buffer.concat([lengthBuffer, strBuffer]);
+          };
+          
           const dataBuffer = Buffer.concat([
             discriminator,
-            Buffer.from([nameBuffer.length]), nameBuffer,
-            Buffer.from([symbolBuffer.length]), symbolBuffer,
-            Buffer.from([uriBuffer.length]), uriBuffer,
-            Buffer.from([brandBuffer.length]), brandBuffer,
-            Buffer.from([modelBuffer.length]), modelBuffer,
-            Buffer.from([sizeBuffer.length]), sizeBuffer,
-            Buffer.from([conditionBuffer.length]), conditionBuffer,
+            serializeString(params.name),
+            serializeString(symbol),
+            serializeString(uri),
+            serializeString(params.brand),
+            serializeString(params.model || params.name),
+            serializeString(params.size),
+            serializeString(params.condition),
             yearBuffer,
             rarityBuffer,
           ]);
           
           console.log('📦 Datos serializados:', dataBuffer.toString('hex'));
+          console.log('📏 Tamaño de datos:', dataBuffer.length, 'bytes');
+          
+          // Validar que los datos no sean demasiado grandes
+          if (dataBuffer.length > 1232) { // Límite de instrucción de Solana
+            throw new Error(`Datos demasiado grandes: ${dataBuffer.length} bytes (máximo 1232)`);
+          }
           
           const instruction = new TransactionInstruction({
             keys: [
