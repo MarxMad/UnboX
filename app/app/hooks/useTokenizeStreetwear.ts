@@ -78,7 +78,25 @@ export function useTokenizeStreetwear() {
       console.log('Asset PDA:', assetPda.toString());
       console.log('Token Account:', tokenAccount.toString());
 
-      console.log('6. Creando instrucción con serialización manual...');
+      console.log('6. Validando datos antes de crear instrucción...');
+      
+      // Validar año
+      const currentYear = new Date().getFullYear();
+      if (params.year < 1990 || params.year > currentYear) {
+        throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y ${currentYear}`);
+      }
+      
+      console.log('Datos validados:', {
+        name: params.name,
+        brand: params.brand,
+        model: params.model,
+        size: params.size,
+        condition: params.condition,
+        year: params.year,
+        rarity: params.rarity
+      });
+      
+      console.log('7. Creando instrucción con serialización manual...');
       
       // Discriminador de la instrucción tokenize_streetwear
       const discriminator = Buffer.from([5, 52, 127, 166, 66, 28, 85, 41]);

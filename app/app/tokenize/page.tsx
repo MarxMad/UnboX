@@ -349,12 +349,20 @@ export default function TokenizePage() {
             <input
               type="number"
               value={formData.year}
-              onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+              onChange={(e) => {
+                const year = parseInt(e.target.value);
+                if (year >= 1990 && year <= new Date().getFullYear()) {
+                  setFormData({ ...formData, year });
+                }
+              }}
               min="1990"
               max={new Date().getFullYear()}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
             />
+            <p className="text-xs text-gray-400 mt-1">
+              Debe estar entre 1990 y {new Date().getFullYear()}
+            </p>
           </div>
 
           <div>
