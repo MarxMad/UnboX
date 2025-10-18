@@ -277,9 +277,12 @@ export function useTokenizeStreetwear() {
           
           console.log('✅ Instrucción de nuestro programa encontrada');
 
-          // Enviar y confirmar la transacción manualmente
-          console.log('📤 Enviando transacción...');
-          const tx = await connection.sendTransaction(transaction, [mintKeypair], {
+          // Firmar y enviar la transacción
+          console.log('✍️ Firmando transacción con wallet...');
+          const signedTransaction = await signTransaction!(transaction);
+          
+          console.log('📤 Enviando transacción firmada...');
+          const tx = await connection.sendRawTransaction(signedTransaction.serialize(), {
             skipPreflight: false,
             preflightCommitment: 'confirmed',
           });
