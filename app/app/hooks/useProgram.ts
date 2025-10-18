@@ -36,6 +36,8 @@ export function useProgram() {
       );
 
       console.log('useProgram - Provider created:', !!provider);
+      console.log('useProgram - Provider connection:', !!provider?.connection);
+      console.log('useProgram - Provider wallet:', !!provider?.wallet);
 
       // Validate provider before creating program
       if (!provider || !provider.connection || !provider.wallet) {
@@ -49,7 +51,16 @@ export function useProgram() {
         return { program: null, provider: null };
       }
 
+      // Check if provider has the required methods
+      if (typeof provider.sendAndConfirm !== 'function') {
+        console.warn('Provider missing sendAndConfirm method');
+        return { program: null, provider: null };
+      }
+
       console.log('useProgram - Creating program...');
+      console.log('useProgram - IDL type:', typeof idl);
+      console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
+      
       const program = new Program(idl as Idl, PROGRAM_ID, provider);
       console.log('useProgram - Program created successfully');
 
