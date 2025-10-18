@@ -144,6 +144,18 @@ export function useUserNFTs() {
                 const name = accountData.slice(offset, offset + nameLength).toString('utf8');
                 offset += nameLength;
                 
+                // Leer symbol (string)
+                const symbolLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const symbol = accountData.slice(offset, offset + symbolLength).toString('utf8');
+                offset += symbolLength;
+                
+                // Leer uri (string) - ¡Está aquí, no al final!
+                const uriLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const uri = accountData.slice(offset, offset + uriLength).toString('utf8');
+                offset += uriLength;
+                
                 // Leer brand (string)
                 const brandLength = accountData.readUInt32LE(offset);
                 offset += 4;
@@ -186,10 +198,7 @@ export function useUserNFTs() {
                 const bump = accountData.readUInt8(offset);
                 offset += 1;
                 
-                // Leer uri (string) - este es el campo que necesitamos
-                const uriLength = accountData.readUInt32LE(offset);
-                offset += 4;
-                const uri = accountData.slice(offset, offset + uriLength).toString('utf8');
+                // Ya leímos uri arriba, continuamos con el resto
                 
                 // Validar que la URI sea válida
                 if (!uri || uri.length === 0 || uri.includes('\0') || !uri.startsWith('http')) {

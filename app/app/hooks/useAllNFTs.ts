@@ -130,6 +130,18 @@ export function useAllNFTs() {
           const name = assetData.slice(offset, offset + nameLength).toString('utf8');
           offset += nameLength;
 
+          // Leer symbol (string)
+          const symbolLength = assetData.readUInt32LE(offset);
+          offset += 4;
+          const symbol = assetData.slice(offset, offset + symbolLength).toString('utf8');
+          offset += symbolLength;
+
+          // Leer uri (string) - ¡Está aquí, no al final!
+          const uriLength = assetData.readUInt32LE(offset);
+          offset += 4;
+          const uri = assetData.slice(offset, offset + uriLength).toString('utf8');
+          offset += uriLength;
+
           // Leer brand (string)
           const brandLength = assetData.readUInt32LE(offset);
           offset += 4;
@@ -171,17 +183,12 @@ export function useAllNFTs() {
           // Leer bump (u8) - no lo usamos pero mantenemos el offset
           offset += 1;
 
-          // Leer uri (string)
-          const uriLength = assetData.readUInt32LE(offset);
-          offset += 4;
-          const uri = assetData.slice(offset, offset + uriLength).toString('utf8');
-
           console.log(`📋 Datos del NFT:`, {
-            name, brand, model, size, condition, year, rarity, isListed, owner: owner.toString()
+            name, brand, model, size, condition, year, rarity, isListed, owner: owner.toString(), uri
           });
 
-          // Validar URI
-          let realImage = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Loading...";
+          // Validar URI y obtener imagen
+          let realImage = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image";
           
           if (uri && uri.length > 0 && !uri.includes('\0') && uri.startsWith('http')) {
             try {
@@ -189,14 +196,21 @@ export function useAllNFTs() {
               const metadataResponse = await fetch(uri);
               if (metadataResponse.ok) {
                 const metadata = await metadataResponse.json();
+                console.log(`📄 Metadata obtenida:`, metadata);
                 if (metadata.image) {
                   realImage = metadata.image;
                   console.log(`🖼️ Imagen encontrada: ${realImage}`);
+                } else {
+                  console.log(`⚠️ No se encontró campo 'image' en metadata`);
                 }
+              } else {
+                console.log(`❌ Error HTTP al obtener metadata: ${metadataResponse.status}`);
               }
             } catch (metadataError) {
               console.log(`❌ Error leyendo metadata:`, metadataError);
             }
+          } else {
+            console.log(`⚠️ URI inválida o vacía: "${uri}"`);
           }
 
           // Crear NFT para marketplace

@@ -54,7 +54,9 @@ export function useListNFT() {
       
       // Serializar argumentos (price: u64)
       const argsBuffer = Buffer.alloc(8);
-      argsBuffer.writeBigUInt64LE(BigInt(priceInLamports), 0);
+      // Usar writeUInt32LE en lugar de writeBigUInt64LE para compatibilidad
+      argsBuffer.writeUInt32LE(priceInLamports, 0);
+      argsBuffer.writeUInt32LE(0, 4); // High 32 bits
       
       console.log('📦 Args buffer:', argsBuffer.toString('hex'));
 
