@@ -4,7 +4,13 @@ import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
 import { PROGRAM_ID } from '../config/program';
 
 // Import IDL as a dynamic import to avoid SSR issues
-const idl = require('../idl/streetwear_tokenizer.json');
+let idl: any = null;
+try {
+  idl = require('../idl/streetwear_tokenizer.json');
+  console.log('IDL loaded successfully:', !!idl);
+} catch (error) {
+  console.error('Failed to load IDL:', error);
+}
 
 export function useProgram() {
   const { connection } = useConnection();
@@ -50,6 +56,14 @@ export function useProgram() {
         console.warn('IDL or PROGRAM_ID not available');
         return { program: null, provider: null };
       }
+
+      // Validate IDL structure
+      if (!idl.instructions || !Array.isArray(idl.instructions)) {
+        console.warn('IDL missing instructions array');
+        return { program: null, provider: null };
+      }
+
+      console.log('useProgram - IDL instructions count:', idl.instructions.length);
 
       // Check if provider has the required methods
       if (typeof provider.sendAndConfirm !== 'function') {
