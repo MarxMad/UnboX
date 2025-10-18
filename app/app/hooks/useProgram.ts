@@ -20,16 +20,22 @@ export function useProgram() {
   }, [connection, wallet]);
 
   const { program, provider } = useMemo(() => {
-    if (!wallet || !connection) {
+    console.log('useProgram - wallet:', !!wallet, 'connection:', !!connection, 'isReady:', isReady);
+    
+    if (!wallet || !connection || !isReady) {
+      console.log('useProgram - Not ready, returning null');
       return { program: null, provider: null };
     }
 
     try {
+      console.log('useProgram - Creating provider...');
       const provider = new AnchorProvider(
         connection,
         wallet,
         AnchorProvider.defaultOptions()
       );
+
+      console.log('useProgram - Provider created:', !!provider);
 
       // Validate provider before creating program
       if (!provider || !provider.connection || !provider.wallet) {
@@ -37,14 +43,22 @@ export function useProgram() {
         return { program: null, provider: null };
       }
 
+      // Additional validation
+      if (!idl || !PROGRAM_ID) {
+        console.warn('IDL or PROGRAM_ID not available');
+        return { program: null, provider: null };
+      }
+
+      console.log('useProgram - Creating program...');
       const program = new Program(idl as Idl, PROGRAM_ID, provider);
+      console.log('useProgram - Program created successfully');
 
       return { program, provider };
     } catch (error) {
       console.error('Error creating program:', error);
       return { program: null, provider: null };
     }
-  }, [connection, wallet]);
+  }, [connection, wallet, isReady]);
 
   return { program, provider, isReady };
 }
