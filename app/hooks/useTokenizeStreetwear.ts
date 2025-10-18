@@ -144,12 +144,21 @@ export function useTokenizeStreetwear() {
       console.log('🔍 Validando IDL...');
       console.log('IDL address:', idl.address);
       console.log('IDL instructions:', idl.instructions?.length);
+      console.log('IDL completo:', JSON.stringify(idl, null, 2));
       
       if (!idl || !idl.address || !idl.instructions) {
         throw new Error('IDL inválido o incompleto');
       }
       
-      const program = new Program(idl, new PublicKey(idl.address), provider);
+      console.log('🔧 Creando programa de Anchor...');
+      let program;
+      try {
+        program = new Program(idl, new PublicKey(idl.address), provider);
+        console.log('✅ Programa creado exitosamente');
+      } catch (error) {
+        console.error('❌ Error creando programa:', error);
+        throw error;
+      }
 
       // Mapear rarity a enum de Anchor
       const rarityMap: Record<string, any> = {
