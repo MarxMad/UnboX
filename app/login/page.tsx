@@ -9,12 +9,16 @@ import { Card } from "@/components/ui/card"
 import { Box, Wallet, Mail, Lock } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
+  const { connect, connected, connecting, publicKey, disconnect } = useWallet()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,6 +29,20 @@ export default function LoginPage() {
       console.error("Login failed:", error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleWalletConnect = async () => {
+    try {
+      if (connected) {
+        // Si ya está conectado, hacer login automático
+        await login(`wallet@${publicKey?.toString().slice(0, 8)}.sol`, "wallet")
+      } else {
+        // Conectar wallet
+        await connect()
+      }
+    } catch (error) {
+      console.error("Wallet connection failed:", error)
     }
   }
 
@@ -46,10 +64,11 @@ export default function LoginPage() {
           <Button
             variant="outline"
             className="w-full h-12 text-base bg-transparent"
-            onClick={() => alert("Wallet connection coming soon!")}
+            onClick={handleWalletConnect}
+            disabled={connecting}
           >
             <Wallet className="mr-2 h-5 w-5" />
-            Connect Wallet
+            {connecting ? "Connecting..." : connected ? `Connected: ${publicKey?.toString().slice(0, 8)}...` : "Connect Wallet"}
           </Button>
 
           <div className="relative">

@@ -5,12 +5,22 @@ import { Header } from "@/components/header"
 import Link from "next/link"
 
 export default function LandingPage() {
-  const carouselImages = [
+  // Fila 1 del carrusel - Imágenes principales
+  const row1Images = [
     "/streetwear-sneakers-.jpg",
-    "/art-toys-kaws-bearbrick-.jpg",
+    "/art-toys-kaws-bearbrick-.jpg", 
     "/luxury-watches-streetwear-.jpg",
     "/supreme-hoodie-streetwear.jpg",
     "/jordan-sneakers-collection.jpg",
+  ]
+
+  // Fila 2 del carrusel - Imágenes secundarias
+  const row2Images = [
+    "/nike-dunk-low-panda-black-white.jpg",
+    "/kaws-companion-grey-figure-art-toy.jpg",
+    "/bape-shark-hoodie-camo-green.jpg", 
+    "/rolex-submariner-black-watch-luxury.jpg",
+    "/air-jordan-1-retro-high-chicago-red.jpg",
   ]
 
   const row1Order = [0, 3, 1, 4, 2, 0, 3, 1, 4, 2, 0, 3]
@@ -28,8 +38,8 @@ export default function LandingPage() {
             {row1Order.map((imgIndex, i) => (
               <div key={`row1-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
                 <img
-                  src={carouselImages[imgIndex] || "/placeholder.svg"}
-                  alt=""
+                  src={row1Images[imgIndex] || "/placeholder.svg"}
+                  alt="Streetwear collection item"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -38,8 +48,8 @@ export default function LandingPage() {
             {row1Order.map((imgIndex, i) => (
               <div key={`row1-dup-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
                 <img
-                  src={carouselImages[imgIndex] || "/placeholder.svg"}
-                  alt=""
+                  src={row1Images[imgIndex] || "/placeholder.svg"}
+                  alt="Streetwear collection item"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -51,8 +61,8 @@ export default function LandingPage() {
             {row2Order.map((imgIndex, i) => (
               <div key={`row2-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
                 <img
-                  src={carouselImages[imgIndex] || "/placeholder.svg"}
-                  alt=""
+                  src={row2Images[imgIndex] || "/placeholder.svg"}
+                  alt="Streetwear collection item"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -61,8 +71,8 @@ export default function LandingPage() {
             {row2Order.map((imgIndex, i) => (
               <div key={`row2-dup-${i}`} className="flex-shrink-0 w-56 h-56 bg-muted/20 rounded-lg overflow-hidden">
                 <img
-                  src={carouselImages[imgIndex] || "/placeholder.svg"}
-                  alt=""
+                  src={row2Images[imgIndex] || "/placeholder.svg"}
+                  alt="Streetwear collection item"
                   className="w-full h-full object-cover"
                 />
               </div>

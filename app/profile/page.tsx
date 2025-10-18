@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,10 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Settings, Share2, Heart, Grid3x3, LayoutGrid, Box } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
+import { useUserNFTs } from "@/app/hooks/useUserNFTs"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const { connected, publicKey } = useWallet()
+  const { nfts: userNFTs, loading: userNFTsLoading } = useUserNFTs()
+  const [likedItems, setLikedItems] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -24,7 +29,64 @@ export default function ProfilePage() {
   if (isLoading || !user) {
     return null
   }
-  // </CHANGE>
+
+  // Combinar NFTs reales del usuario con datos mock
+  const combinedUserItems = [
+    ...(userNFTs || []).map((nft, index) => ({
+      id: `user-${index}`,
+      name: nft.name || "My NFT",
+      brand: nft.brand || "Unknown",
+      image: "/placeholder.svg",
+      price: "USD 0", // Los NFTs del usuario no tienen precio de venta
+      likes: Math.floor(Math.random() * 50),
+      isReal: true
+    })),
+    // Mantener algunos items mock para mostrar contenido
+    ...userItems.slice(0, 3).map(item => ({ ...item, isReal: false }))
+  ]
+
+  const handleLike = (itemId: number) => {
+    setLikedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const handleShare = (item: any) => {
+    if (navigator.share) {
+      navigator.share({
+        title: item.name,
+        text: `Check out my ${item.brand} item in my UnboX collection`,
+        url: window.location.href
+      })
+    } else {
+      navigator.clipboard.writeText(`${item.name} - ${item.brand}`)
+      alert("Item info copied to clipboard!")
+    }
+  }
+
+  const handleEditProfile = () => {
+    // TODO: Implementar edición de perfil
+    alert("Edit profile functionality coming soon!")
+  }
+
+  const handleShareProfile = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${user.username}'s Collection`,
+        text: `Check out ${user.username}'s streetwear collection on UnboX`,
+        url: window.location.href
+      })
+    } else {
+      navigator.clipboard.writeText(`${user.username}'s UnboX Profile: ${window.location.href}`)
+      alert("Profile link copied to clipboard!")
+    }
+  }
 
   const userItems = [
     {
@@ -122,11 +184,11 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Button size="sm" variant="outline" className="gap-2 bg-transparent">
+                <Button size="sm" variant="outline" className="gap-2 bg-transparent" onClick={handleEditProfile}>
                   <Settings className="h-4 w-4" />
                   Edit Profile
                 </Button>
-                <Button size="sm" variant="outline" className="gap-2 bg-transparent">
+                <Button size="sm" variant="outline" className="gap-2 bg-transparent" onClick={handleShareProfile}>
                   <Share2 className="h-4 w-4" />
                   Share
                 </Button>
@@ -156,7 +218,7 @@ export default function ProfilePage() {
 
           <TabsContent value="collection">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {userItems.map((item) => (
+              {combinedUserItems.map((item) => (
                 <Card
                   key={item.id}
                   className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
@@ -167,12 +229,31 @@ export default function ProfilePage() {
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
+                    {item.isReal && (
+                      <Badge className="absolute top-2 left-2 bg-green-500 text-white text-xs">On-Chain</Badge>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-2 right-2 flex gap-2">
-                        <Button size="icon" variant="secondary" className="h-8 w-8">
-                          <Heart className="h-4 w-4" />
+                        <Button 
+                          size="icon" 
+                          variant="secondary" 
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleLike(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id)
+                          }}
+                        >
+                          <Heart className={`h-4 w-4 ${likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 'fill-red-500 text-red-500' : ''}`} />
                         </Button>
-                        <Button size="icon" variant="secondary" className="h-8 w-8">
+                        <Button 
+                          size="icon" 
+                          variant="secondary" 
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleShare(item)
+                          }}
+                        >
                           <Share2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -185,7 +266,7 @@ export default function ProfilePage() {
                       <span className="text-sm font-bold text-primary">{item.price}</span>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Heart className="h-3 w-3" />
-                        {item.likes}
+                        {item.likes + (likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 1 : 0)}
                       </span>
                     </div>
                   </div>
