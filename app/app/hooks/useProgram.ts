@@ -75,22 +75,10 @@ export function useProgram() {
       console.log('useProgram - IDL type:', typeof idl);
       console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
       
-      // Create a clean IDL object to avoid any issues
-      const cleanIdl: Idl = {
-        address: idl.address,
-        metadata: idl.metadata,
-        instructions: idl.instructions,
-        accounts: idl.accounts || [],
-        types: idl.types || [],
-        errors: idl.errors || [],
-        events: idl.events || [],
-        constants: idl.constants || [],
-        state: idl.state || null,
-      };
+      // Try using the IDL directly without wrapper
+      console.log('useProgram - Using IDL directly');
       
-      console.log('useProgram - Clean IDL created');
-      
-      const program = new Program(cleanIdl, PROGRAM_ID, provider);
+      const program = new Program(idl, PROGRAM_ID, provider);
       console.log('useProgram - Program created successfully');
 
       return { program, provider };
