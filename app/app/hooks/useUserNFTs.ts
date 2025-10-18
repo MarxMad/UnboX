@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Connection } from '@solana/web3.js';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, getTokenAccountsByOwner } from '@solana/spl-token';
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 
@@ -40,8 +40,7 @@ export function useUserNFTs() {
       console.log('🔍 Buscando NFTs reales del usuario...');
       
       // 1. Obtener todos los token accounts del usuario
-      const tokenAccounts = await getTokenAccountsByOwner(
-        provider.connection,
+      const tokenAccounts = await provider.connection.getTokenAccountsByOwner(
         wallet.publicKey,
         {
           programId: TOKEN_PROGRAM_ID,
