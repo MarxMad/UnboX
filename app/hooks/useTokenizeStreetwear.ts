@@ -292,6 +292,10 @@ export function useTokenizeStreetwear() {
           console.log('✅ Instrucción de nuestro programa encontrada');
           console.log(`📊 Total de instrucciones: ${transaction.instructions.length} (solo nuestro programa)`);
 
+          // El mintKeypair también debe firmar la transacción
+          console.log('✍️ Firmando con mint keypair...');
+          transaction.partialSign(mintKeypair);
+
           // Firmar y enviar la transacción
           console.log('✍️ Firmando transacción con wallet...');
           const signedTransaction = await signTransaction!(transaction);
