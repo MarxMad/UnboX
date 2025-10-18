@@ -148,10 +148,10 @@ export function useTokenizeStreetwear() {
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
           console.log('✍️ 9. Creando transacción con nuestro programa...');
-          console.log('📤 10. Enviando transacción...');
+          console.log('📤 10. Construyendo transacción...');
 
-          // Crear y enviar transacción usando nuestro programa personalizado
-          const tx = await program.methods
+          // Construir la transacción explícitamente para inspeccionar las instrucciones
+          const transaction = await program.methods
             .tokenize_streetwear(
               params.name,
               metadata.symbol,
@@ -174,10 +174,31 @@ export function useTokenizeStreetwear() {
               rent: SYSVAR_RENT_PUBKEY,
             })
             .signers([mintKeypair])
-            .rpc({
-              commitment: 'confirmed',
-        skipPreflight: false,
-            });
+            .transaction();
+
+          // Loggear las instrucciones generadas para depuración
+          console.log('🔍 Instrucciones generadas:');
+          transaction.instructions.forEach((ix, index) => {
+            console.log(`Instrucción ${index + 1}:`);
+            console.log(`  Program ID: ${ix.programId.toString()}`);
+            console.log(`  Keys: ${ix.keys.map(k => k.pubkey.toString()).join(', ')}`);
+            console.log(`  Data: ${ix.data.toString('hex')}`);
+          });
+
+          // Verificar que nuestra instrucción esté presente
+          const ourProgramId = new PublicKey(idl.address);
+          const hasOurInstruction = transaction.instructions.some(ix => 
+            ix.programId.equals(ourProgramId)
+          );
+          
+          if (!hasOurInstruction) {
+            throw new Error('❌ No se encontró la instrucción de nuestro programa en la transacción');
+          }
+          
+          console.log('✅ Instrucción de nuestro programa encontrada');
+
+          // Enviar y confirmar la transacción
+          const tx = await provider.sendAndConfirm(transaction, [mintKeypair]);
 
       console.log('⏳ Esperando confirmación del wallet...');
       console.log('✅ Transacción enviada:', tx);
