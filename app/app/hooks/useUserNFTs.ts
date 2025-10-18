@@ -183,6 +183,30 @@ export function useUserNFTs() {
                 offset += 4;
                 const uri = accountData.slice(offset, offset + uriLength).toString('utf8');
                 
+                // Validar que la URI sea válida
+                if (!uri || uri.length === 0 || uri.includes('\0') || !uri.startsWith('http')) {
+                  console.log(`⚠️ URI inválida detectada: "${uri}", usando fallback`);
+                  // Usar datos básicos sin metadata
+                  const nft: UserNFT = {
+                    mint: mint,
+                    name: name,
+                    symbol: brand.substring(0, 10).toUpperCase(),
+                    uri: "https://gateway.pinata.cloud/ipfs/...",
+                    brand: brand,
+                    model: model,
+                    size: size,
+                    condition: condition,
+                    year: year,
+                    rarity: rarity,
+                    isListed: isListed,
+                    image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"
+                  };
+                  
+                  userNFTs.push(nft);
+                  console.log(`✅ NFT agregado con datos básicos: ${nft.name} (${nft.brand} ${nft.model})`);
+                  continue;
+                }
+                
                 console.log(`📋 Datos reales leídos:`, {
                   name, brand, model, size, condition, year, rarity, uri, isListed
                 });
