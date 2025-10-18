@@ -3,8 +3,42 @@
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import Link from 'next/link';
 import { Shirt, Store, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const Navbar = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <nav className="bg-black/30 backdrop-blur-md border-b border-purple-500/20 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+                <Shirt className="w-6 h-6" />
+              </div>
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                UnboX
+              </span>
+            </Link>
+
+            {/* Wallet Connect Button - Loading */}
+            <div className="wallet-adapter-button-container">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold animate-pulse">
+                Loading...
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="bg-black/30 backdrop-blur-md border-b border-purple-500/20 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
