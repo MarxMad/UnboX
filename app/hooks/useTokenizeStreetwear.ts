@@ -5,7 +5,8 @@ import {
   SystemProgram, 
   Transaction,
   sendAndConfirmTransaction,
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL,
+  SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
 import { 
   TOKEN_PROGRAM_ID, 
@@ -52,11 +53,15 @@ export function useTokenizeStreetwear() {
     setError(null);
 
     try {
-      console.log('📸 1. Subiendo imagen a IPFS...');
-      const imageUri = await mockUploadToIPFS(params.image);
-      console.log('✅ Imagen subida:', imageUri.slice(0, 50) + '...');
+      console.log('📸 1. Subiendo imagen...');
+      // Usar Pinata si las API keys están disponibles, sino usar mock
+      const hasPinataKeys = process.env.NEXT_PUBLIC_PINATA_API_KEY && process.env.NEXT_PUBLIC_PINATA_SECRET_KEY;
+      const imageUri = hasPinataKeys 
+        ? await uploadImageToIPFS(params.image)
+        : await mockUploadToIPFS(params.image);
+      console.log('✅ Imagen subida');
 
-      console.log('2. Creando metadata...');
+      console.log('📋 2. Creando metadata...');
       const metadata = createNFTMetadata(
         params.name,
         params.brand.substring(0, 10).toUpperCase(),
@@ -72,12 +77,11 @@ export function useTokenizeStreetwear() {
         }
       );
 
-      console.log('📋 Metadata creado:', JSON.stringify(metadata, null, 2));
-
-      console.log('3. Subiendo metadata a IPFS...');
-      const uri = await mockUploadMetadataToIPFS(metadata);
-      console.log('✅ Metadata subido a Pinata:', uri);
-      console.log('🔗 URL de metadata:', uri);
+      console.log('📤 3. Subiendo metadata...');
+      const uri = hasPinataKeys 
+        ? await uploadMetadataToIPFS(metadata)
+        : await mockUploadMetadataToIPFS(metadata);
+      console.log('✅ Metadata subido');
 
       console.log('4. Creando mint...');
       const mintKeypair = Keypair.generate();
@@ -210,24 +214,29 @@ export function useTokenizeStreetwear() {
       transaction.add(instruction);
       transaction.feePayer = publicKey;
       
-      // Obtener blockhash reciente
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      // Obtener blockhash reciente con timeout
+      console.log('🔗 8. Obteniendo blockhash...');
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
       transaction.recentBlockhash = blockhash;
       
       // Firmar con mintKeypair
       transaction.partialSign(mintKeypair);
       
-      console.log('8. Firmando transacción con wallet...');
-      // El wallet firmará automáticamente con su keypair
-      const signedTransaction = signTransaction ? await signTransaction(transaction) : transaction;
+      console.log('✍️ 9. Firmando con mint keypair...');
+      console.log('📤 10. Enviando transacción...');
       
-      console.log('9. Enviando transacción a la red...');
-      const signature = await sendTransaction(signedTransaction, connection, {
+      // Enviar transacción con manejo de timeout
+      const signature = await sendTransaction(transaction, connection, {
         skipPreflight: false,
         preflightCommitment: 'confirmed',
+        maxRetries: 3,
       });
       
-      console.log('10. Esperando confirmación...');
+      console.log('⏳ Esperando confirmación del wallet...');
+      console.log('✅ Transacción enviada:', signature);
+      console.log('⏳ 11. Esperando confirmación en blockchain...');
+      
+      // Confirmar con timeout y retry
       const confirmation = await connection.confirmTransaction({
         signature,
         blockhash,
@@ -265,6 +274,10 @@ export function useTokenizeStreetwear() {
           errorMessage = 'Wallet no conectado. Por favor conecta tu wallet.';
         } else if (err.message.includes('insufficient funds')) {
           errorMessage = 'Fondos insuficientes para completar la transacción';
+        } else if (err.message.includes('TransactionExpiredBlockheightExceededError') || err.message.includes('block height exceeded')) {
+          errorMessage = 'La transacción expiró. Por favor intenta de nuevo. Esto puede ocurrir cuando hay demoras en la red.';
+        } else if (err.message.includes('Signature')) {
+          errorMessage = 'Error en la firma de la transacción. Por favor intenta de nuevo.';
         }
       }
       
