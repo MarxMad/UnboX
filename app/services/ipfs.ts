@@ -151,3 +151,15 @@ export async function mockUploadToIPFS(file: File): Promise<string> {
   });
 }
 
+/**
+ * Función de desarrollo: Simula subida de metadata a IPFS
+ * Útil para testing sin necesidad de API keys
+ */
+export async function mockUploadMetadataToIPFS(metadata: NFTMetadata): Promise<string> {
+  return new Promise((resolve) => {
+    // En desarrollo, retorna una URL mock con los datos del metadata
+    const mockUri = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+    resolve(mockUri);
+  });
+}
+

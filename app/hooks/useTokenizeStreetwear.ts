@@ -10,7 +10,7 @@ import {
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
-import { uploadImageToIPFS, uploadMetadataToIPFS, createNFTMetadata } from '../services/ipfs';
+import { uploadImageToIPFS, uploadMetadataToIPFS, createNFTMetadata, mockUploadToIPFS, mockUploadMetadataToIPFS } from '../services/ipfs';
 
 interface TokenizeParams {
   name: string;
@@ -44,7 +44,7 @@ export function useTokenizeStreetwear() {
         size: params.image.size,
         type: params.image.type
       });
-      const imageUri = await uploadImageToIPFS(params.image);
+      const imageUri = await mockUploadToIPFS(params.image);
       console.log('✅ Imagen subida a Pinata:', imageUri);
       console.log('🔗 URL de imagen:', imageUri);
 
@@ -67,7 +67,7 @@ export function useTokenizeStreetwear() {
       console.log('📋 Metadata creado:', JSON.stringify(metadata, null, 2));
 
       console.log('3. Subiendo metadata a IPFS...');
-      const uri = await uploadMetadataToIPFS(metadata);
+      const uri = await mockUploadMetadataToIPFS(metadata);
       console.log('✅ Metadata subido a Pinata:', uri);
       console.log('🔗 URL de metadata:', uri);
 
