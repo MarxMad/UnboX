@@ -172,14 +172,7 @@ export function useTokenizeStreetwear() {
       
       // No usar Anchor, crear transacción manualmente
 
-      // Mapear rarity a enum de Anchor
-      const rarityMap: Record<string, any> = {
-        'Common': { common: {} },
-        'Uncommon': { uncommon: {} },
-        'Rare': { rare: {} },
-        'Epic': { epic: {} },
-        'Legendary': { legendary: {} },
-      };
+      // No necesitamos rarityMap aquí ya que lo definimos más abajo
 
       // Obtener PDA del asset
       const [assetPda] = await getAssetPDA(publicKey, mint);
@@ -197,35 +190,8 @@ export function useTokenizeStreetwear() {
           transaction.recentBlockhash = blockhash;
           transaction.feePayer = publicKey;
           
-          // 1. Crear instrucción para inicializar el mint
-          console.log('🔧 Agregando instrucción de inicialización de mint...');
-          const initMintIx = createInitializeMintInstruction(
-            mint, // mint account
-            0, // decimals (NFT = 0)
-            publicKey, // mint authority
-            publicKey // freeze authority
-          );
-          transaction.add(initMintIx);
-
-          // 2. Crear instrucción para crear el token account
-          console.log('🔧 Agregando instrucción de creación de token account...');
-          const createTokenAccountIx = createAssociatedTokenAccountInstruction(
-            publicKey, // payer
-            tokenAccount, // associated token account
-            publicKey, // owner
-            mint // mint
-          );
-          transaction.add(createTokenAccountIx);
-
-          // 3. Crear instrucción para mintear 1 token
-          console.log('🔧 Agregando instrucción de mint...');
-          const mintToIx = createMintToInstruction(
-            mint, // mint
-            tokenAccount, // destination
-            publicKey, // authority
-            1 // amount (1 NFT)
-          );
-          transaction.add(mintToIx);
+          // Solo usar nuestro programa - el programa manejará todo internamente
+          console.log('🔧 Usando solo nuestro programa...');
 
           // 4. Crear instrucción personalizada manualmente (sin Anchor)
           console.log('🔧 Agregando instrucción de nuestro programa...');
@@ -313,17 +279,18 @@ export function useTokenizeStreetwear() {
             console.log(`  Data: ${ix.data.toString('hex')}`);
           });
 
-          // Verificar que nuestra instrucción esté presente
+          // Verificar que solo tenemos nuestra instrucción
           const ourProgramId = new PublicKey(idl.address);
-          const hasOurInstruction = transaction.instructions.some(ix => 
+          const ourInstructions = transaction.instructions.filter(ix => 
             ix.programId.equals(ourProgramId)
           );
           
-          if (!hasOurInstruction) {
+          if (ourInstructions.length === 0) {
             throw new Error('❌ No se encontró la instrucción de nuestro programa en la transacción');
           }
           
           console.log('✅ Instrucción de nuestro programa encontrada');
+          console.log(`📊 Total de instrucciones: ${transaction.instructions.length} (solo nuestro programa)`);
 
           // Firmar y enviar la transacción
           console.log('✍️ Firmando transacción con wallet...');
