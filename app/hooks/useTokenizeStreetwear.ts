@@ -67,10 +67,14 @@ export function useTokenizeStreetwear() {
       console.log('📸 1. Subiendo imagen...');
       // Usar Pinata si las API keys están disponibles, sino usar mock
       const hasPinataKeys = process.env.NEXT_PUBLIC_PINATA_API_KEY && process.env.NEXT_PUBLIC_PINATA_SECRET_KEY;
+      console.log('🔑 Pinata API Key presente:', !!process.env.NEXT_PUBLIC_PINATA_API_KEY);
+      console.log('🔑 Pinata Secret Key presente:', !!process.env.NEXT_PUBLIC_PINATA_SECRET_KEY);
+      console.log('📡 Usando Pinata real:', hasPinataKeys);
+      
       const imageUri = hasPinataKeys 
         ? await uploadImageToIPFS(params.image)
         : await mockUploadToIPFS(params.image);
-      console.log('✅ Imagen subida');
+      console.log('✅ Imagen subida:', imageUri);
 
       console.log('📋 2. Creando metadata...');
       const metadata = createNFTMetadata(
@@ -92,7 +96,7 @@ export function useTokenizeStreetwear() {
       const uri = hasPinataKeys 
         ? await uploadMetadataToIPFS(metadata)
         : await mockUploadMetadataToIPFS(metadata);
-      console.log('✅ Metadata subido');
+      console.log('✅ Metadata subido:', uri);
 
       console.log('🔑 4. Generando mint keypair...');
       const mintKeypair = Keypair.generate();
@@ -155,7 +159,7 @@ export function useTokenizeStreetwear() {
           console.log('📤 10. Construyendo transacción paso a paso...');
 
           // Crear transacción manualmente para tener control total
-          const transaction = new Transaction();
+      const transaction = new Transaction();
           
           // 1. Crear instrucción para inicializar el mint
           console.log('🔧 Agregando instrucción de inicialización de mint...');
