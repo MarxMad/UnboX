@@ -168,25 +168,65 @@ export function useUserNFTs() {
                 const rarityValue = accountData.readUInt8(offset);
                 const rarityMap = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
                 const rarity = rarityMap[rarityValue] || 'Common';
+                offset += 1;
+                
+                // Leer is_listed (u8)
+                const isListed = accountData.readUInt8(offset) === 1;
+                offset += 1;
+                
+                // Leer bump (u8)
+                const bump = accountData.readUInt8(offset);
+                offset += 1;
+                
+                // Leer uri (string) - este es el campo que necesitamos
+                const uriLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const uri = accountData.slice(offset, offset + uriLength).toString('utf8');
                 
                 console.log(`📋 Datos reales leídos:`, {
-                  name, brand, model, size, condition, year, rarity
+                  name, brand, model, size, condition, year, rarity, uri, isListed
                 });
+                
+                // Leer metadata real desde IPFS para obtener imagen
+                let realImage = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Loading...";
+                
+                try {
+                  console.log(`🔍 Leyendo metadata desde IPFS: ${uri}`);
+                  
+                  // Hacer fetch al metadata JSON
+                  const metadataResponse = await fetch(uri);
+                  if (metadataResponse.ok) {
+                    const metadata = await metadataResponse.json();
+                    console.log(`📋 Metadata leído:`, metadata);
+                    
+                    // Extraer la imagen real del metadata
+                    if (metadata.image) {
+                      realImage = metadata.image;
+                      console.log(`🖼️ Imagen real encontrada: ${realImage}`);
+                    } else {
+                      console.log(`⚠️ No se encontró campo 'image' en metadata`);
+                    }
+                  } else {
+                    console.log(`❌ Error fetchando metadata: ${metadataResponse.status}`);
+                  }
+                } catch (metadataError) {
+                  console.log(`❌ Error leyendo metadata:`, metadataError);
+                }
                 
                 // Crear NFT con datos reales
                 const nft: UserNFT = {
                   mint: mint,
                   name: name,
                   symbol: brand.substring(0, 10).toUpperCase(),
-                  uri: "https://gateway.pinata.cloud/ipfs/...", // TODO: Leer URI real
+                  uri: uri, // URI real del metadata
                   brand: brand,
                   model: model,
                   size: size,
                   condition: condition,
                   year: year,
                   rarity: rarity,
-                  isListed: false,
-                  image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Real+NFT" // TODO: Leer imagen real
+                  isListed: isListed, // Estado real de listado
+                  image: realImage // Imagen real extraída del metadata
                 };
                 
                 userNFTs.push(nft);
