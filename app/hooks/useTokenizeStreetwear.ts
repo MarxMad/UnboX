@@ -241,8 +241,52 @@ export function useTokenizeStreetwear() {
             rarity: params.rarity
           });
           
-          // Crear la instrucción manualmente
+          // Crear la instrucción manualmente con datos serializados
           const programId = new PublicKey(idl.address);
+          
+          // Serializar los datos para tokenize_streetwear
+          // Discriminator: [5, 52, 127, 166, 66, 28, 85, 41]
+          const discriminator = Buffer.from([5, 52, 127, 166, 66, 28, 85, 41]);
+          
+          // Serializar los parámetros
+          const nameBuffer = Buffer.from(params.name, 'utf8');
+          const symbolBuffer = Buffer.from(symbol, 'utf8');
+          const uriBuffer = Buffer.from(uri, 'utf8');
+          const brandBuffer = Buffer.from(params.brand, 'utf8');
+          const modelBuffer = Buffer.from(params.model || params.name, 'utf8');
+          const sizeBuffer = Buffer.from(params.size, 'utf8');
+          const conditionBuffer = Buffer.from(params.condition, 'utf8');
+          
+          // Serializar year como u16 (2 bytes)
+          const yearBuffer = Buffer.alloc(2);
+          yearBuffer.writeUInt16LE(params.year, 0);
+          
+          // Serializar rarity (1 byte: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary)
+          const rarityMap: Record<string, number> = {
+            'Common': 0,
+            'Uncommon': 1,
+            'Rare': 2,
+            'Epic': 3,
+            'Legendary': 4,
+          };
+          const rarityBuffer = Buffer.from([rarityMap[params.rarity] || 0]);
+          
+          // Crear el buffer de datos completo
+          const dataBuffer = Buffer.concat([
+            discriminator,
+            Buffer.from([nameBuffer.length]), nameBuffer,
+            Buffer.from([symbolBuffer.length]), symbolBuffer,
+            Buffer.from([uriBuffer.length]), uriBuffer,
+            Buffer.from([brandBuffer.length]), brandBuffer,
+            Buffer.from([modelBuffer.length]), modelBuffer,
+            Buffer.from([sizeBuffer.length]), sizeBuffer,
+            Buffer.from([conditionBuffer.length]), conditionBuffer,
+            yearBuffer,
+            rarityBuffer,
+          ]);
+          
+          console.log('📦 Datos serializados:', dataBuffer.toString('hex'));
+          
           const instruction = new TransactionInstruction({
             keys: [
               { pubkey: publicKey, isSigner: true, isWritable: true }, // owner
@@ -255,7 +299,7 @@ export function useTokenizeStreetwear() {
               { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }, // rent
             ],
             programId: programId,
-            data: Buffer.from([]), // Por ahora vacío, necesitamos serializar los datos
+            data: dataBuffer,
           });
           
           transaction.add(instruction);
