@@ -150,118 +150,90 @@ export function useTokenizeStreetwear() {
         throw new Error('IDL inválido o incompleto');
       }
       
-      console.log('🔧 Creando programa de Anchor...');
-      let program;
-      try {
-        program = new Program(idl, new PublicKey(idl.address), provider);
-        console.log('✅ Programa creado exitosamente');
-      } catch (error) {
-        console.error('❌ Error creando programa:', error);
-        throw error;
-      }
-
-      // Mapear rarity a enum de Anchor
-      const rarityMap: Record<string, any> = {
-        'Common': { common: {} },
-        'Uncommon': { uncommon: {} },
-        'Rare': { rare: {} },
-        'Epic': { epic: {} },
-        'Legendary': { legendary: {} },
-      };
-
-      // Obtener PDA del asset
-      const [assetPda] = await getAssetPDA(publicKey, mint);
-
-      console.log('🔗 8. Obteniendo blockhash...');
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-
-          console.log('✍️ 9. Creando transacción manualmente...');
-          console.log('📤 10. Construyendo transacción paso a paso...');
-
-          // Crear transacción manualmente para tener control total
+      console.log('🔧 Saltando Anchor por IDL corrupto, usando transacción manual...');
+      
+      // Crear transacción manualmente sin Anchor
       const transaction = new Transaction();
-          
-          // 1. Crear instrucción para inicializar el mint
-          console.log('🔧 Agregando instrucción de inicialización de mint...');
-          const initMintIx = createInitializeMintInstruction(
-            mint, // mint account
-            0, // decimals (NFT = 0)
-            publicKey, // mint authority
-            publicKey // freeze authority
-          );
-          transaction.add(initMintIx);
+      
+      // 1. Crear instrucción para inicializar el mint
+      console.log('🔧 Agregando instrucción de inicialización de mint...');
+      const initMintIx = createInitializeMintInstruction(
+        mint, // mint account
+        0, // decimals (NFT = 0)
+        publicKey, // mint authority
+        publicKey // freeze authority
+      );
+      transaction.add(initMintIx);
 
-          // 2. Crear instrucción para crear el token account
-          console.log('🔧 Agregando instrucción de creación de token account...');
-          const createTokenAccountIx = createAssociatedTokenAccountInstruction(
-            publicKey, // payer
-            tokenAccount, // associated token account
-            publicKey, // owner
-            mint // mint
-          );
-          transaction.add(createTokenAccountIx);
+      // 2. Crear instrucción para crear el token account
+      console.log('🔧 Agregando instrucción de creación de token account...');
+      const createTokenAccountIx = createAssociatedTokenAccountInstruction(
+        publicKey, // payer
+        tokenAccount, // associated token account
+        publicKey, // owner
+        mint // mint
+      );
+      transaction.add(createTokenAccountIx);
 
-          // 3. Crear instrucción para mintear 1 token
-          console.log('🔧 Agregando instrucción de mint...');
-          const mintToIx = createMintToInstruction(
-            mint, // mint
-            tokenAccount, // destination
-            publicKey, // authority
-            1 // amount (1 NFT)
-          );
-          transaction.add(mintToIx);
+      // 3. Crear instrucción para mintear 1 token
+      console.log('🔧 Agregando instrucción de mint...');
+      const mintToIx = createMintToInstruction(
+        mint, // mint
+        tokenAccount, // destination
+        publicKey, // authority
+        1 // amount (1 NFT)
+      );
+      transaction.add(mintToIx);
 
-          // 4. Crear nuestra instrucción personalizada usando Anchor
-          console.log('🔧 Agregando instrucción de nuestro programa...');
-          const ourInstruction = await program.methods
-            .tokenize_streetwear(
-              params.name,
-              metadata.symbol,
-              uri,
-              params.brand,
-              params.model,
-              params.size,
-              params.condition,
-              params.year,
-              rarityMap[params.rarity] || { common: {} }
-            )
-            .accounts({
-              owner: publicKey,
-              mint: mint,
-              tokenAccount: tokenAccount,
-              assetAccount: assetPda,
-              tokenProgram: TOKEN_PROGRAM_ID,
-              associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-              systemProgram: SystemProgram.programId,
-              rent: SYSVAR_RENT_PUBKEY,
-            })
-            .instruction();
-          
-          transaction.add(ourInstruction);
+      // 4. Crear instrucción personalizada para nuestro programa
+      console.log('🔧 Agregando instrucción de nuestro programa...');
+      
+      // Crear la instrucción manualmente
+      const programId = new PublicKey(idl.address);
+      const instruction = new TransactionInstruction({
+        keys: [
+          { pubkey: publicKey, isSigner: true, isWritable: true }, // owner
+          { pubkey: mint, isSigner: true, isWritable: true }, // mint
+          { pubkey: tokenAccount, isSigner: false, isWritable: true }, // token_account
+          { pubkey: assetPda, isSigner: false, isWritable: true }, // asset_account
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // token_program
+          { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // associated_token_program
+          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }, // system_program
+          { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }, // rent
+        ],
+        programId: programId,
+        data: Buffer.from([]), // Por ahora vacío, necesitamos serializar los datos
+      });
+      
+      transaction.add(instruction);
 
-          // Loggear las instrucciones generadas para depuración
-          console.log('🔍 Instrucciones en la transacción:');
-          transaction.instructions.forEach((ix, index) => {
-            console.log(`Instrucción ${index + 1}:`);
-            console.log(`  Program ID: ${ix.programId.toString()}`);
-            console.log(`  Keys: ${ix.keys.map(k => k.pubkey.toString()).join(', ')}`);
-            console.log(`  Data: ${ix.data.toString('hex')}`);
-          });
+      // Loggear las instrucciones generadas para depuración
+      console.log('🔍 Instrucciones en la transacción:');
+      transaction.instructions.forEach((ix, index) => {
+        console.log(`Instrucción ${index + 1}:`);
+        console.log(`  Program ID: ${ix.programId.toString()}`);
+        console.log(`  Keys: ${ix.keys.map(k => k.pubkey.toString()).join(', ')}`);
+        console.log(`  Data: ${ix.data.toString('hex')}`);
+      });
 
-          // Verificar que nuestra instrucción esté presente
-          const ourProgramId = new PublicKey(idl.address);
-          const hasOurInstruction = transaction.instructions.some(ix => 
-            ix.programId.equals(ourProgramId)
-          );
-          
-          if (!hasOurInstruction) {
-            throw new Error('❌ No se encontró la instrucción de nuestro programa en la transacción');
-          }
-          
-          console.log('✅ Instrucción de nuestro programa encontrada');
+      // Verificar que nuestra instrucción esté presente
+      const ourProgramId = new PublicKey(idl.address);
+      const hasOurInstruction = transaction.instructions.some(ix => 
+        ix.programId.equals(ourProgramId)
+      );
+      
+      if (!hasOurInstruction) {
+        throw new Error('❌ No se encontró la instrucción de nuestro programa en la transacción');
+      }
+      
+      console.log('✅ Instrucción de nuestro programa encontrada');
 
-          // Enviar y confirmar la transacción
-          const tx = await provider.sendAndConfirm(transaction, [mintKeypair]);
+      // Enviar y confirmar la transacción
+      console.log('📤 Enviando transacción...');
+      const tx = await connection.sendTransaction(transaction, [mintKeypair], {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
 
       console.log('⏳ Esperando confirmación del wallet...');
       console.log('✅ Transacción enviada:', tx);
