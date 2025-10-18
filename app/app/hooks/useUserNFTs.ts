@@ -38,6 +38,8 @@ export function useUserNFTs() {
 
     try {
       console.log('🔍 Buscando NFTs reales del usuario...');
+      console.log('👤 Wallet:', wallet.publicKey?.toString());
+      console.log('🔗 Connection:', provider.connection.rpcEndpoint);
       
       // 1. Obtener todos los token accounts del usuario
       const tokenAccounts = await provider.connection.getTokenAccountsByOwner(
@@ -48,6 +50,17 @@ export function useUserNFTs() {
       );
 
       console.log(`📊 Encontrados ${tokenAccounts.value.length} token accounts`);
+      
+      // Debug: Mostrar todos los token accounts
+      tokenAccounts.value.forEach((account, index) => {
+        const mint = account.account.data.parsed.info.mint;
+        const amount = account.account.data.parsed.info.tokenAmount.amount;
+        console.log(`Token ${index + 1}:`, {
+          mint: mint,
+          amount: amount,
+          owner: account.account.data.parsed.info.owner
+        });
+      });
 
       const userNFTs: UserNFT[] = [];
 
@@ -57,15 +70,20 @@ export function useUserNFTs() {
           const mint = tokenAccount.account.data.parsed.info.mint;
           const mintPubkey = new PublicKey(mint);
           
+          console.log(`🔍 Verificando mint: ${mint}`);
+          
           // 3. Obtener el asset account para este mint
           const [assetPda] = await getAssetPDA(wallet.publicKey, mintPubkey);
+          console.log(`📍 Asset PDA: ${assetPda.toString()}`);
           
           try {
             // 4. Intentar obtener los datos del asset account
             const assetAccount = await provider.connection.getAccountInfo(assetPda);
+            console.log(`📋 Asset account existe:`, !!assetAccount);
             
             if (assetAccount) {
               console.log(`✅ NFT encontrado: ${mint}`);
+              console.log(`📊 Asset account data length:`, assetAccount.data.length);
               
               // 5. Parsear los datos del asset account
               // Nota: Esto requiere deserializar manualmente los datos
@@ -86,13 +104,16 @@ export function useUserNFTs() {
               };
               
               userNFTs.push(nft);
+            } else {
+              console.log(`❌ No es un NFT de nuestro programa: ${mint}`);
             }
           } catch (assetError) {
+            console.log(`❌ Error verificando asset account para ${mint}:`, assetError);
             // Este mint no es un NFT de nuestro programa
             continue;
           }
         } catch (error) {
-          console.log('Error procesando token account:', error);
+          console.log('❌ Error procesando token account:', error);
           continue;
         }
       }
@@ -100,8 +121,16 @@ export function useUserNFTs() {
       setNfts(userNFTs);
       console.log(`✅ NFTs cargados: ${userNFTs.length}`);
       
+      if (userNFTs.length === 0) {
+        console.log('⚠️ No se encontraron NFTs. Posibles causas:');
+        console.log('1. Los NFTs no se mintearon correctamente');
+        console.log('2. El asset account no existe');
+        console.log('3. El PDA calculation está mal');
+        console.log('4. Los NFTs están en otra wallet');
+      }
+      
     } catch (err: any) {
-      console.error('Error fetching NFTs:', err);
+      console.error('❌ Error fetching NFTs:', err);
       setError(err.message || 'Error al cargar NFTs');
     } finally {
       setLoading(false);
