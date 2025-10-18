@@ -34,16 +34,10 @@ export function NetworkChecker() {
   if (!publicKey) return null;
 
   return (
-    <div className="fixed top-4 right-4 bg-black/80 text-white p-3 rounded-lg text-sm z-50">
-      <div className="font-bold mb-2">🔍 Network Status</div>
-      <div>Network: {network}</div>
-      <div>Wallet: {publicKey.toString().slice(0, 8)}...</div>
-      <div>Balance: {balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}</div>
-      {network.includes('devnet') ? (
-        <div className="text-green-400">✅ Devnet</div>
-      ) : (
-        <div className="text-red-400">❌ Not Devnet</div>
-      )}
+    <div className="fixed bottom-4 left-4 bg-black/60 text-white p-2 rounded-md text-xs z-40 opacity-75 hover:opacity-100 transition-opacity">
+      <div className="font-semibold mb-1">🌐 {network.includes('devnet') ? 'Devnet' : 'Network'}</div>
+      <div>💰 {balance !== null ? `${balance.toFixed(2)} SOL` : 'Loading...'}</div>
+      <div className="text-gray-300">{publicKey.toString().slice(0, 6)}...</div>
     </div>
   );
 }
