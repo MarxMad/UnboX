@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Connection } from '@solana/web3.js';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 
@@ -75,13 +75,29 @@ export function useUserNFTs() {
       
       for (const tokenAccount of tokenAccounts.value) {
         try {
-          // Validar que el token account tenga la estructura esperada
-          if (!tokenAccount.account.data.parsed || !tokenAccount.account.data.parsed.info) {
-            console.log(`⚠️ Token account sin estructura parsed.info, saltando...`);
-            continue;
+          let mint: string;
+          
+          // Manejar tanto datos parsed como raw
+          if (tokenAccount.account.data.parsed && tokenAccount.account.data.parsed.info) {
+            // Datos ya parseados
+            mint = tokenAccount.account.data.parsed.info.mint;
+            console.log(`📋 Token account con datos parsed, mint: ${mint}`);
+          } else {
+            // Datos raw - necesitamos parsear manualmente
+            console.log(`🔧 Token account con datos raw, parseando manualmente...`);
+            
+            try {
+              // Parsear datos raw usando AccountLayout
+              const accountData = tokenAccount.account.data;
+              const parsed = AccountLayout.decode(accountData);
+              mint = parsed.mint.toString();
+              console.log(`✅ Token account raw parseado, mint: ${mint}`);
+            } catch (parseError) {
+              console.log(`❌ Error parseando token account raw:`, parseError);
+              continue;
+            }
           }
           
-          const mint = tokenAccount.account.data.parsed.info.mint;
           const mintPubkey = new PublicKey(mint);
           
           console.log(`🔍 Verificando mint: ${mint}`);
