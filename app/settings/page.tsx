@@ -51,6 +51,15 @@ export default function SettingsPage() {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    // Implementar lógica de eliminación de cuenta
+    (window as any).addNotification?.({
+      type: "warning",
+      title: "Eliminar cuenta",
+      message: "Esta función está en desarrollo"
+    })
+  }
+
   const handlePinComplete = (pin: string) => {
     setUserPin(pin)
     setShowPinSetup(false)
@@ -179,7 +188,6 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
-            </Card>
               
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">

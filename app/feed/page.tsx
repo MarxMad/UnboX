@@ -18,8 +18,8 @@ export default function FeedPage() {
   const [likedItems, setLikedItems] = useState<Set<number>>(new Set())
   
   // Hooks para obtener NFTs reales
-  const { nfts: allNFTs, loading: allNFTsLoading } = useAllNFTs()
-  const { nfts: marketplaceNFTs, loading: marketplaceLoading } = useMarketplaceNFTs()
+  const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
+  const { marketplaceNFTs, loading: marketplaceLoading } = useMarketplaceNFTs()
 
   useEffect(() => {
     if (!isLoading && !user) {

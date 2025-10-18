@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, Camera, Sparkles, CheckCircle, Loader2 } from "lucide-react"
+import { Upload, Camera, Sparkles, CheckCircle, Loader2, AlertCircle, ExternalLink } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { usePin } from "@/lib/pin-context"
@@ -215,7 +215,52 @@ export default function TokenizePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      {/* </CHANGE> */}
+
+      {/* Wallet Status Banner */}
+      {!connected && (
+        <div className="bg-yellow-50 border-b border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
+          <div className="container max-w-5xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  Wallet no conectado
+                </p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
+                  Necesitas conectar tu wallet para tokenizar artículos
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {connected && (
+        <div className="bg-blue-50 border-b border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="container max-w-5xl mx-auto px-4 py-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  Wallet: {publicKey?.toString().slice(0, 8)}...{publicKey?.toString().slice(-8)}
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                  ⚠️ Asegúrate de estar en <span className="font-bold">DEVNET</span> y tener al menos 0.02 SOL
+                </p>
+              </div>
+              <a 
+                href="https://faucet.solana.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 whitespace-nowrap"
+              >
+                <span>Obtener SOL</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-5xl">
