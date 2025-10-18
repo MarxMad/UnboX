@@ -49,6 +49,18 @@ export function useTokenizeStreetwear() {
     console.log('Network:', connection?.rpcEndpoint);
     console.log('Program ID:', idl.address);
     
+    // Debug: Verificar parámetros recibidos
+    console.log('📋 Parámetros recibidos:', {
+      name: params.name,
+      brand: params.brand,
+      model: params.model,
+      size: params.size,
+      condition: params.condition,
+      year: params.year,
+      rarity: params.rarity,
+      image: params.image?.name
+    });
+    
     if (!publicKey || !connection) {
       throw new Error('Wallet no conectado');
     }
