@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
-import { AnchorProvider } from '@coral-xyz/anchor';
-import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
 import { PROGRAM_ID } from '../config/program';
 
 // Import IDL as a dynamic import to avoid SSR issues
@@ -72,23 +71,12 @@ export function useProgram() {
         return { program: null, provider: null };
       }
 
-      console.log('useProgram - Creating custom program interface...');
+      console.log('useProgram - Creating program with Anchor 0.29.0...');
       console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
       
-      // Create a custom program interface that bypasses Anchor's Program constructor
-      const program = {
-        programId: PROGRAM_ID,
-        provider,
-        // Add methods that will be implemented in useTokenizeStreetwear
-        methods: {
-          tokenizeStreetwear: async (args: any) => {
-            // This will be implemented in useTokenizeStreetwear
-            throw new Error('Method not implemented in custom program interface');
-          }
-        }
-      };
-
-      console.log('useProgram - Custom program created successfully');
+      // Use Anchor Program constructor with proper IDL
+      const program = new Program(idl as Idl, PROGRAM_ID, provider);
+      console.log('useProgram - Program created successfully');
 
       return { program, provider };
     } catch (error) {
