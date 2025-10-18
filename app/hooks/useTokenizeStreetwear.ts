@@ -43,11 +43,19 @@ export function useTokenizeStreetwear() {
   const [error, setError] = useState<string | null>(null);
 
   const tokenize = async (params: TokenizeParams) => {
-    console.log('🚀 Iniciando tokenización con Anchor...');
-    console.log('Wallet:', publicKey?.toString());
-    console.log('Connection:', !!connection);
-    console.log('Network:', connection?.rpcEndpoint);
-    console.log('Program ID:', idl.address);
+        console.log('🚀 Iniciando tokenización con Anchor...');
+        console.log('Wallet:', publicKey?.toString());
+        console.log('Connection:', !!connection);
+        console.log('Network:', connection?.rpcEndpoint);
+        console.log('Program ID:', idl.address);
+        
+        // Verificar que estamos en devnet
+        const isDevnet = connection?.rpcEndpoint?.includes('devnet');
+        console.log('🌐 ¿Estamos en devnet?', isDevnet);
+        
+        if (!isDevnet) {
+          console.warn('⚠️ ADVERTENCIA: No estamos en devnet!');
+        }
     
     // Debug: Verificar parámetros recibidos
     console.log('📋 Parámetros recibidos:', {
@@ -65,14 +73,32 @@ export function useTokenizeStreetwear() {
       throw new Error('Wallet no conectado');
     }
 
-    // Verificar balance antes de proceder
-    console.log('💰 Verificando balance...');
-    const balance = await connection.getBalance(publicKey);
-    console.log('Balance actual:', balance / LAMPORTS_PER_SOL, 'SOL');
-    
-    if (balance < 0.001 * LAMPORTS_PER_SOL) {
-      throw new Error(`Balance insuficiente: ${balance / LAMPORTS_PER_SOL} SOL. Necesitas al menos 0.001 SOL para la transacción.`);
-    }
+        // Verificar balance antes de proceder
+        console.log('💰 Verificando balance...');
+        const balance = await connection.getBalance(publicKey);
+        console.log('Balance actual:', balance / LAMPORTS_PER_SOL, 'SOL');
+        console.log('Balance en lamports:', balance);
+        console.log('Network endpoint:', connection.rpcEndpoint);
+        
+        // Calcular rent para todas las cuentas que vamos a crear
+        const mintRent = await connection.getMinimumBalanceForRentExemption(0);
+        const tokenAccountRent = await connection.getMinimumBalanceForRentExemption(0);
+        const assetAccountRent = await connection.getMinimumBalanceForRentExemption(0);
+        const totalRent = mintRent + tokenAccountRent + assetAccountRent;
+        const estimatedFee = 5000; // Fee estimado de transacción
+        const totalNeeded = totalRent + estimatedFee;
+        
+        console.log('📊 Cálculo de rent:');
+        console.log('  - Mint rent:', mintRent / LAMPORTS_PER_SOL, 'SOL');
+        console.log('  - Token account rent:', tokenAccountRent / LAMPORTS_PER_SOL, 'SOL');
+        console.log('  - Asset account rent:', assetAccountRent / LAMPORTS_PER_SOL, 'SOL');
+        console.log('  - Transaction fee:', estimatedFee / LAMPORTS_PER_SOL, 'SOL');
+        console.log('  - Total needed:', totalNeeded / LAMPORTS_PER_SOL, 'SOL');
+        console.log('  - Available:', balance / LAMPORTS_PER_SOL, 'SOL');
+        
+        if (balance < totalNeeded) {
+          throw new Error(`Balance insuficiente: ${balance / LAMPORTS_PER_SOL} SOL. Necesitas al menos ${totalNeeded / LAMPORTS_PER_SOL} SOL para la transacción.`);
+        }
 
     setLoading(true);
     setError(null);
