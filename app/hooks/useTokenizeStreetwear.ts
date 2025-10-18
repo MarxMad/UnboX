@@ -91,14 +91,20 @@ export function useTokenizeStreetwear() {
       console.log('✅ Imagen subida:', imageUri);
 
       console.log('📋 2. Creando metadata...');
+      // Generar symbol automáticamente desde brand (máximo 10 caracteres)
+      const symbol = params.brand.substring(0, 10).toUpperCase();
+      
+      // Crear descripción completa
+      const description = `${params.brand} ${params.model || params.name} - ${params.condition} (${params.year})`;
+      
       const metadata = createNFTMetadata(
         params.name,
-        params.brand.substring(0, 10).toUpperCase(),
-        `${params.brand} ${params.model} - ${params.condition} (${params.year})`,
+        symbol,
+        description,
         imageUri,
         {
           brand: params.brand,
-          model: params.model,
+          model: params.model || params.name,
           size: params.size,
           condition: params.condition,
           year: params.year,
@@ -225,17 +231,29 @@ export function useTokenizeStreetwear() {
 
           // 4. Crear nuestra instrucción personalizada usando Anchor
           console.log('🔧 Agregando instrucción de nuestro programa...');
+          console.log('📋 Parámetros para tokenize_streetwear:', {
+            name: params.name,
+            symbol: symbol,
+            uri: uri,
+            brand: params.brand,
+            model: params.model || params.name,
+            size: params.size,
+            condition: params.condition,
+            year: params.year,
+            rarity: params.rarity
+          });
+          
           const ourInstruction = await program.methods
             .tokenize_streetwear(
-              params.name,
-              metadata.symbol,
-              uri,
-              params.brand,
-              params.model,
-              params.size,
-              params.condition,
-              params.year,
-              rarityMap[params.rarity] || { common: {} }
+              params.name,           // name
+              symbol,                // symbol (generado automáticamente)
+              uri,                   // uri (metadata de IPFS)
+              params.brand,          // brand
+              params.model || params.name, // model (usar name si model está vacío)
+              params.size,           // size
+              params.condition,      // condition
+              params.year,           // year
+              rarityMap[params.rarity] || { common: {} } // rarity
             )
             .accounts({
               owner: publicKey,
