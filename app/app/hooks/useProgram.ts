@@ -75,25 +75,10 @@ export function useProgram() {
       console.log('useProgram - IDL type:', typeof idl);
       console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
       
-      // Try using the IDL directly without wrapper
+      // Use the IDL directly without any modifications
       console.log('useProgram - Using IDL directly');
       
-      // Create a minimal IDL that should work
-      const minimalIdl = {
-        address: idl.address,
-        metadata: idl.metadata,
-        instructions: idl.instructions,
-        accounts: idl.accounts || [],
-        types: idl.types || [],
-        errors: idl.errors || [],
-        events: idl.events || [],
-        constants: idl.constants || [],
-        state: idl.state || null,
-      };
-      
-      console.log('useProgram - Minimal IDL created');
-      
-      const program = new Program(minimalIdl, PROGRAM_ID, provider);
+      const program = new Program(idl, PROGRAM_ID, provider);
       console.log('useProgram - Program created successfully');
 
       return { program, provider };
