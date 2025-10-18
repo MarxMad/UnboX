@@ -1,16 +1,4 @@
 {
-  "buildCommand": "npm run build",
   "installCommand": "npm install --force",
-  "framework": "nextjs",
-  "regions": ["iad1"],
-  "functions": {
-    "app/**/*.tsx": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "env": {
-    "NODE_ENV": "production",
-    "NEXT_PUBLIC_SOLANA_RPC_ENDPOINT": "https://api.devnet.solana.com",
-    "NEXT_PUBLIC_SOLANA_NETWORK": "devnet"
-  }
+  "framework": "nextjs"
 }
