@@ -90,6 +90,23 @@ export function useUserNFTs() {
               image: "https://gateway.pinata.cloud/ipfs/QmdnZaPDDupMP49fstJNCvQa5YmUVd2ozd1mibnd1Sj2FC"
             };
             
+            // Verificar si la imagen es accesible
+            try {
+              console.log(`🖼️ Verificando imagen: ${nft.image}`);
+              const imageResponse = await fetch(nft.image, { method: 'HEAD' });
+              if (imageResponse.ok) {
+                console.log(`✅ Imagen accesible: ${nft.image}`);
+              } else {
+                console.log(`❌ Imagen no accesible: ${nft.image} (Status: ${imageResponse.status})`);
+                // Usar imagen de respaldo
+                nft.image = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Found";
+              }
+            } catch (imageError) {
+              console.log(`❌ Error verificando imagen: ${imageError}`);
+              // Usar imagen de respaldo
+              nft.image = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Error";
+            }
+            
             userNFTs.push(nft);
             console.log(`✅ NFT agregado: ${nft.name} (${nft.brand} ${nft.model})`);
           } else {
