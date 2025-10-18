@@ -40,9 +40,9 @@ export function useTokenizeStreetwear() {
 
     try {
       console.log('1. Subiendo imagen a IPFS...');
-      // Usar mock para desarrollo, o uploadImageToIPFS para producción
-      const imageUri = await mockUploadToIPFS(params.image);
-      console.log('Imagen subida:', imageUri);
+      // Usar Pinata real para subir imagen
+      const imageUri = await uploadImageToIPFS(params.image);
+      console.log('Imagen subida a Pinata:', imageUri);
 
       console.log('2. Creando metadata...');
       const metadata = createNFTMetadata(
@@ -60,10 +60,9 @@ export function useTokenizeStreetwear() {
         }
       );
 
-      // Para desarrollo, usar una URI mock
-      // En producción: await uploadMetadataToIPFS(metadata)
-      const uri = 'https://arweave.net/mock-metadata-uri';
-      console.log('Metadata URI:', uri);
+      // Subir metadata a Pinata
+      const uri = await uploadMetadataToIPFS(metadata);
+      console.log('Metadata subido a Pinata:', uri);
 
       console.log('3. Creando mint...');
       const mintKeypair = Keypair.generate();
