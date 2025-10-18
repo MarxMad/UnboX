@@ -1,16 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
-import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
+import { AnchorProvider } from '@coral-xyz/anchor';
 import { PROGRAM_ID } from '../config/program';
-
-// Import IDL as a dynamic import to avoid SSR issues
-let idl: any = null;
-try {
-  idl = require('../idl/streetwear_tokenizer.json');
-  console.log('IDL loaded successfully:', !!idl);
-} catch (error) {
-  console.error('Failed to load IDL:', error);
-}
 
 export function useProgram() {
   const { connection } = useConnection();
@@ -51,32 +42,23 @@ export function useProgram() {
         return { program: null, provider: null };
       }
 
-      // Additional validation
-      if (!idl || !PROGRAM_ID) {
-        console.warn('IDL or PROGRAM_ID not available');
-        return { program: null, provider: null };
-      }
-
-      // Validate IDL structure
-      if (!idl.instructions || !Array.isArray(idl.instructions)) {
-        console.warn('IDL missing instructions array');
-        return { program: null, provider: null };
-      }
-
-      console.log('useProgram - IDL instructions count:', idl.instructions.length);
-
       // Check if provider has the required methods
       if (typeof provider.sendAndConfirm !== 'function') {
         console.warn('Provider missing sendAndConfirm method');
         return { program: null, provider: null };
       }
 
-      console.log('useProgram - Creating program with Anchor 0.29.0...');
+      console.log('useProgram - Creating custom program interface...');
       console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
       
-      // Use Anchor Program constructor with proper IDL
-      const program = new Program(idl as Idl, PROGRAM_ID, provider);
-      console.log('useProgram - Program created successfully');
+      // Create a custom program interface that bypasses Anchor's Program constructor
+      const program = {
+        programId: PROGRAM_ID,
+        provider,
+        // No methods needed since we're using manual instruction creation
+      };
+
+      console.log('useProgram - Custom program created successfully');
 
       return { program, provider };
     } catch (error) {
