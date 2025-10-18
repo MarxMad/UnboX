@@ -6,16 +6,20 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { Box, Wallet, Mail, Lock } from "lucide-react"
+import { Box, Wallet, Mail, Lock, User } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  })
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
   const { connected, connecting, publicKey } = useWallet()
@@ -24,11 +28,37 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (formData.password !== formData.confirmPassword) {
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error",
+        message: "Las contraseñas no coinciden"
+      })
+      return
+    }
+
+    if (formData.password.length < 6) {
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error",
+        message: "La contraseña debe tener al menos 6 caracteres"
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
-      await login(email, password)
+      // Simular registro - en MVP real aquí se haría el registro
+      await login(formData.email, formData.password)
+      router.push("/feed")
     } catch (error) {
-      console.error("Login failed:", error)
+      console.error("Registration failed:", error)
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error de registro",
+        message: "No se pudo crear la cuenta. Inténtalo de nuevo."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -54,6 +84,13 @@ export default function LoginPage() {
     }
   }
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
@@ -63,12 +100,12 @@ export default function LoginPage() {
             <Box className="h-10 w-10 text-primary" />
             <span className="text-3xl font-bold tracking-tight">UnboX</span>
           </Link>
-          <h1 className="text-2xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your account to continue</p>
+          <h1 className="text-2xl font-bold">Create Account</h1>
+          <p className="text-muted-foreground">Join the streetwear collector community</p>
         </div>
 
         <Card className="p-8 space-y-6">
-          {/* Web3 Login */}
+          {/* Web3 Registration */}
           <Button
             variant="outline"
             className="w-full h-12 text-base bg-transparent"
@@ -84,12 +121,30 @@ export default function LoginPage() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              <span className="bg-card px-2 text-muted-foreground">Or register with email</span>
             </div>
           </div>
 
-          {/* Email Login Form */}
+          {/* Email Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
@@ -100,8 +155,8 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="collector@unbox.app"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   className="pl-10"
                   required
                 />
@@ -118,8 +173,26 @@ export default function LoginPage() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                   className="pl-10"
                   required
                 />
@@ -127,20 +200,20 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full h-12 text-base bg-primary hover:bg-primary/90" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
           <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className="text-primary hover:underline font-medium">
+              Sign in
             </Link>
           </div>
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to UnboX's Terms of Service and Privacy Policy
+          By creating an account, you agree to UnboX's Terms of Service and Privacy Policy
         </p>
       </div>
     </div>

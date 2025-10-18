@@ -31,65 +31,7 @@ export default function FeedPage() {
     return null
   }
 
-  // Combinar NFTs reales con datos mock para mostrar algo
-  const combinedNFTs = [
-    ...(allNFTs || []).map((nft, index) => ({
-      id: `real-${index}`,
-      name: nft.name || "NFT Item",
-      brand: nft.brand || "Unknown",
-      year: nft.year || "2024",
-      condition: nft.condition || "New",
-      price: "USD 0", // Los NFTs reales no tienen precio por ahora
-      image: "/placeholder.svg",
-      likes: Math.floor(Math.random() * 100),
-      verified: true,
-      trending: Math.random() > 0.7,
-      isReal: true
-    })),
-    // Mantener algunos items mock para mostrar contenido
-    ...trendingItems.slice(0, 3).map(item => ({ ...item, isReal: false }))
-  ]
-
-  const handleLike = (itemId: number) => {
-    setLikedItems(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
-      } else {
-        newSet.add(itemId)
-      }
-      return newSet
-    })
-  }
-
-  const handleShare = (item: any) => {
-    if (navigator.share) {
-      navigator.share({
-        title: item.name,
-        text: `Check out this ${item.brand} item on UnboX`,
-        url: window.location.href
-      })
-    } else {
-      // Fallback: copiar al clipboard
-      navigator.clipboard.writeText(`${item.name} - ${item.brand}`)
-      alert("Item info copied to clipboard!")
-    }
-  }
-
-  const filteredNFTs = selectedCategory === "All" 
-    ? combinedNFTs 
-    : combinedNFTs.filter(item => {
-        // Mapear categorías a tipos de items
-        const categoryMap: { [key: string]: string[] } = {
-          "Sneakers": ["Nike", "Jordan", "Adidas"],
-          "Streetwear": ["Supreme", "Bape", "Off-White"],
-          "Art Toys": ["KAWS", "Bearbrick"],
-          "Watches": ["Rolex", "Omega"],
-          "Accessories": ["Gucci", "Louis Vuitton"]
-        }
-        return categoryMap[selectedCategory]?.includes(item.brand) || false
-      })
-
+  // Datos mock para mostrar contenido cuando no hay NFTs reales
   const trendingItems = [
     {
       id: 1,
@@ -98,7 +40,7 @@ export default function FeedPage() {
       year: "2023",
       condition: "New",
       price: "USD 850",
-      image: "/red-hoodie.png",
+      image: "/supreme-hoodie-streetwear.jpg",
       likes: 234,
       verified: true,
       trending: true,
@@ -164,6 +106,65 @@ export default function FeedPage() {
       trending: false,
     },
   ]
+
+  // Combinar NFTs reales con datos mock para mostrar algo
+  const combinedNFTs = [
+    ...(allNFTs || []).map((nft, index) => ({
+      id: `real-${index}`,
+      name: nft.name || "NFT Item",
+      brand: nft.brand || "Unknown",
+      year: nft.year || "2024",
+      condition: nft.condition || "New",
+      price: "USD 0", // Los NFTs reales no tienen precio por ahora
+      image: "/placeholder.svg",
+      likes: Math.floor(Math.random() * 100),
+      verified: true,
+      trending: Math.random() > 0.7,
+      isReal: true
+    })),
+    // Mantener algunos items mock para mostrar contenido
+    ...trendingItems.slice(0, 3).map(item => ({ ...item, isReal: false }))
+  ]
+
+  const handleLike = (itemId: number) => {
+    setLikedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
+  }
+
+  const handleShare = (item: any) => {
+    if (navigator.share) {
+      navigator.share({
+        title: item.name,
+        text: `Check out this ${item.brand} item on UnboX`,
+        url: window.location.href
+      })
+    } else {
+      // Fallback: copiar al clipboard
+      navigator.clipboard.writeText(`${item.name} - ${item.brand}`)
+      alert("Item info copied to clipboard!")
+    }
+  }
+
+  const filteredNFTs = selectedCategory === "All" 
+    ? combinedNFTs 
+    : combinedNFTs.filter(item => {
+        // Mapear categorías a tipos de items
+        const categoryMap: { [key: string]: string[] } = {
+          "Sneakers": ["Nike", "Jordan", "Adidas"],
+          "Streetwear": ["Supreme", "Bape", "Off-White"],
+          "Art Toys": ["KAWS", "Bearbrick"],
+          "Watches": ["Rolex", "Omega"],
+          "Accessories": ["Gucci", "Louis Vuitton"]
+        }
+        return categoryMap[selectedCategory]?.includes(item.brand) || false
+      })
 
   const categories = ["All", "Sneakers", "Streetwear", "Art Toys", "Watches", "Accessories"]
 

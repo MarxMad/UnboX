@@ -53,7 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null)
     localStorage.removeItem("unbox_user")
-    router.push("/")
+    // Si estamos en la landing page, no redirigir
+    if (window.location.pathname !== "/") {
+      router.push("/")
+    }
   }
 
   return (

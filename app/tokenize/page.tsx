@@ -10,14 +10,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, Camera, Sparkles } from "lucide-react"
+import { Upload, Camera, Sparkles, CheckCircle, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 export default function TokenizePage() {
   const [images, setImages] = useState<string[]>([])
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [mintingStep, setMintingStep] = useState<string>("")
+  const [isSuccess, setIsSuccess] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -30,6 +33,7 @@ export default function TokenizePage() {
   })
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const { connected, publicKey } = useWallet()
   const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
 
   useEffect(() => {
@@ -57,16 +61,52 @@ export default function TokenizePage() {
     e.preventDefault()
     
     if (!selectedFile) {
-      alert("Please select an image")
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error",
+        message: "Por favor selecciona una imagen"
+      })
       return
     }
 
     if (!formData.name || !formData.brand || !formData.condition) {
-      alert("Please fill in all required fields")
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error",
+        message: "Por favor completa todos los campos requeridos"
+      })
+      return
+    }
+
+    if (!connected) {
+      (window as any).addNotification?.({
+        type: "warning",
+        title: "Wallet no conectado",
+        message: "Por favor conecta tu wallet para continuar"
+      })
       return
     }
 
     try {
+      setIsSuccess(false)
+      setMintingStep("Subiendo imagen a IPFS...")
+      
+      // Simular progreso del minteo
+      const steps = [
+        "Subiendo imagen a IPFS...",
+        "Creando metadata...",
+        "Generando mint...",
+        "Firmando transacción...",
+        "Confirmando en blockchain...",
+        "¡Tokenización completada!"
+      ]
+
+      for (let i = 0; i < steps.length; i++) {
+        setMintingStep(steps[i])
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+
+      // Llamar a la función real de tokenización
       await tokenize({
         name: formData.name,
         brand: formData.brand,
@@ -78,10 +118,31 @@ export default function TokenizePage() {
         image: selectedFile
       })
       
-      // Redirect to profile or feed after successful tokenization
-      router.push("/profile")
+      setIsSuccess(true)
+      setMintingStep("")
+      
+      // Mostrar notificación de éxito
+      (window as any).addNotification?.({
+        type: "success",
+        title: "¡Tokenización Exitosa!",
+        message: `Tu ${formData.brand} ${formData.name} ha sido tokenizado exitosamente`,
+        duration: 8000
+      })
+
+      // Redirigir después de 3 segundos
+      setTimeout(() => {
+        router.push("/profile")
+      }, 3000)
+      
     } catch (error) {
       console.error("Tokenization failed:", error)
+      setMintingStep("")
+      
+      (window as any).addNotification?.({
+        type: "error",
+        title: "Error en Tokenización",
+        message: "Hubo un problema al tokenizar tu item. Inténtalo de nuevo."
+      })
     }
   }
 
@@ -288,17 +349,77 @@ export default function TokenizePage() {
               </div>
             </Card>
 
+            {/* Indicador de progreso del minteo */}
+            {mintingStep && (
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out"
+                  style={{ 
+                    width: mintingStep.includes("completada") ? "100%" : 
+                           mintingStep.includes("Subiendo") ? "16%" :
+                           mintingStep.includes("Creando") ? "33%" :
+                           mintingStep.includes("Generando") ? "50%" :
+                           mintingStep.includes("Firmando") ? "66%" :
+                           mintingStep.includes("Confirmando") ? "83%" : "0%"
+                  }}
+                ></div>
+              </div>
+            )}
+            
+            {/* Mostrar paso actual */}
+            {mintingStep && !mintingStep.includes("completada") && (
+              <div className="text-center text-sm text-blue-600 mb-4">
+                {mintingStep}
+              </div>
+            )}
+            
+            {/* Mensaje de éxito */}
+            {isSuccess && (
+              <div className="text-center text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                <p className="font-semibold">¡Tokenización Exitosa!</p>
+                <p>Tu item ha sido tokenizado y aparecerá en tu perfil en unos segundos...</p>
+              </div>
+            )}
+
             <Button 
               type="submit"
               className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-              disabled={tokenizeLoading}
+              disabled={tokenizeLoading || mintingStep !== ""}
             >
-              <Sparkles className="h-5 w-5" />
-              {tokenizeLoading ? "Minting..." : "Mint NFT"}
+              {mintingStep ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  {mintingStep}
+                </>
+              ) : isSuccess ? (
+                <>
+                  <CheckCircle className="h-5 w-5" />
+                  ¡Tokenizado Exitosamente!
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5" />
+                  Mint NFT
+                </>
+              )}
             </Button>
             
+            {/* Mostrar estado del wallet */}
+            {!connected && (
+              <div className="text-center text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                ⚠️ Conecta tu wallet para tokenizar
+              </div>
+            )}
+            
+            {connected && (
+              <div className="text-center text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-3">
+                ✅ Wallet conectado: {publicKey?.toString().slice(0, 8)}...
+              </div>
+            )}
+            
             {error && (
-              <div className="text-red-500 text-sm text-center">
+              <div className="text-red-500 text-sm text-center bg-red-50 border border-red-200 rounded-lg p-3">
                 Error: {error}
               </div>
             )}

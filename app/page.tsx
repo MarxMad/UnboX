@@ -100,7 +100,7 @@ export default function LandingPage() {
                   Start Tokenizing
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/feed">
                 <Button size="lg" variant="outline" className="text-base px-8 bg-background/80 backdrop-blur-sm">
                   Explore Collections
                 </Button>
@@ -225,12 +225,16 @@ export default function LandingPage() {
               Join thousands of collectors showcasing and trading their streetwear on Solana
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
-                Launch App
-              </Button>
-              <Button size="lg" variant="outline" className="text-base px-8 bg-transparent">
-                View Documentation
-              </Button>
+              <Link href="/login">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
+                  Launch App
+                </Button>
+              </Link>
+              <Link href="/feed">
+                <Button size="lg" variant="outline" className="text-base px-8 bg-transparent">
+                  View Collections
+                </Button>
+              </Link>
             </div>
           </div>
         </Card>
