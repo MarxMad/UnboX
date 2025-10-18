@@ -49,71 +49,70 @@ export function useUserNFTs() {
       console.log('👤 Wallet:', wallet.publicKey?.toString());
       console.log('🔗 Connection:', provider.connection.rpcEndpoint);
       
-      // MÉTODO DIRECTO: Buscar Asset Accounts conocidos
-      // Basado en la transacción real, sabemos que existe:
-      // Asset Account: A49MxNFimtiPKNXf13tvrhXeqqNU2k32cqRmkMKCx1WA
-      // Mint: BM94wiaVyYBGjtiAioUJXDuAuEz2jMZEgY3Uat2hv7pN
+      // MÉTODO MEJORADO: Buscar todos los NFTs del usuario
+      // 1. Obtener todos los token accounts del usuario
+      console.log('🔍 Buscando todos los token accounts del usuario...');
       
-      const knownAssetAccounts = [
+      const tokenAccounts = await provider.connection.getTokenAccountsByOwner(
+        wallet.publicKey,
         {
-          assetAccount: 'A49MxNFimtiPKNXf13tvrhXeqqNU2k32cqRmkMKCx1WA',
-          mint: 'BM94wiaVyYBGjtiAioUJXDuAuEz2jMZEgY3Uat2hv7pN'
+          programId: TOKEN_PROGRAM_ID,
         }
-      ];
+      );
 
+      console.log(`📊 Encontrados ${tokenAccounts.value.length} token accounts`);
+      
+      // 2. Para cada token account, verificar si es un NFT de nuestro programa
       const userNFTs: UserNFT[] = [];
-
-      for (const knownAsset of knownAssetAccounts) {
+      
+      for (const tokenAccount of tokenAccounts.value) {
         try {
-          console.log(`🔍 Verificando Asset Account conocido: ${knownAsset.assetAccount}`);
+          const mint = tokenAccount.account.data.parsed.info.mint;
+          const mintPubkey = new PublicKey(mint);
           
-          const assetAccountPubkey = new PublicKey(knownAsset.assetAccount);
-          const assetAccount = await provider.connection.getAccountInfo(assetAccountPubkey);
+          console.log(`🔍 Verificando mint: ${mint}`);
           
-          if (assetAccount) {
-            console.log(`✅ Asset Account encontrado: ${knownAsset.assetAccount}`);
-            console.log(`📊 Data length: ${assetAccount.data.length} bytes`);
+          // 3. Obtener el asset account para este mint
+          const [assetPda] = await getAssetPDA(wallet.publicKey, mintPubkey);
+          console.log(`📍 Asset PDA: ${assetPda.toString()}`);
+          
+          try {
+            // 4. Intentar obtener los datos del asset account
+            const assetAccount = await provider.connection.getAccountInfo(assetPda);
+            console.log(`📋 Asset account existe:`, !!assetAccount);
             
-            // Crear NFT con datos reales de la transacción
-            const nft: UserNFT = {
-              mint: knownAsset.mint,
-              name: "sneakers", // Datos reales de la transacción
-              symbol: "ADIDAS",
-              uri: "https://gateway.pinata.cloud/ipfs/QmdnZaPDDupMP49fstJNCvQa5YmUVd2ozd1mibnd1Sj2FC",
-              brand: "adidas",
-              model: "cool", 
-              size: "10",
-              condition: "Used",
-              year: 2020,
-              rarity: "Uncommon",
-              isListed: false,
-              image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Available" // Imagen de respaldo para el NFT viejo
-            };
-            
-            // Verificar si la imagen es accesible
-            try {
-              console.log(`🖼️ Verificando imagen: ${nft.image}`);
-              const imageResponse = await fetch(nft.image, { method: 'HEAD' });
-              if (imageResponse.ok) {
-                console.log(`✅ Imagen accesible: ${nft.image}`);
-              } else {
-                console.log(`❌ Imagen no accesible: ${nft.image} (Status: ${imageResponse.status})`);
-                // Usar imagen de respaldo
-                nft.image = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Found";
-              }
-            } catch (imageError) {
-              console.log(`❌ Error verificando imagen: ${imageError}`);
-              // Usar imagen de respaldo
-              nft.image = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Error";
+            if (assetAccount) {
+              console.log(`✅ NFT encontrado: ${mint}`);
+              console.log(`📊 Asset account data length:`, assetAccount.data.length);
+              
+              // 5. Crear NFT con datos básicos (por ahora)
+              const nft: UserNFT = {
+                mint: mint,
+                name: `NFT ${mint.slice(0, 8)}`,
+                symbol: "STW",
+                uri: "https://gateway.pinata.cloud/ipfs/...",
+                brand: "Unknown",
+                model: "Unknown",
+                size: "Unknown",
+                condition: "Unknown",
+                year: new Date().getFullYear(),
+                rarity: "Common",
+                isListed: false,
+                image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=NFT"
+              };
+              
+              userNFTs.push(nft);
+              console.log(`✅ NFT agregado: ${nft.name}`);
+            } else {
+              console.log(`❌ No es un NFT de nuestro programa: ${mint}`);
             }
-            
-            userNFTs.push(nft);
-            console.log(`✅ NFT agregado: ${nft.name} (${nft.brand} ${nft.model})`);
-          } else {
-            console.log(`❌ Asset Account no encontrado: ${knownAsset.assetAccount}`);
+          } catch (assetError) {
+            console.log(`❌ Error verificando asset account para ${mint}:`, assetError);
+            continue;
           }
         } catch (error) {
-          console.log(`❌ Error verificando Asset Account ${knownAsset.assetAccount}:`, error);
+          console.log('❌ Error procesando token account:', error);
+          continue;
         }
       }
 
