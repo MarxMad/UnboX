@@ -6,12 +6,16 @@ import {
   Transaction,
   PublicKey,
   LAMPORTS_PER_SOL,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction
 } from '@solana/web3.js';
 import { 
   TOKEN_PROGRAM_ID, 
   ASSOCIATED_TOKEN_PROGRAM_ID, 
   getAssociatedTokenAddress,
+  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction,
+  createMintToInstruction,
 } from '@solana/spl-token';
 import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
 import { useProgram } from './useProgram';
@@ -147,11 +151,45 @@ export function useTokenizeStreetwear() {
       console.log('🔗 8. Obteniendo blockhash...');
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
-          console.log('✍️ 9. Creando transacción con nuestro programa...');
-          console.log('📤 10. Construyendo transacción...');
+          console.log('✍️ 9. Creando transacción manualmente...');
+          console.log('📤 10. Construyendo transacción paso a paso...');
 
-          // Construir la transacción explícitamente para inspeccionar las instrucciones
-          const transaction = await program.methods
+          // Crear transacción manualmente para tener control total
+          const transaction = new Transaction();
+          
+          // 1. Crear instrucción para inicializar el mint
+          console.log('🔧 Agregando instrucción de inicialización de mint...');
+          const initMintIx = createInitializeMintInstruction(
+            mint, // mint account
+            0, // decimals (NFT = 0)
+            publicKey, // mint authority
+            publicKey // freeze authority
+          );
+          transaction.add(initMintIx);
+
+          // 2. Crear instrucción para crear el token account
+          console.log('🔧 Agregando instrucción de creación de token account...');
+          const createTokenAccountIx = createAssociatedTokenAccountInstruction(
+            publicKey, // payer
+            tokenAccount, // associated token account
+            publicKey, // owner
+            mint // mint
+          );
+          transaction.add(createTokenAccountIx);
+
+          // 3. Crear instrucción para mintear 1 token
+          console.log('🔧 Agregando instrucción de mint...');
+          const mintToIx = createMintToInstruction(
+            mint, // mint
+            tokenAccount, // destination
+            publicKey, // authority
+            1 // amount (1 NFT)
+          );
+          transaction.add(mintToIx);
+
+          // 4. Crear nuestra instrucción personalizada usando Anchor
+          console.log('🔧 Agregando instrucción de nuestro programa...');
+          const ourInstruction = await program.methods
             .tokenize_streetwear(
               params.name,
               metadata.symbol,
@@ -173,11 +211,12 @@ export function useTokenizeStreetwear() {
               systemProgram: SystemProgram.programId,
               rent: SYSVAR_RENT_PUBKEY,
             })
-            .signers([mintKeypair])
-            .transaction();
+            .instruction();
+          
+          transaction.add(ourInstruction);
 
           // Loggear las instrucciones generadas para depuración
-          console.log('🔍 Instrucciones generadas:');
+          console.log('🔍 Instrucciones en la transacción:');
           transaction.instructions.forEach((ix, index) => {
             console.log(`Instrucción ${index + 1}:`);
             console.log(`  Program ID: ${ix.programId.toString()}`);
