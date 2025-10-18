@@ -27,12 +27,60 @@ export const Navbar = () => {
               </span>
             </Link>
 
-            {/* Wallet Connect Button - Loading */}
-            <div className="wallet-adapter-button-container">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold animate-pulse">
-                Loading...
-              </div>
+            {/* Navigation Links - Hidden on mobile */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link 
+                href="/" 
+                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              >
+                <Store className="w-5 h-5" />
+                <span>Marketplace</span>
+              </Link>
+              <Link 
+                href="/tokenize" 
+                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              >
+                <Shirt className="w-5 h-5" />
+                <span>Tokenizar</span>
+              </Link>
+              <Link 
+                href="/dashboard" 
+                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              >
+                <User className="w-5 h-5" />
+                <span>Mi Colección</span>
+              </Link>
             </div>
+
+            {/* Wallet Connect Button - Loading */}
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold animate-pulse">
+              Loading...
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center justify-around mt-4 space-x-4">
+            <Link 
+              href="/" 
+              className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
+            >
+              <Store className="w-5 h-5" />
+              <span className="text-xs">Market</span>
+            </Link>
+            <Link 
+              href="/tokenize" 
+              className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
+            >
+              <Shirt className="w-5 h-5" />
+              <span className="text-xs">Tokenizar</span>
+            </Link>
+            <Link 
+              href="/dashboard" 
+              className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
+            >
+              <User className="w-5 h-5" />
+              <span className="text-xs">Colección</span>
+            </Link>
           </div>
         </div>
       </nav>

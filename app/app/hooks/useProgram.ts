@@ -31,6 +31,12 @@ export function useProgram() {
         AnchorProvider.defaultOptions()
       );
 
+      // Validate provider before creating program
+      if (!provider || !provider.connection || !provider.wallet) {
+        console.warn('Provider not ready');
+        return { program: null, provider: null };
+      }
+
       const program = new Program(idl as Idl, PROGRAM_ID, provider);
 
       return { program, provider };
