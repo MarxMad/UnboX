@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import { PinProvider } from "@/lib/pin-context"
 import { NotificationContainer } from "@/components/Notification"
 import { WalletContextProvider } from "@/lib/wallet-context"
+import { NetworkChecker } from "./components/NetworkChecker"
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -30,6 +31,7 @@ export default function RootLayout({
             <PinProvider>
               {children}
               <NotificationContainer />
+              <NetworkChecker />
             </PinProvider>
           </AuthProvider>
         </WalletContextProvider>

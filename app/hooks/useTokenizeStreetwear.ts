@@ -47,6 +47,15 @@ export function useTokenizeStreetwear() {
       throw new Error('Wallet no conectado');
     }
 
+    // Verificar balance antes de proceder
+    console.log('💰 Verificando balance...');
+    const balance = await connection.getBalance(publicKey);
+    console.log('Balance actual:', balance / LAMPORTS_PER_SOL, 'SOL');
+    
+    if (balance < 0.001 * LAMPORTS_PER_SOL) {
+      throw new Error(`Balance insuficiente: ${balance / LAMPORTS_PER_SOL} SOL. Necesitas al menos 0.001 SOL para la transacción.`);
+    }
+
     setLoading(true);
     setError(null);
 
@@ -138,36 +147,37 @@ export function useTokenizeStreetwear() {
       console.log('🔗 8. Obteniendo blockhash...');
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
-      console.log('✍️ 9. Firmando con mint keypair...');
-      console.log('📤 10. Enviando transacción...');
+          console.log('✍️ 9. Creando transacción con nuestro programa...');
+          console.log('📤 10. Enviando transacción...');
 
-      // Crear y enviar transacción usando Anchor
-      const tx = await program.methods
-        .tokenizeStreetwear(
-          params.name,
-          metadata.symbol,
-          uri,
-          params.brand,
-          params.model,
-          params.size,
-          params.condition,
-          new BN(params.year),
-          rarityMap[params.rarity] || { common: {} }
-        )
-        .accounts({
-          owner: publicKey,
-          mint: mint,
-          tokenAccount: tokenAccount,
-          assetAccount: assetPda,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers([mintKeypair])
-        .rpc({
-          commitment: 'confirmed',
+          // Crear y enviar transacción usando nuestro programa personalizado
+          const tx = await program.methods
+            .tokenize_streetwear(
+              params.name,
+              metadata.symbol,
+              uri,
+              params.brand,
+              params.model,
+              params.size,
+              params.condition,
+              params.year,
+              rarityMap[params.rarity] || { common: {} }
+            )
+            .accounts({
+              owner: publicKey,
+              mint: mint,
+              tokenAccount: tokenAccount,
+              assetAccount: assetPda,
+              tokenProgram: TOKEN_PROGRAM_ID,
+              associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+              systemProgram: SystemProgram.programId,
+              rent: SYSVAR_RENT_PUBKEY,
+            })
+            .signers([mintKeypair])
+            .rpc({
+              commitment: 'confirmed',
         skipPreflight: false,
-        });
+            });
 
       console.log('⏳ Esperando confirmación del wallet...');
       console.log('✅ Transacción enviada:', tx);
