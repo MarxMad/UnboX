@@ -14,10 +14,11 @@ import { Upload, Camera, Sparkles, CheckCircle, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { usePin } from "@/lib/pin-context"
-import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
+import { useSimpleMint } from "@/app/hooks/useSimpleMint"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PinModal } from "@/components/PinModal"
 import { PinSetup } from "@/components/PinSetup"
+import { MintSuccessModal } from "@/components/MintSuccessModal"
 
 export default function TokenizePage() {
   const [images, setImages] = useState<string[]>([])
@@ -26,6 +27,8 @@ export default function TokenizePage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPinModal, setShowPinModal] = useState(false)
   const [showPinSetup, setShowPinSetup] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [mintResult, setMintResult] = useState<{ signature: string; mint: string; assetPda: string } | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -40,7 +43,7 @@ export default function TokenizePage() {
   const { isPinSet, verifyPin } = usePin()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
-  const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
+  const { tokenize, loading: tokenizeLoading, error } = useSimpleMint()
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -162,7 +165,7 @@ export default function TokenizePage() {
         throw new Error("No se ha seleccionado ninguna imagen")
       }
       
-      await tokenize({
+      const result = await tokenize({
         name: formData.name,
         brand: formData.brand,
         model: formData.model || formData.name,
@@ -175,19 +178,20 @@ export default function TokenizePage() {
       
       setIsSuccess(true)
       setMintingStep("")
+      setMintResult(result)
       
-      // Mostrar notificación de éxito
+      console.log('🎉 Resultado de tokenización:', result);
+      
+      // Mostrar modal de éxito
+      setShowSuccessModal(true)
+      
+      // También mostrar notificación
       (window as any).addNotification?.({
         type: "success",
         title: "¡Tokenización Exitosa!",
         message: `Tu ${formData.brand} ${formData.name} ha sido tokenizado exitosamente`,
-        duration: 8000
+        duration: 10000
       })
-
-      // Redirigir después de 3 segundos
-      setTimeout(() => {
-        router.push("/profile")
-      }, 3000)
       
     } catch (error) {
       console.error("Tokenization failed:", error)
@@ -497,6 +501,22 @@ export default function TokenizePage() {
         <PinSetup 
           onComplete={handlePinComplete}
           onSkip={handlePinSkip}
+        />
+      )}
+
+      {/* Mint Success Modal */}
+      {mintResult && (
+        <MintSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false)
+            router.push("/profile")
+          }}
+          mintAddress={mintResult.mint}
+          signature={mintResult.signature}
+          imageUrl={images[0] || ""}
+          name={formData.name}
+          brand={formData.brand}
         />
       )}
     </div>

@@ -1,13 +1,22 @@
 import { useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { 
   Keypair, 
   SystemProgram, 
-  SYSVAR_RENT_PUBKEY,
   Transaction,
-  TransactionInstruction
+  sendAndConfirmTransaction,
+  LAMPORTS_PER_SOL
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
+import { 
+  TOKEN_PROGRAM_ID, 
+  ASSOCIATED_TOKEN_PROGRAM_ID, 
+  getAssociatedTokenAddress,
+  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction,
+  createMintToInstruction,
+  MINT_SIZE,
+  getMinimumBalanceForRentExemptMint
+} from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 import { uploadImageToIPFS, uploadMetadataToIPFS, createNFTMetadata, mockUploadToIPFS, mockUploadMetadataToIPFS } from '../services/ipfs';
@@ -25,28 +34,27 @@ interface TokenizeParams {
 
 export function useTokenizeStreetwear() {
   const { program, provider, isReady } = useProgram();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const tokenize = async (params: TokenizeParams) => {
-    if (!program || !publicKey || !isReady || !provider) {
-      throw new Error('Wallet not connected or program not ready');
+    console.log('🚀 Iniciando tokenización simplificada...');
+    console.log('Wallet:', publicKey?.toString());
+    console.log('Connection:', !!connection);
+    
+    if (!publicKey || !connection) {
+      throw new Error('Wallet no conectado');
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      console.log('1. Subiendo imagen a IPFS...');
-      console.log('Archivo de imagen:', {
-        name: params.image.name,
-        size: params.image.size,
-        type: params.image.type
-      });
+      console.log('📸 1. Subiendo imagen a IPFS...');
       const imageUri = await mockUploadToIPFS(params.image);
-      console.log('✅ Imagen subida a Pinata:', imageUri);
-      console.log('🔗 URL de imagen:', imageUri);
+      console.log('✅ Imagen subida:', imageUri.slice(0, 50) + '...');
 
       console.log('2. Creando metadata...');
       const metadata = createNFTMetadata(
@@ -197,16 +205,43 @@ export function useTokenizeStreetwear() {
         data: instructionData
       });
 
-      console.log('7. Enviando transacción...');
-      const transaction = new Transaction().add(instruction);
+      console.log('7. Preparando transacción...');
+      const transaction = new Transaction();
+      transaction.add(instruction);
+      transaction.feePayer = publicKey;
       
-      const signature = await provider.sendAndConfirm(transaction, [mintKeypair], {
-        commitment: 'confirmed',
+      // Obtener blockhash reciente
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      
+      // Firmar con mintKeypair
+      transaction.partialSign(mintKeypair);
+      
+      console.log('8. Firmando transacción con wallet...');
+      // El wallet firmará automáticamente con su keypair
+      const signedTransaction = signTransaction ? await signTransaction(transaction) : transaction;
+      
+      console.log('9. Enviando transacción a la red...');
+      const signature = await sendTransaction(signedTransaction, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
       });
+      
+      console.log('10. Esperando confirmación...');
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      }, 'confirmed');
+      
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
 
-      console.log('✅ NFT Tokenizado!');
-      console.log('Transaction:', signature);
-      console.log('Mint Address:', mint.toString());
+      console.log('✅ NFT Tokenizado exitosamente!');
+      console.log('📝 Transaction:', signature);
+      console.log('🎨 Mint Address:', mint.toString());
+      console.log('🔗 Explorer:', `https://explorer.solana.com/tx/${signature}?cluster=devnet`);
 
       return {
         signature,
@@ -214,10 +249,36 @@ export function useTokenizeStreetwear() {
         assetPda: assetPda.toString(),
       };
     } catch (err: unknown) {
-      console.error('Error tokenizing:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error al tokenizar';
+      console.error('❌ Error tokenizing:', err);
+      
+      let errorMessage = 'Error al tokenizar';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        
+        // Mejorar mensajes de error comunes
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Error de conexión: No se pudo conectar a Solana. Verifica tu conexión a internet.';
+        } else if (err.message.includes('User rejected')) {
+          errorMessage = 'Transacción cancelada por el usuario';
+        } else if (err.message.includes('Wallet not connected')) {
+          errorMessage = 'Wallet no conectado. Por favor conecta tu wallet.';
+        } else if (err.message.includes('insufficient funds')) {
+          errorMessage = 'Fondos insuficientes para completar la transacción';
+        }
+      }
+      
       setError(errorMessage);
-      throw err;
+      
+      // Mostrar notificación de error
+      ;(window as any).addNotification?.({
+        type: "error",
+        title: "Error en tokenización",
+        message: errorMessage,
+        duration: 8000
+      });
+      
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

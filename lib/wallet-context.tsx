@@ -19,7 +19,17 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined)
 export function WalletContextProvider({ children }: { children: ReactNode }) {
   // Configurar la red - usar devnet para desarrollo
   const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  
+  // Usar endpoint de Helius para mejor confiabilidad
+  // Si no hay HELIUS_API_KEY, usar el RPC público de Solana
+  const endpoint = useMemo(() => {
+    const heliusApiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY
+    if (heliusApiKey) {
+      return `https://devnet.helius-rpc.com/?api-key=${heliusApiKey}`
+    }
+    // Usar RPC público de Solana
+    return 'https://api.devnet.solana.com'
+  }, [])
 
   // Configurar wallets soportados
   const wallets = useMemo(
@@ -27,7 +37,7 @@ export function WalletContextProvider({ children }: { children: ReactNode }) {
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
     ],
-    [network]
+    []
   )
 
   return (
