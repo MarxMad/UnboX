@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Connection } from '@solana/web3.js';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
+import { PublicKey } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 
-// RPC endpoints de respaldo
-const FALLBACK_RPC_ENDPOINTS = [
-  'https://api.devnet.solana.com',
-  'https://devnet.helius-rpc.com/?api-key=',
-  'https://rpc-devnet.helius.xyz/?api-key=',
-  'https://devnet.genesysgo.com'
-];
+// RPC endpoints de respaldo (comentado por ahora)
+// const FALLBACK_RPC_ENDPOINTS = [
+//   'https://api.devnet.solana.com',
+//   'https://devnet.helius-rpc.com/?api-key=',
+//   'https://rpc-devnet.helius.xyz/?api-key=',
+//   'https://devnet.genesysgo.com'
+// ];
 
 export interface UserNFT {
   mint: string;
@@ -26,7 +26,7 @@ export interface UserNFT {
   rarity: string;
   isListed: boolean;
   image?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export function useUserNFTs() {
@@ -36,7 +36,7 @@ export function useUserNFTs() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserNFTs = async () => {
+  const fetchUserNFTs = useCallback(async () => {
     if (!program || !wallet || !isReady || !provider) {
       return;
     }
@@ -63,11 +63,11 @@ export function useUserNFTs() {
       
       // Debug: Mostrar estructura de los token accounts
       tokenAccounts.value.forEach((account, index) => {
+        const accountData = account.account.data;
         console.log(`Token Account ${index + 1}:`, {
-          hasData: !!account.account.data,
-          hasParsed: !!account.account.data.parsed,
-          hasInfo: !!account.account.data.parsed?.info,
-          dataType: account.account.data.parsed ? 'parsed' : 'raw'
+          hasData: !!accountData,
+          hasParsed: typeof accountData === 'object' && 'parsed' in accountData,
+          dataType: typeof accountData === 'object' && 'parsed' in accountData ? 'parsed' : 'raw'
         });
       });
       
@@ -78,10 +78,18 @@ export function useUserNFTs() {
           let mint: string;
           
           // Manejar tanto datos parsed como raw
-          if (tokenAccount.account.data.parsed && tokenAccount.account.data.parsed.info) {
+          const accountData = tokenAccount.account.data;
+          
+          if (typeof accountData === 'object' && 'parsed' in accountData) {
             // Datos ya parseados
-            mint = tokenAccount.account.data.parsed.info.mint;
-            console.log(`📋 Token account con datos parsed, mint: ${mint}`);
+            const parsedData = accountData as { parsed: { info?: { mint: string } } };
+            if (parsedData.parsed.info?.mint) {
+              mint = parsedData.parsed.info.mint;
+              console.log(`📋 Token account con datos parsed, mint: ${mint}`);
+            } else {
+              console.log(`⚠️ Token account parsed sin mint válido, saltando...`);
+              continue;
+            }
           } else {
             // Datos raw - necesitamos parsear manualmente
             console.log(`🔧 Token account con datos raw, parseando manualmente...`);
@@ -298,19 +306,20 @@ export function useUserNFTs() {
         console.log('⚠️ No se encontraron NFTs en los Asset Accounts conocidos');
       }
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Error fetching NFTs:', err);
-      setError(err.message || 'Error al cargar NFTs');
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar NFTs';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [program, wallet, isReady, provider]);
 
   useEffect(() => {
     if (wallet && isReady) {
       fetchUserNFTs();
     }
-  }, [wallet, isReady]);
+  }, [wallet, isReady, fetchUserNFTs]);
 
   return { nfts, loading, error, refetch: fetchUserNFTs };
 }

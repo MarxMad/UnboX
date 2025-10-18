@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { 
-  PublicKey, 
   Keypair, 
   SystemProgram, 
   SYSVAR_RENT_PUBKEY,
@@ -91,11 +90,12 @@ export function useTokenizeStreetwear() {
       
       // Validar año
       const currentYear = new Date().getFullYear();
-      console.log(`📅 Validando año: ${params.year} (debe estar entre 1990 y ${currentYear})`);
+      const maxYear = Math.max(currentYear, 2025); // Permitir hasta 2025
+      console.log(`📅 Validando año: ${params.year} (debe estar entre 1990 y ${maxYear})`);
       
-      if (params.year < 1990 || params.year > currentYear) {
-        console.error(`❌ Año inválido: ${params.year}. Debe estar entre 1990 y ${currentYear}`);
-        throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y ${currentYear}`);
+      if (params.year < 1990 || params.year > maxYear) {
+        console.error(`❌ Año inválido: ${params.year}. Debe estar entre 1990 y ${maxYear}`);
+        throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y ${maxYear}`);
       }
       
       console.log('✅ Datos validados:', {
@@ -213,9 +213,10 @@ export function useTokenizeStreetwear() {
         mint: mint.toString(),
         assetPda: assetPda.toString(),
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error tokenizing:', err);
-      setError(err.message || 'Error al tokenizar');
+      const errorMessage = err instanceof Error ? err.message : 'Error al tokenizar';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);

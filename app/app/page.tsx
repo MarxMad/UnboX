@@ -1,55 +1,11 @@
 'use client';
 
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { useEffect, useState } from 'react';
-import { PublicKey } from '@solana/web3.js';
-import { Program, AnchorProvider } from '@coral-xyz/anchor';
-import { Store, TrendingUp, Sparkles } from 'lucide-react';
+import { Store, TrendingUp, Sparkles, RefreshCw } from 'lucide-react';
 import { NFTCard } from './components/NFTCard';
+import { useAllNFTs } from './hooks/useAllNFTs';
 
 export default function Home() {
-  const { connection } = useConnection();
-  const wallet = useWallet();
-  const [listings, setListings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Aquí cargarías los NFTs listados desde el programa
-    // Por ahora, datos de ejemplo
-    setLoading(false);
-    setListings([
-      {
-        id: '1',
-        name: 'Air Jordan 1 Retro High',
-        brand: 'Nike',
-        year: 2023,
-        rarity: 'Legendary',
-        price: 2.5,
-        image: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500',
-        condition: 'Deadstock',
-      },
-      {
-        id: '2',
-        name: 'Box Logo Hoodie',
-        brand: 'Supreme',
-        year: 2022,
-        rarity: 'Epic',
-        price: 1.8,
-        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500',
-        condition: 'New',
-      },
-      {
-        id: '3',
-        name: 'Dunk Low Panda',
-        brand: 'Nike',
-        year: 2024,
-        rarity: 'Rare',
-        price: 0.9,
-        image: 'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500',
-        condition: 'Used',
-      },
-    ]);
-  }, [connection, wallet]);
+  const { allNFTs, loading, error, refetch } = useAllNFTs();
 
   return (
     <div className="space-y-8">
@@ -80,16 +36,16 @@ export default function Home() {
       {/* Stats Section */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-purple-400">2,847</div>
+          <div className="text-4xl font-bold text-purple-400">{allNFTs.length}</div>
           <div className="text-gray-400 mt-2">NFTs Tokenizados</div>
         </div>
         <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-pink-400">1,234</div>
-          <div className="text-gray-400 mt-2">Coleccionistas</div>
+          <div className="text-4xl font-bold text-pink-400">{allNFTs.filter(nft => nft.isListed).length}</div>
+          <div className="text-gray-400 mt-2">En Venta</div>
         </div>
         <div className="glass-card p-6 text-center">
-          <div className="text-4xl font-bold text-blue-400">156 SOL</div>
-          <div className="text-gray-400 mt-2">Volumen Total</div>
+          <div className="text-4xl font-bold text-blue-400">{allNFTs.filter(nft => nft.isListed).reduce((sum, nft) => sum + (nft.price || 0), 0).toFixed(1)} SOL</div>
+          <div className="text-gray-400 mt-2">Valor Total</div>
         </div>
       </section>
 
@@ -100,28 +56,49 @@ export default function Home() {
             <Store className="w-8 h-8 text-purple-400" />
             <span>Artículos en Venta</span>
           </h2>
-          <select className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-            <option>Todos</option>
-            <option>Nike</option>
-            <option>Supreme</option>
-            <option>Off-White</option>
-          </select>
+          <div className="flex items-center space-x-4">
+            <select className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option>Todos</option>
+              <option>Nike</option>
+              <option>Supreme</option>
+              <option>Off-White</option>
+            </select>
+            <button
+              onClick={refetch}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 hover:bg-white/10 transition-colors flex items-center space-x-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Actualizar</span>
+            </button>
+          </div>
         </div>
 
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-            <p className="mt-4 text-gray-400">Cargando artículos...</p>
+            <p className="mt-4 text-gray-400">Cargando artículos desde la blockchain...</p>
           </div>
-        ) : listings.length === 0 ? (
+        ) : error ? (
+          <div className="glass-card p-12 text-center">
+            <div className="text-red-400 text-lg mb-4">❌ Error cargando NFTs</div>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <button
+              onClick={refetch}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : allNFTs.length === 0 ? (
           <div className="glass-card p-12 text-center">
             <Store className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No hay artículos en venta actualmente</p>
+            <p className="text-gray-400 text-lg">No hay NFTs tokenizados aún</p>
+            <p className="text-gray-500 text-sm mt-2">¡Sé el primero en tokenizar tu streetwear!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((nft) => (
-              <NFTCard key={nft.id} nft={nft} />
+            {allNFTs.map((nft) => (
+              <NFTCard key={nft.mint} nft={nft} />
             ))}
           </div>
         )}

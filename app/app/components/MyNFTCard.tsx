@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DollarSign, XCircle, Award, Calendar } from 'lucide-react';
+import { ListNFTModal } from './ListNFTModal';
 
 interface MyNFT {
   mint: string;
@@ -16,12 +17,12 @@ interface MyNFT {
   rarity: string;
   isListed: boolean;
   image?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
+  listPrice?: number;
 }
 
 export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
   const [showListModal, setShowListModal] = useState(false);
-  const [listPrice, setListPrice] = useState('');
 
   const rarityColors: Record<string, string> = {
     Common: 'bg-gray-500',
@@ -31,12 +32,10 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
     Legendary: 'bg-yellow-500',
   };
 
-  const handleList = () => {
-    // Aquí implementarías la lógica para listar el NFT
-    console.log(`Listing ${nft.name} for ${listPrice} SOL`);
-    alert(`NFT listado por ${listPrice} SOL`);
+  const handleListSuccess = () => {
     setShowListModal(false);
-    setListPrice('');
+    // Refrescar la página o actualizar el estado
+    window.location.reload();
   };
 
   const handleCancelListing = () => {
@@ -112,46 +111,19 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
         </div>
       </div>
 
-      {/* List Modal */}
-      {showListModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-card p-8 max-w-md w-full space-y-6">
-            <h3 className="text-2xl font-bold">Listar para Venta</h3>
-            <p className="text-gray-300">
-              Establece el precio para <span className="font-semibold">{nft.name}</span>
-            </p>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2">Precio (SOL)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={listPrice}
-                onChange={(e) => setListPrice(e.target.value)}
-                placeholder="0.00"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowListModal(false)}
-                className="flex-1 bg-white/5 border border-white/10 px-4 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleList}
-                disabled={!listPrice || parseFloat(listPrice) <= 0}
-                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* List NFT Modal */}
+      <ListNFTModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        nft={{
+          mint: nft.mint,
+          name: nft.name,
+          brand: nft.brand,
+          model: nft.model,
+          image: nft.image || 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image'
+        }}
+        onSuccess={handleListSuccess}
+      />
     </>
   );
 };

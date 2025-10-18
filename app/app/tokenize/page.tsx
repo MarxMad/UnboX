@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Upload, Shirt, AlertCircle, ExternalLink, Wifi, WifiOff } from 'lucide-react';
 import { useTokenizeStreetwear } from '../hooks/useTokenizeStreetwear';
-import { Connection } from '@solana/web3.js';
+import { useProgram } from '../hooks/useProgram';
 
 export default function TokenizePage() {
   const wallet = useWallet();
-  const { connection } = useConnection();
+  const { provider } = useProgram();
   const { tokenize, loading, error } = useTokenizeStreetwear();
   const [formData, setFormData] = useState({
     name: '',
@@ -29,11 +29,11 @@ export default function TokenizePage() {
   // Verificar si estamos en Devnet
   useEffect(() => {
     const checkNetwork = async () => {
-      if (!connection) return;
+      if (!provider?.connection) return;
       
       setCheckingNetwork(true);
       try {
-        const endpoint = connection.rpcEndpoint;
+        const endpoint = provider.connection.rpcEndpoint;
         const isDevnetEndpoint = endpoint.includes('devnet');
         setIsDevnet(isDevnetEndpoint);
       } catch (error) {
@@ -45,13 +45,13 @@ export default function TokenizePage() {
     };
 
     checkNetwork();
-  }, [connection]);
+  }, []);
 
   // Función para cambiar a Devnet
   const switchToDevnet = async () => {
     try {
       // Intentar cambiar la red del wallet
-      if (wallet.adapter && 'connect' in wallet.adapter) {
+      if (wallet && 'connect' in wallet) {
         await wallet.disconnect();
         // El usuario necesitará cambiar manualmente en su wallet
         alert('Por favor cambia tu wallet a Devnet y reconecta');
@@ -351,17 +351,18 @@ export default function TokenizePage() {
               value={formData.year}
               onChange={(e) => {
                 const year = parseInt(e.target.value);
-                if (year >= 1990 && year <= new Date().getFullYear()) {
+                const maxYear = Math.max(new Date().getFullYear(), 2025);
+                if (year >= 1990 && year <= maxYear) {
                   setFormData({ ...formData, year });
                 }
               }}
               min="1990"
-              max={new Date().getFullYear()}
+              max={Math.max(new Date().getFullYear(), 2025)}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
             />
             <p className="text-xs text-gray-400 mt-1">
-              Debe estar entre 1990 y {new Date().getFullYear()}
+              Debe estar entre 1990 y {Math.max(new Date().getFullYear(), 2025)}
             </p>
           </div>
 
