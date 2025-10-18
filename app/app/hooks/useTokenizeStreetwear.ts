@@ -91,11 +91,14 @@ export function useTokenizeStreetwear() {
       
       // Validar año
       const currentYear = new Date().getFullYear();
+      console.log(`📅 Validando año: ${params.year} (debe estar entre 1990 y ${currentYear})`);
+      
       if (params.year < 1990 || params.year > currentYear) {
+        console.error(`❌ Año inválido: ${params.year}. Debe estar entre 1990 y ${currentYear}`);
         throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y ${currentYear}`);
       }
       
-      console.log('Datos validados:', {
+      console.log('✅ Datos validados:', {
         name: params.name,
         brand: params.brand,
         model: params.model,
