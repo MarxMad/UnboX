@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
 import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
 import { PROGRAM_ID } from '../config/program';
@@ -9,23 +9,37 @@ const idl = require('../idl/streetwear_tokenizer.json');
 export function useProgram() {
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (connection && wallet) {
+      setIsReady(true);
+    } else {
+      setIsReady(false);
+    }
+  }, [connection, wallet]);
 
   const { program, provider } = useMemo(() => {
-    if (!wallet) {
+    if (!wallet || !connection) {
       return { program: null, provider: null };
     }
 
-    const provider = new AnchorProvider(
-      connection,
-      wallet,
-      AnchorProvider.defaultOptions()
-    );
+    try {
+      const provider = new AnchorProvider(
+        connection,
+        wallet,
+        AnchorProvider.defaultOptions()
+      );
 
-    const program = new Program(idl as Idl, PROGRAM_ID, provider);
+      const program = new Program(idl as Idl, PROGRAM_ID, provider);
 
-    return { program, provider };
+      return { program, provider };
+    } catch (error) {
+      console.error('Error creating program:', error);
+      return { program: null, provider: null };
+    }
   }, [connection, wallet]);
 
-  return { program, provider };
+  return { program, provider, isReady };
 }
 

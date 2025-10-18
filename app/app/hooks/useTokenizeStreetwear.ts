@@ -18,14 +18,14 @@ interface TokenizeParams {
 }
 
 export function useTokenizeStreetwear() {
-  const { program } = useProgram();
+  const { program, isReady } = useProgram();
   const wallet = useAnchorWallet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const tokenize = async (params: TokenizeParams) => {
-    if (!program || !wallet) {
-      throw new Error('Wallet not connected');
+    if (!program || !wallet || !isReady) {
+      throw new Error('Wallet not connected or program not ready');
     }
 
     setLoading(true);
