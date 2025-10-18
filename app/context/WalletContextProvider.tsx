@@ -11,7 +11,10 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // Configurar la red (devnet para desarrollo)
   const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => {
+    // Forzar devnet explícitamente
+    return 'https://api.devnet.solana.com';
+  }, []);
 
   // Configurar las wallets soportadas
   const wallets = useMemo(

@@ -40,6 +40,8 @@ export function useTokenizeStreetwear() {
     console.log('🚀 Iniciando tokenización con Anchor...');
     console.log('Wallet:', publicKey?.toString());
     console.log('Connection:', !!connection);
+    console.log('Network:', connection?.rpcEndpoint);
+    console.log('Program ID:', idl.address);
     
     if (!publicKey || !connection) {
       throw new Error('Wallet no conectado');
@@ -112,7 +114,11 @@ export function useTokenizeStreetwear() {
             return signedTxs;
           }
         },
-        { commitment: 'confirmed' }
+        { 
+          commitment: 'confirmed',
+          preflightCommitment: 'confirmed',
+          skipPreflight: false
+        }
       );
 
       const program = new Program(idl as any, new PublicKey(idl.address), provider);
