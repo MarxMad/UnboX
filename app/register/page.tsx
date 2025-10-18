@@ -89,11 +89,23 @@ export default function RegisterPage() {
       setShowPinSetup(true)
     } catch (error) {
       console.error("Registration failed:", error)
-      (window as any).addNotification?.({
-        type: "error",
-        title: "Error de registro",
-        message: error instanceof Error ? error.message : "No se pudo crear la cuenta. Inténtalo de nuevo."
-      })
+      
+      const errorMessage = error instanceof Error ? error.message : "No se pudo crear la cuenta. Inténtalo de nuevo."
+      
+      // Si el error es que el usuario ya existe, ofrecer limpiar y reintentar
+      if (errorMessage.includes("ya existe")) {
+        (window as any).addNotification?.({
+          type: "error",
+          title: "Usuario ya existe",
+          message: "Ya existe una cuenta con este email. Si olvidaste tu contraseña, ve a la página de login. O usa un email diferente."
+        })
+      } else {
+        (window as any).addNotification?.({
+          type: "error",
+          title: "Error de registro",
+          message: errorMessage
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -123,22 +135,40 @@ export default function RegisterPage() {
   const handlePinComplete = (pin: string) => {
     setUserPin(pin)
     setShowPinSetup(false)
-    router.push("/feed")
-    (window as any).addNotification?.({
-      type: "success",
-      title: "¡Cuenta creada exitosamente!",
-      message: "Tu PIN de seguridad ha sido configurado. Ya puedes empezar a tokenizar."
-    })
+    
+    // Usar setTimeout para asegurar que el estado se actualice antes de la navegación
+    setTimeout(() => {
+      (window as any).addNotification?.({
+        type: "success",
+        title: "¡Cuenta creada exitosamente!",
+        message: "Tu PIN de seguridad ha sido configurado. Ya puedes empezar a tokenizar."
+      })
+      
+      // Navegar al feed
+      if (router && typeof router.push === 'function') {
+        router.push("/feed")
+      } else {
+        window.location.href = "/feed"
+      }
+    }, 100)
   }
 
   const handlePinSkip = () => {
     setShowPinSetup(false)
-    router.push("/feed")
-    (window as any).addNotification?.({
-      type: "warning",
-      title: "PIN no configurado",
-      message: "Recuerda configurar tu PIN en Settings para proteger tus transacciones."
-    })
+    
+    setTimeout(() => {
+      (window as any).addNotification?.({
+        type: "warning",
+        title: "PIN no configurado",
+        message: "Recuerda configurar tu PIN en Settings para proteger tus transacciones."
+      })
+      
+      if (router && typeof router.push === 'function') {
+        router.push("/feed")
+      } else {
+        window.location.href = "/feed"
+      }
+    }, 100)
   }
 
   return (

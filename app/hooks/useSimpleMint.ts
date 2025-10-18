@@ -191,21 +191,30 @@ export function useSimpleMint() {
       console.error('❌ Error en minteo:', err);
       
       let errorMessage = 'Error al crear NFT';
+      let errorTitle = 'Error al crear NFT';
       
       if (err instanceof Error) {
         errorMessage = err.message;
         
         // Mejorar mensajes de error comunes
         if (err.message.includes('Failed to fetch')) {
-          errorMessage = 'Error de conexión: No se pudo conectar a Solana. Verifica tu conexión a internet o configura un RPC alternativo (ver SOLANA_RPC_SETUP.md)';
+          errorTitle = 'Error de Conexión';
+          errorMessage = 'No se pudo conectar a Solana. Verifica tu conexión a internet o configura un RPC alternativo (ver SOLANA_RPC_SETUP.md)';
         } else if (err.message.includes('User rejected')) {
-          errorMessage = 'Transacción cancelada por el usuario';
+          errorTitle = 'Transacción Cancelada';
+          errorMessage = 'Cancelaste la transacción en tu wallet';
         } else if (err.message.includes('Wallet not connected')) {
-          errorMessage = 'Wallet no conectado. Por favor conecta tu wallet.';
-        } else if (err.message.includes('insufficient funds')) {
-          errorMessage = 'Fondos insuficientes. Necesitas al menos 0.01 SOL en Devnet para crear el NFT.';
-        } else if (err.message.includes('Attempt to debit an account but found no record')) {
-          errorMessage = 'Sin fondos en Devnet. Consigue SOL de prueba en https://faucet.solana.com/';
+          errorTitle = 'Wallet No Conectado';
+          errorMessage = 'Por favor conecta tu wallet antes de mintear';
+        } else if (err.message.includes('insufficient funds') || err.message.includes('Attempt to debit')) {
+          errorTitle = '🪙 Sin Fondos en Devnet';
+          errorMessage = 'Necesitas al menos 0.02 SOL en Devnet. Ve a https://faucet.solana.com/ para obtener SOL gratis de prueba. IMPORTANTE: Asegúrate de que tu wallet esté en la red DEVNET.';
+        } else if (err.message.includes('blockhash')) {
+          errorTitle = 'Error de Red';
+          errorMessage = 'No se pudo obtener blockhash de Solana. El RPC puede estar saturado. Intenta de nuevo o configura Helius RPC (ver SOLANA_RPC_SETUP.md)';
+        } else if (err.message.includes('WalletSendTransactionError') || err.message.includes('Unexpected error')) {
+          errorTitle = '🪙 Sin Fondos en Devnet';
+          errorMessage = 'Tu wallet no tiene fondos en Devnet. Necesitas al menos 0.02 SOL. Pasos: 1) Cambia tu wallet a red DEVNET, 2) Ve a https://faucet.solana.com/, 3) Solicita 2 SOL gratis, 4) Espera 1 minuto, 5) Intenta mintear de nuevo.';
         }
       }
       
@@ -214,9 +223,9 @@ export function useSimpleMint() {
       // Mostrar notificación de error
       ;(window as any).addNotification?.({
         type: "error",
-        title: "Error al crear NFT",
+        title: errorTitle,
         message: errorMessage,
-        duration: 10000
+        duration: 15000
       });
       
       throw new Error(errorMessage);
