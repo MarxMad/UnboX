@@ -78,7 +78,22 @@ export function useProgram() {
       // Try using the IDL directly without wrapper
       console.log('useProgram - Using IDL directly');
       
-      const program = new Program(idl, PROGRAM_ID, provider);
+      // Create a minimal IDL that should work
+      const minimalIdl = {
+        address: idl.address,
+        metadata: idl.metadata,
+        instructions: idl.instructions,
+        accounts: idl.accounts || [],
+        types: idl.types || [],
+        errors: idl.errors || [],
+        events: idl.events || [],
+        constants: idl.constants || [],
+        state: idl.state || null,
+      };
+      
+      console.log('useProgram - Minimal IDL created');
+      
+      const program = new Program(minimalIdl, PROGRAM_ID, provider);
       console.log('useProgram - Program created successfully');
 
       return { program, provider };
