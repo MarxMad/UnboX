@@ -87,7 +87,7 @@ export function useUserNFTs() {
               year: 2020,
               rarity: "Uncommon",
               isListed: false,
-              image: "https://gateway.pinata.cloud/ipfs/QmdnZaPDDupMP49fstJNCvQa5YmUVd2ozd1mibnd1Sj2FC"
+              image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Image+Not+Available" // Imagen de respaldo para el NFT viejo
             };
             
             // Verificar si la imagen es accesible
