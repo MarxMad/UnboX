@@ -4,7 +4,7 @@ import {
   Keypair, 
   SystemProgram, 
   Transaction,
-  sendAndConfirmTransaction,
+  PublicKey,
   LAMPORTS_PER_SOL,
   SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
@@ -12,15 +12,12 @@ import {
   TOKEN_PROGRAM_ID, 
   ASSOCIATED_TOKEN_PROGRAM_ID, 
   getAssociatedTokenAddress,
-  createInitializeMintInstruction,
-  createAssociatedTokenAccountInstruction,
-  createMintToInstruction,
-  MINT_SIZE,
-  getMinimumBalanceForRentExemptMint
 } from '@solana/spl-token';
+import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 import { uploadImageToIPFS, uploadMetadataToIPFS, createNFTMetadata, mockUploadToIPFS, mockUploadMetadataToIPFS } from '../services/ipfs';
+import idl from '../idl/streetwear_tokenizer.json';
 
 interface TokenizeParams {
   name: string;
@@ -34,14 +31,13 @@ interface TokenizeParams {
 }
 
 export function useTokenizeStreetwear() {
-  const { program, provider, isReady } = useProgram();
   const { publicKey, signTransaction, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const tokenize = async (params: TokenizeParams) => {
-    console.log('🚀 Iniciando tokenización simplificada...');
+    console.log('🚀 Iniciando tokenización con Anchor...');
     console.log('Wallet:', publicKey?.toString());
     console.log('Connection:', !!connection);
     
@@ -83,177 +79,101 @@ export function useTokenizeStreetwear() {
         : await mockUploadMetadataToIPFS(metadata);
       console.log('✅ Metadata subido');
 
-      console.log('4. Creando mint...');
+      console.log('🔑 4. Generando mint keypair...');
       const mintKeypair = Keypair.generate();
       const mint = mintKeypair.publicKey;
+      console.log('Mint Address:', mint.toString());
 
-      console.log('5. Obteniendo PDAs...');
-      const [assetPda] = await getAssetPDA(publicKey, mint);
+      console.log('🏦 5. Obteniendo token account...');
       const tokenAccount = await getAssociatedTokenAddress(
         mint,
         publicKey
       );
-
-      console.log('Mint:', mint.toString());
-      console.log('Asset PDA:', assetPda.toString());
       console.log('Token Account:', tokenAccount.toString());
 
-      console.log('6. Validando datos antes de crear instrucción...');
-      
-      // Validar año
-      const currentYear = new Date().getFullYear();
-      const maxYear = Math.max(currentYear, 2025); // Permitir hasta 2025
-      console.log(`📅 Validando año: ${params.year} (debe estar entre 1990 y ${maxYear})`);
-      
-      if (params.year < 1990 || params.year > maxYear) {
-        console.error(`❌ Año inválido: ${params.year}. Debe estar entre 1990 y ${maxYear}`);
-        throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y ${maxYear}`);
-      }
-      
-      console.log('✅ Datos validados:', {
-        name: params.name,
-        brand: params.brand,
-        model: params.model,
-        size: params.size,
-        condition: params.condition,
-        year: params.year,
-        rarity: params.rarity
-      });
-      
-      console.log('7. Creando instrucción con serialización manual...');
-      
-      // Discriminador de la instrucción tokenize_streetwear
-      const discriminator = Buffer.from([5, 52, 127, 166, 66, 28, 85, 41]);
-      
-      // Serializar argumentos manualmente
-      const argsBuffer = Buffer.alloc(0);
-      
-      // Serializar name (string)
-      const nameBuffer = Buffer.from(params.name, 'utf8');
-      const nameLengthBuffer = Buffer.alloc(4);
-      nameLengthBuffer.writeUInt32LE(nameBuffer.length, 0);
-      
-      // Serializar symbol (string)
-      const symbolBuffer = Buffer.from(metadata.symbol, 'utf8');
-      const symbolLengthBuffer = Buffer.alloc(4);
-      symbolLengthBuffer.writeUInt32LE(symbolBuffer.length, 0);
-      
-      // Serializar uri (string)
-      const uriBuffer = Buffer.from(uri, 'utf8');
-      const uriLengthBuffer = Buffer.alloc(4);
-      uriLengthBuffer.writeUInt32LE(uriBuffer.length, 0);
-      
-      // Serializar brand (string)
-      const brandBuffer = Buffer.from(params.brand, 'utf8');
-      const brandLengthBuffer = Buffer.alloc(4);
-      brandLengthBuffer.writeUInt32LE(brandBuffer.length, 0);
-      
-      // Serializar model (string)
-      const modelBuffer = Buffer.from(params.model, 'utf8');
-      const modelLengthBuffer = Buffer.alloc(4);
-      modelLengthBuffer.writeUInt32LE(modelBuffer.length, 0);
-      
-      // Serializar size (string)
-      const sizeBuffer = Buffer.from(params.size, 'utf8');
-      const sizeLengthBuffer = Buffer.alloc(4);
-      sizeLengthBuffer.writeUInt32LE(sizeBuffer.length, 0);
-      
-      // Serializar condition (string)
-      const conditionBuffer = Buffer.from(params.condition, 'utf8');
-      const conditionLengthBuffer = Buffer.alloc(4);
-      conditionLengthBuffer.writeUInt32LE(conditionBuffer.length, 0);
-      
-      // Serializar year (u16)
-      const yearBuffer = Buffer.alloc(2);
-      yearBuffer.writeUInt16LE(params.year, 0);
-      
-      // Serializar rarity (enum)
-      const rarityMap: Record<string, number> = {
-        'Common': 0,
-        'Uncommon': 1,
-        'Rare': 2,
-        'Epic': 3,
-        'Legendary': 4,
-      };
-      const rarityValue = rarityMap[params.rarity] || 0;
-      const rarityBuffer = Buffer.alloc(1);
-      rarityBuffer.writeUInt8(rarityValue, 0);
-      
-      // Combinar todos los argumentos
-      const allArgs = Buffer.concat([
-        nameLengthBuffer, nameBuffer,
-        symbolLengthBuffer, symbolBuffer,
-        uriLengthBuffer, uriBuffer,
-        brandLengthBuffer, brandBuffer,
-        modelLengthBuffer, modelBuffer,
-        sizeLengthBuffer, sizeBuffer,
-        conditionLengthBuffer, conditionBuffer,
-        yearBuffer,
-        rarityBuffer
-      ]);
-      
-      const instructionData = Buffer.concat([discriminator, allArgs]);
-      
-      const instruction = new TransactionInstruction({
-        keys: [
-          { pubkey: publicKey, isSigner: true, isWritable: true },
-          { pubkey: mint, isSigner: true, isWritable: true },
-          { pubkey: tokenAccount, isSigner: false, isWritable: true },
-          { pubkey: assetPda, isSigner: false, isWritable: true },
-          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-          { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-        ],
-        programId: program.programId,
-        data: instructionData
-      });
+      console.log('💰 6. Calculando rent...');
+      const rent = await connection.getMinimumBalanceForRentExemption(0);
+      console.log('Rent para mint:', rent / LAMPORTS_PER_SOL, 'SOL');
 
-      console.log('7. Preparando transacción...');
-      const transaction = new Transaction();
-      transaction.add(instruction);
-      transaction.feePayer = publicKey;
+      console.log('📝 7. Creando transacción...');
       
-      // Obtener blockhash reciente con timeout
+      // Crear provider y programa de Anchor
+      const provider = new AnchorProvider(
+        connection,
+        {
+          publicKey,
+          signTransaction: signTransaction!,
+          signAllTransactions: async (txs) => {
+            const signedTxs = [];
+            for (const tx of txs) {
+              const signed = await signTransaction!(tx);
+              signedTxs.push(signed);
+            }
+            return signedTxs;
+          }
+        },
+        { commitment: 'confirmed' }
+      );
+
+      const program = new Program(idl as any, new PublicKey(idl.address), provider);
+
+      // Mapear rarity a enum de Anchor
+      const rarityMap: Record<string, any> = {
+        'Common': { common: {} },
+        'Uncommon': { uncommon: {} },
+        'Rare': { rare: {} },
+        'Epic': { epic: {} },
+        'Legendary': { legendary: {} },
+      };
+
+      // Obtener PDA del asset
+      const [assetPda] = await getAssetPDA(publicKey, mint);
+
       console.log('🔗 8. Obteniendo blockhash...');
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-      transaction.recentBlockhash = blockhash;
-      
-      // Firmar con mintKeypair
-      transaction.partialSign(mintKeypair);
-      
+
       console.log('✍️ 9. Firmando con mint keypair...');
       console.log('📤 10. Enviando transacción...');
-      
-      // Enviar transacción con manejo de timeout
-      const signature = await sendTransaction(transaction, connection, {
+
+      // Crear y enviar transacción usando Anchor
+      const tx = await program.methods
+        .tokenizeStreetwear(
+          params.name,
+          metadata.symbol,
+          uri,
+          params.brand,
+          params.model,
+          params.size,
+          params.condition,
+          new BN(params.year),
+          rarityMap[params.rarity] || { common: {} }
+        )
+        .accounts({
+          owner: publicKey,
+          mint: mint,
+          tokenAccount: tokenAccount,
+          assetAccount: assetPda,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([mintKeypair])
+        .rpc({
+          commitment: 'confirmed',
         skipPreflight: false,
-        preflightCommitment: 'confirmed',
-        maxRetries: 3,
-      });
-      
+        });
+
       console.log('⏳ Esperando confirmación del wallet...');
-      console.log('✅ Transacción enviada:', signature);
+      console.log('✅ Transacción enviada:', tx);
       console.log('⏳ 11. Esperando confirmación en blockchain...');
-      
-      // Confirmar con timeout y retry
-      const confirmation = await connection.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight,
-      }, 'confirmed');
-      
-      if (confirmation.value.err) {
-        throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
-      }
 
       console.log('✅ NFT Tokenizado exitosamente!');
-      console.log('📝 Transaction:', signature);
+      console.log('📝 Transaction:', tx);
       console.log('🎨 Mint Address:', mint.toString());
-      console.log('🔗 Explorer:', `https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+      console.log('🔗 Explorer:', `https://explorer.solana.com/tx/${tx}?cluster=devnet`);
 
       return {
-        signature,
+        signature: tx,
         mint: mint.toString(),
         assetPda: assetPda.toString(),
       };
