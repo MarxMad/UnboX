@@ -61,10 +61,26 @@ export function useUserNFTs() {
 
       console.log(`📊 Encontrados ${tokenAccounts.value.length} token accounts`);
       
+      // Debug: Mostrar estructura de los token accounts
+      tokenAccounts.value.forEach((account, index) => {
+        console.log(`Token Account ${index + 1}:`, {
+          hasData: !!account.account.data,
+          hasParsed: !!account.account.data.parsed,
+          hasInfo: !!account.account.data.parsed?.info,
+          dataType: account.account.data.parsed ? 'parsed' : 'raw'
+        });
+      });
+      
       const userNFTs: UserNFT[] = [];
       
       for (const tokenAccount of tokenAccounts.value) {
         try {
+          // Validar que el token account tenga la estructura esperada
+          if (!tokenAccount.account.data.parsed || !tokenAccount.account.data.parsed.info) {
+            console.log(`⚠️ Token account sin estructura parsed.info, saltando...`);
+            continue;
+          }
+          
           const mint = tokenAccount.account.data.parsed.info.mint;
           const mintPubkey = new PublicKey(mint);
           
