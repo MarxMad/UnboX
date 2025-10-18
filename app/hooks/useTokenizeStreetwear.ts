@@ -191,7 +191,11 @@ export function useTokenizeStreetwear() {
           console.log('📤 10. Construyendo transacción paso a paso...');
 
           // Crear transacción manualmente para tener control total
-      const transaction = new Transaction();
+          const transaction = new Transaction();
+          
+          // Agregar blockhash y lastValidBlockHeight a la transacción
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = publicKey;
           
           // 1. Crear instrucción para inicializar el mint
           console.log('🔧 Agregando instrucción de inicialización de mint...');
