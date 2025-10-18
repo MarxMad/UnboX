@@ -14,7 +14,7 @@ import { Upload, Camera, Sparkles, CheckCircle, Loader2, AlertCircle, ExternalLi
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { usePin } from "@/lib/pin-context"
-import { useSimpleMint } from "@/app/hooks/useSimpleMint"
+import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PinModal } from "@/components/PinModal"
 import { PinSetup } from "@/components/PinSetup"
@@ -43,7 +43,7 @@ export default function TokenizePage() {
   const { isPinSet, verifyPin, setUserPin } = usePin()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
-  const { tokenize, loading: tokenizeLoading, error } = useSimpleMint()
+  const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
 
   useEffect(() => {
     if (!isLoading && !user) {
