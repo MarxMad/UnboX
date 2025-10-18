@@ -6,6 +6,7 @@ import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { PinProvider } from "@/lib/pin-context"
 import { NotificationContainer } from "@/components/Notification"
+import { WalletContextProvider } from "@/lib/wallet-context"
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -24,12 +25,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${spaceGrotesk.className} font-sans antialiased`}>
-        <AuthProvider>
-          <PinProvider>
-            {children}
-            <NotificationContainer />
-          </PinProvider>
-        </AuthProvider>
+        <WalletContextProvider>
+          <AuthProvider>
+            <PinProvider>
+              {children}
+              <NotificationContainer />
+            </PinProvider>
+          </AuthProvider>
+        </WalletContextProvider>
         <Analytics />
       </body>
     </html>

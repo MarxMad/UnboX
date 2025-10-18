@@ -50,18 +50,19 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
   const isFormValid = pin.length === 4 && confirmPin.length === 4 && pin === confirmPin
 
   return (
-    <Card className="p-6 max-w-md mx-auto">
-      <div className="text-center space-y-4 mb-6">
-        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-          <Shield className="h-8 w-8 text-primary" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
+      <Card className="p-6 max-w-md mx-auto w-full">
+        <div className="text-center space-y-4 mb-6">
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <Shield className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">🔐 Configurar PIN de Seguridad</h2>
+            <p className="text-muted-foreground">
+              Tu PIN protegerá las transacciones importantes. Elige un PIN de 4 dígitos que puedas recordar fácilmente.
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold">Configurar PIN de Seguridad</h2>
-          <p className="text-muted-foreground">
-            Tu PIN protegerá las transacciones importantes. Elige un PIN de 4 dígitos que puedas recordar fácilmente.
-          </p>
-        </div>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
@@ -154,5 +155,6 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
         </ul>
       </div>
     </Card>
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { 
   Keypair, 
   SystemProgram, 
@@ -25,12 +25,12 @@ interface TokenizeParams {
 
 export function useTokenizeStreetwear() {
   const { program, provider, isReady } = useProgram();
-  const wallet = useAnchorWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const tokenize = async (params: TokenizeParams) => {
-    if (!program || !wallet || !isReady || !provider) {
+    if (!program || !publicKey || !isReady || !provider) {
       throw new Error('Wallet not connected or program not ready');
     }
 
@@ -76,10 +76,10 @@ export function useTokenizeStreetwear() {
       const mint = mintKeypair.publicKey;
 
       console.log('5. Obteniendo PDAs...');
-      const [assetPda] = await getAssetPDA(wallet.publicKey, mint);
+      const [assetPda] = await getAssetPDA(publicKey, mint);
       const tokenAccount = await getAssociatedTokenAddress(
         mint,
-        wallet.publicKey
+        publicKey
       );
 
       console.log('Mint:', mint.toString());
@@ -184,7 +184,7 @@ export function useTokenizeStreetwear() {
       
       const instruction = new TransactionInstruction({
         keys: [
-          { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+          { pubkey: publicKey, isSigner: true, isWritable: true },
           { pubkey: mint, isSigner: true, isWritable: true },
           { pubkey: tokenAccount, isSigner: false, isWritable: true },
           { pubkey: assetPda, isSigner: false, isWritable: true },

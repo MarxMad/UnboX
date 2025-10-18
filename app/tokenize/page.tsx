@@ -17,6 +17,7 @@ import { usePin } from "@/lib/pin-context"
 import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PinModal } from "@/components/PinModal"
+import { PinSetup } from "@/components/PinSetup"
 
 export default function TokenizePage() {
   const [images, setImages] = useState<string[]>([])
@@ -24,6 +25,7 @@ export default function TokenizePage() {
   const [mintingStep, setMintingStep] = useState<string>("")
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPinModal, setShowPinModal] = useState(false)
+  const [showPinSetup, setShowPinSetup] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -93,11 +95,8 @@ export default function TokenizePage() {
 
     // Verificar si el PIN está configurado
     if (!isPinSet) {
-      (window as any).addNotification?.({
-        type: "warning",
-        title: "PIN no configurado",
-        message: "Por favor configura tu PIN en Settings antes de tokenizar"
-      })
+      // Mostrar PIN setup directamente
+      setShowPinSetup(true)
       return
     }
 
@@ -105,12 +104,33 @@ export default function TokenizePage() {
     setShowPinModal(true)
   }
 
-  const handlePinVerify = async (pin: string): Promise<boolean> => {
+  const handlePinComplete = (pin: string) => {
+    setUserPin(pin)
+    setShowPinSetup(false)
+    // Después de configurar el PIN, proceder con la tokenización
+    setShowPinModal(true)
+    ;(window as any).addNotification?.({
+      type: "success",
+      title: "¡PIN configurado!",
+      message: "Tu PIN de seguridad ha sido configurado. Ahora puedes proceder con la tokenización."
+    })
+  }
+
+  const handlePinSkip = () => {
+    setShowPinSetup(false)
+    ;(window as any).addNotification?.({
+      type: "warning",
+      title: "PIN requerido",
+      message: "Necesitas configurar un PIN para proteger tus transacciones de tokenización."
+    })
+  }
+
+  const handlePinVerify = (pin: string): boolean => {
     const isValid = verifyPin(pin)
     
     if (isValid) {
       setShowPinModal(false)
-      await performTokenization()
+      performTokenization() // No await aquí para mantener el tipo boolean
       return true
     }
     
@@ -138,6 +158,10 @@ export default function TokenizePage() {
       }
 
       // Llamar a la función real de tokenización
+      if (!selectedFile) {
+        throw new Error("No se ha seleccionado ninguna imagen")
+      }
+      
       await tokenize({
         name: formData.name,
         brand: formData.brand,
@@ -467,6 +491,14 @@ export default function TokenizePage() {
         title="Confirmar Tokenización"
         description="Ingresa tu PIN para confirmar la tokenización de tu artículo"
       />
+
+      {/* PIN Setup Modal */}
+      {showPinSetup && (
+        <PinSetup 
+          onComplete={handlePinComplete}
+          onSkip={handlePinSkip}
+        />
+      )}
     </div>
   )
 }
