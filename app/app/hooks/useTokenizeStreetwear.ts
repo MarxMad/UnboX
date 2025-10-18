@@ -40,8 +40,14 @@ export function useTokenizeStreetwear() {
 
     try {
       console.log('1. Subiendo imagen a IPFS...');
+      console.log('Archivo de imagen:', {
+        name: params.image.name,
+        size: params.image.size,
+        type: params.image.type
+      });
       const imageUri = await uploadImageToIPFS(params.image);
-      console.log('Imagen subida a Pinata:', imageUri);
+      console.log('✅ Imagen subida a Pinata:', imageUri);
+      console.log('🔗 URL de imagen:', imageUri);
 
       console.log('2. Creando metadata...');
       const metadata = createNFTMetadata(
@@ -59,9 +65,12 @@ export function useTokenizeStreetwear() {
         }
       );
 
+      console.log('📋 Metadata creado:', JSON.stringify(metadata, null, 2));
+
       console.log('3. Subiendo metadata a IPFS...');
       const uri = await uploadMetadataToIPFS(metadata);
-      console.log('Metadata subido a Pinata:', uri);
+      console.log('✅ Metadata subido a Pinata:', uri);
+      console.log('🔗 URL de metadata:', uri);
 
       console.log('4. Creando mint...');
       const mintKeypair = Keypair.generate();
