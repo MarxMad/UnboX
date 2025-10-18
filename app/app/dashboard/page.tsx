@@ -2,13 +2,13 @@
 
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useState, useEffect } from 'react';
-import { Wallet, Package, TrendingUp, AlertCircle } from 'lucide-react';
+import { Wallet, Package, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { MyNFTCard } from '../components/MyNFTCard';
+import { useUserNFTs } from '../hooks/useUserNFTs';
 
 export default function DashboardPage() {
   const wallet = useWallet();
-  const [myNFTs, setMyNFTs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { nfts, loading, error, refetch } = useUserNFTs();
   const [stats, setStats] = useState({
     totalNFTs: 0,
     totalValue: 0,
@@ -16,42 +16,15 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    if (wallet.connected) {
-      // Aquí cargarías los NFTs del usuario desde el programa
-      // Por ahora, datos de ejemplo
-      setLoading(false);
-      setMyNFTs([
-        {
-          id: '1',
-          name: 'Yeezy Boost 350',
-          brand: 'Adidas',
-          year: 2022,
-          rarity: 'Epic',
-          isListed: true,
-          listPrice: 1.5,
-          image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500',
-          condition: 'New',
-        },
-        {
-          id: '2',
-          name: 'Travis Scott Hoodie',
-          brand: 'Cactus Jack',
-          year: 2023,
-          rarity: 'Legendary',
-          isListed: false,
-          image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=500',
-          condition: 'Deadstock',
-        },
-      ]);
+    if (nfts.length > 0) {
+      const listed = nfts.filter(nft => nft.isListed).length;
       setStats({
-        totalNFTs: 2,
-        totalValue: 3.2,
-        listed: 1,
+        totalNFTs: nfts.length,
+        totalValue: nfts.length * 0.5, // Valor estimado
+        listed: listed,
       });
-    } else {
-      setLoading(false);
     }
-  }, [wallet.connected]);
+  }, [nfts]);
 
   if (!wallet.connected) {
     return (
@@ -92,14 +65,31 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => wallet.disconnect()}
-            className="bg-red-500/20 border border-red-500/50 px-4 py-2 rounded-lg hover:bg-red-500/30 transition-colors"
-          >
-            Desconectar
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={refetch}
+              className="bg-blue-500/20 border border-blue-500/50 px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center space-x-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Actualizar</span>
+            </button>
+            <button
+              onClick={() => wallet.disconnect()}
+              className="bg-red-500/20 border border-red-500/50 px-4 py-2 rounded-lg hover:bg-red-500/30 transition-colors"
+            >
+              Desconectar
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="glass-card p-4 flex items-center space-x-3 border-red-500/50">
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <p className="text-red-200">{error}</p>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -137,7 +127,7 @@ export default function DashboardPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
             <p className="mt-4 text-gray-400">Cargando colección...</p>
           </div>
-        ) : myNFTs.length === 0 ? (
+        ) : nfts.length === 0 ? (
           <div className="glass-card p-12 text-center space-y-4">
             <Package className="w-16 h-16 text-gray-500 mx-auto" />
             <h3 className="text-xl font-semibold">No tienes artículos tokenizados</h3>
@@ -153,8 +143,8 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {myNFTs.map((nft) => (
-              <MyNFTCard key={nft.id} nft={nft} />
+            {nfts.map((nft, index) => (
+              <MyNFTCard key={`${nft.mint}-${index}`} nft={nft} />
             ))}
           </div>
         )}

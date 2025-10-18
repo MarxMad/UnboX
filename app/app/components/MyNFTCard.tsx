@@ -4,15 +4,19 @@ import { useState } from 'react';
 import { DollarSign, XCircle, Award, Calendar } from 'lucide-react';
 
 interface MyNFT {
-  id: string;
+  mint: string;
   name: string;
+  symbol: string;
+  uri: string;
   brand: string;
+  model: string;
+  size: string;
+  condition: string;
   year: number;
   rarity: string;
   isListed: boolean;
-  listPrice?: number;
-  image: string;
-  condition: string;
+  image?: string;
+  metadata?: any;
 }
 
 export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
@@ -47,7 +51,7 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
         {/* Image */}
         <div className="relative h-64 bg-gray-800 overflow-hidden">
           <img
-            src={nft.image}
+            src={nft.image || 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image'}
             alt={nft.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
@@ -70,7 +74,8 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
           {/* Title */}
           <div>
             <h3 className="text-xl font-bold mb-1">{nft.name}</h3>
-            <p className="text-gray-400 text-sm">{nft.brand}</p>
+            <p className="text-gray-400 text-sm">{nft.brand} {nft.model}</p>
+            <p className="text-gray-500 text-xs">Talla: {nft.size}</p>
           </div>
 
           {/* Info */}
@@ -78,6 +83,9 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
             <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4" />
               <span>{nft.year}</span>
+            </div>
+            <div className="text-xs">
+              <span className="text-gray-500">Mint:</span> {nft.mint.slice(0, 4)}...{nft.mint.slice(-4)}
             </div>
           </div>
 
