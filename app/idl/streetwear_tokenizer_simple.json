@@ -1,0 +1,124 @@
+{
+  "address": "DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho",
+  "metadata": {
+    "name": "streetwear_tokenizer",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "tokenize_streetwear",
+      "discriminator": [5, 52, 127, 166, 66, 28, 85, 41],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "asset_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "writable": false
+        },
+        {
+          "name": "associated_token_program",
+          "writable": false
+        },
+        {
+          "name": "system_program",
+          "writable": false
+        },
+        {
+          "name": "rent",
+          "writable": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        },
+        {
+          "name": "brand",
+          "type": "string"
+        },
+        {
+          "name": "model",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "string"
+        },
+        {
+          "name": "condition",
+          "type": "string"
+        },
+        {
+          "name": "year",
+          "type": "u16"
+        },
+        {
+          "name": "rarity",
+          "type": {
+            "defined": {
+              "name": "Rarity"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "StreetwearAsset",
+      "discriminator": [36, 69, 48, 123, 200, 174, 89, 42]
+    }
+  ],
+  "types": [
+    {
+      "name": "Rarity",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Common"
+          },
+          {
+            "name": "Uncommon"
+          },
+          {
+            "name": "Rare"
+          },
+          {
+            "name": "Epic"
+          },
+          {
+            "name": "Legendary"
+          }
+        ]
+      }
+    }
+  ]
+}
