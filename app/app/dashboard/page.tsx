@@ -130,16 +130,36 @@ export default function DashboardPage() {
         ) : nfts.length === 0 ? (
           <div className="glass-card p-12 text-center space-y-4">
             <Package className="w-16 h-16 text-gray-500 mx-auto" />
-            <h3 className="text-xl font-semibold">No tienes artículos tokenizados</h3>
-            <p className="text-gray-400">
-              Comienza tokenizando tu primer artículo de streetwear
+            <h3 className="text-xl font-semibold">Colección no disponible</h3>
+            <p className="text-gray-400 mb-4">
+              La funcionalidad para mostrar tus NFTs tokenizados está en desarrollo.
             </p>
-            <a
-              href="/tokenize"
-              className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all mt-4"
-            >
-              Tokenizar Ahora
-            </a>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-200 mb-2">
+                <strong>¿Por qué no veo mis NFTs?</strong>
+              </p>
+              <ul className="text-xs text-blue-300 space-y-1">
+                <li>• Los NFTs se mintean correctamente en la blockchain</li>
+                <li>• La búsqueda automática de colección está pendiente</li>
+                <li>• Puedes ver tus transacciones en Solana Explorer</li>
+              </ul>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <a
+                href="/tokenize"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+              >
+                Tokenizar Más
+              </a>
+              <a
+                href="https://explorer.solana.com/address/6qs2WZRSVTmYewzZvBYLnQe78YpVLD27muCL4qcfjKDS?cluster=devnet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/5 border border-white/10 px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all"
+              >
+                Ver en Explorer
+              </a>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

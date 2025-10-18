@@ -37,47 +37,22 @@ export function useUserNFTs() {
     setError(null);
 
     try {
-      console.log('🔍 Buscando NFTs del usuario...');
+      console.log('🔍 Buscando NFTs reales del usuario...');
       
-      // Por ahora, vamos a simular algunos NFTs
+      // TODO: Implementar búsqueda real de NFTs
+      // Por ahora, vamos a mostrar un mensaje de que no hay NFTs
       // En una implementación real, necesitarías:
-      // 1. Obtener todos los tokens del usuario
+      // 1. Obtener todos los tokens del usuario usando getTokenAccountsByOwner
       // 2. Filtrar solo los NFTs de nuestro programa
-      // 3. Obtener los datos de cada asset account
+      // 3. Obtener los datos de cada asset account usando program.account.streetwearAsset.fetch()
+      // 4. Cargar metadata desde IPFS usando las URIs
       
-      const mockNFTs: UserNFT[] = [
-        {
-          mint: "DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho",
-          name: "Air Jordan 1 Retro High",
-          symbol: "NIKE",
-          uri: "https://gateway.pinata.cloud/ipfs/QmExample1",
-          brand: "Nike",
-          model: "Jordan 1",
-          size: "US 10",
-          condition: "New",
-          year: 2024,
-          rarity: "Rare",
-          isListed: false,
-          image: "https://gateway.pinata.cloud/ipfs/QmExampleImage1"
-        },
-        {
-          mint: "DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho",
-          name: "Supreme Box Logo Hoodie",
-          symbol: "SUPREME",
-          uri: "https://gateway.pinata.cloud/ipfs/QmExample2",
-          brand: "Supreme",
-          model: "Box Logo",
-          size: "L",
-          condition: "Used",
-          year: 2023,
-          rarity: "Epic",
-          isListed: true,
-          image: "https://gateway.pinata.cloud/ipfs/QmExampleImage2"
-        }
-      ];
-
-      setNfts(mockNFTs);
-      console.log('✅ NFTs cargados:', mockNFTs.length);
+      console.log('⚠️ Funcionalidad de búsqueda real de NFTs pendiente de implementar');
+      console.log('Por ahora, los NFTs tokenizados no aparecen automáticamente en la colección');
+      
+      // Mostrar colección vacía hasta implementar la búsqueda real
+      setNfts([]);
+      console.log('✅ Búsqueda completada (colección vacía)');
       
     } catch (err: any) {
       console.error('Error fetching NFTs:', err);
