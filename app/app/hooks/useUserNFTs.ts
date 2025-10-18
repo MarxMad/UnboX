@@ -49,8 +49,7 @@ export function useUserNFTs() {
       console.log('👤 Wallet:', wallet.publicKey?.toString());
       console.log('🔗 Connection:', provider.connection.rpcEndpoint);
       
-      // MÉTODO MEJORADO: Buscar todos los NFTs del usuario
-      // 1. Obtener todos los token accounts del usuario
+      // MÉTODO REAL: Buscar todos los NFTs del usuario y leer datos reales
       console.log('🔍 Buscando todos los token accounts del usuario...');
       
       const tokenAccounts = await provider.connection.getTokenAccountsByOwner(
@@ -62,7 +61,6 @@ export function useUserNFTs() {
 
       console.log(`📊 Encontrados ${tokenAccounts.value.length} token accounts`);
       
-      // 2. Para cada token account, verificar si es un NFT de nuestro programa
       const userNFTs: UserNFT[] = [];
       
       for (const tokenAccount of tokenAccounts.value) {
@@ -72,37 +70,118 @@ export function useUserNFTs() {
           
           console.log(`🔍 Verificando mint: ${mint}`);
           
-          // 3. Obtener el asset account para este mint
+          // Obtener el asset account para este mint
           const [assetPda] = await getAssetPDA(wallet.publicKey, mintPubkey);
           console.log(`📍 Asset PDA: ${assetPda.toString()}`);
           
           try {
-            // 4. Intentar obtener los datos del asset account
+            // Intentar obtener los datos del asset account
             const assetAccount = await provider.connection.getAccountInfo(assetPda);
-            console.log(`📋 Asset account existe:`, !!assetAccount);
             
             if (assetAccount) {
               console.log(`✅ NFT encontrado: ${mint}`);
               console.log(`📊 Asset account data length:`, assetAccount.data.length);
               
-              // 5. Crear NFT con datos básicos (por ahora)
-              const nft: UserNFT = {
-                mint: mint,
-                name: `NFT ${mint.slice(0, 8)}`,
-                symbol: "STW",
-                uri: "https://gateway.pinata.cloud/ipfs/...",
-                brand: "Unknown",
-                model: "Unknown",
-                size: "Unknown",
-                condition: "Unknown",
-                year: new Date().getFullYear(),
-                rarity: "Common",
-                isListed: false,
-                image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=NFT"
-              };
-              
-              userNFTs.push(nft);
-              console.log(`✅ NFT agregado: ${nft.name}`);
+              // DESERIALIZAR DATOS REALES DEL ASSET ACCOUNT
+              try {
+                const accountData = assetAccount.data;
+                console.log(`🔍 Deserializando datos del asset account...`);
+                
+                // Leer datos según la estructura del programa
+                let offset = 8; // Skip discriminator
+                
+                // Leer owner (32 bytes)
+                const owner = new PublicKey(accountData.slice(offset, offset + 32));
+                offset += 32;
+                
+                // Leer mint (32 bytes)
+                const mintFromData = new PublicKey(accountData.slice(offset, offset + 32));
+                offset += 32;
+                
+                // Leer name (string)
+                const nameLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const name = accountData.slice(offset, offset + nameLength).toString('utf8');
+                offset += nameLength;
+                
+                // Leer brand (string)
+                const brandLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const brand = accountData.slice(offset, offset + brandLength).toString('utf8');
+                offset += brandLength;
+                
+                // Leer model (string)
+                const modelLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const model = accountData.slice(offset, offset + modelLength).toString('utf8');
+                offset += modelLength;
+                
+                // Leer size (string)
+                const sizeLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const size = accountData.slice(offset, offset + sizeLength).toString('utf8');
+                offset += sizeLength;
+                
+                // Leer condition (string)
+                const conditionLength = accountData.readUInt32LE(offset);
+                offset += 4;
+                const condition = accountData.slice(offset, offset + conditionLength).toString('utf8');
+                offset += conditionLength;
+                
+                // Leer year (u16)
+                const year = accountData.readUInt16LE(offset);
+                offset += 2;
+                
+                // Leer rarity (u8)
+                const rarityValue = accountData.readUInt8(offset);
+                const rarityMap = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+                const rarity = rarityMap[rarityValue] || 'Common';
+                
+                console.log(`📋 Datos reales leídos:`, {
+                  name, brand, model, size, condition, year, rarity
+                });
+                
+                // Crear NFT con datos reales
+                const nft: UserNFT = {
+                  mint: mint,
+                  name: name,
+                  symbol: brand.substring(0, 10).toUpperCase(),
+                  uri: "https://gateway.pinata.cloud/ipfs/...", // TODO: Leer URI real
+                  brand: brand,
+                  model: model,
+                  size: size,
+                  condition: condition,
+                  year: year,
+                  rarity: rarity,
+                  isListed: false,
+                  image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Real+NFT" // TODO: Leer imagen real
+                };
+                
+                userNFTs.push(nft);
+                console.log(`✅ NFT agregado con datos reales: ${nft.name} (${nft.brand} ${nft.model})`);
+                
+              } catch (deserializeError) {
+                console.error(`❌ Error deserializando asset account:`, deserializeError);
+                
+                // Fallback: crear NFT con datos básicos
+                const nft: UserNFT = {
+                  mint: mint,
+                  name: `NFT ${mint.slice(0, 8)}`,
+                  symbol: "STW",
+                  uri: "https://gateway.pinata.cloud/ipfs/...",
+                  brand: "Unknown",
+                  model: "Unknown",
+                  size: "Unknown",
+                  condition: "Unknown",
+                  year: new Date().getFullYear(),
+                  rarity: "Common",
+                  isListed: false,
+                  image: "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Parse+Error"
+                };
+                
+                userNFTs.push(nft);
+                console.log(`✅ NFT agregado con datos básicos: ${nft.name}`);
+              }
             } else {
               console.log(`❌ No es un NFT de nuestro programa: ${mint}`);
             }
