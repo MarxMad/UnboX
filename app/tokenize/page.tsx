@@ -13,14 +13,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, Camera, Sparkles, CheckCircle, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
+import { usePin } from "@/lib/pin-context"
 import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { PinModal } from "@/components/PinModal"
 
 export default function TokenizePage() {
   const [images, setImages] = useState<string[]>([])
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [mintingStep, setMintingStep] = useState<string>("")
   const [isSuccess, setIsSuccess] = useState(false)
+  const [showPinModal, setShowPinModal] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -32,6 +35,7 @@ export default function TokenizePage() {
     description: ""
   })
   const { user, isLoading } = useAuth()
+  const { isPinSet, verifyPin } = usePin()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
   const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
@@ -87,6 +91,33 @@ export default function TokenizePage() {
       return
     }
 
+    // Verificar si el PIN está configurado
+    if (!isPinSet) {
+      (window as any).addNotification?.({
+        type: "warning",
+        title: "PIN no configurado",
+        message: "Por favor configura tu PIN en Settings antes de tokenizar"
+      })
+      return
+    }
+
+    // Mostrar modal de PIN para verificación
+    setShowPinModal(true)
+  }
+
+  const handlePinVerify = async (pin: string): Promise<boolean> => {
+    const isValid = verifyPin(pin)
+    
+    if (isValid) {
+      setShowPinModal(false)
+      await performTokenization()
+      return true
+    }
+    
+    return false
+  }
+
+  const performTokenization = async () => {
     try {
       setIsSuccess(false)
       setMintingStep("Subiendo imagen a IPFS...")
@@ -427,6 +458,15 @@ export default function TokenizePage() {
           </div>
         </div>
       </main>
+
+      {/* PIN Verification Modal */}
+      <PinModal
+        isOpen={showPinModal}
+        onClose={() => setShowPinModal(false)}
+        onVerify={handlePinVerify}
+        title="Confirmar Tokenización"
+        description="Ingresa tu PIN para confirmar la tokenización de tu artículo"
+      />
     </div>
   )
 }

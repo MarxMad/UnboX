@@ -9,9 +9,11 @@ import { Card } from "@/components/ui/card"
 import { Box, Wallet, Mail, Lock, User } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
+import { usePin } from "@/lib/pin-context"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { useRouter } from "next/navigation"
+import { PinSetup } from "@/components/PinSetup"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -21,10 +23,19 @@ export default function RegisterPage() {
     confirmPassword: ""
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [showPinSetup, setShowPinSetup] = useState(false)
   const { login } = useAuth()
+  const { setUserPin } = usePin()
   const { connected, connecting, publicKey } = useWallet()
   const { setVisible } = useWalletModal()
   const router = useRouter()
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,7 +62,9 @@ export default function RegisterPage() {
     try {
       // Simular registro - en MVP real aquí se haría el registro
       await login(formData.email, formData.password)
-      router.push("/feed")
+      
+      // Mostrar configuración de PIN después del registro exitoso
+      setShowPinSetup(true)
     } catch (error) {
       console.error("Registration failed:", error)
       (window as any).addNotification?.({
@@ -84,11 +97,25 @@ export default function RegisterPage() {
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+  const handlePinComplete = (pin: string) => {
+    setUserPin(pin)
+    setShowPinSetup(false)
+    router.push("/feed")
+    (window as any).addNotification?.({
+      type: "success",
+      title: "¡Cuenta creada exitosamente!",
+      message: "Tu PIN de seguridad ha sido configurado. Ya puedes empezar a tokenizar."
+    })
+  }
+
+  const handlePinSkip = () => {
+    setShowPinSetup(false)
+    router.push("/feed")
+    (window as any).addNotification?.({
+      type: "warning",
+      title: "PIN no configurado",
+      message: "Recuerda configurar tu PIN en Settings para proteger tus transacciones."
+    })
   }
 
   return (
@@ -216,6 +243,16 @@ export default function RegisterPage() {
           By creating an account, you agree to UnboX's Terms of Service and Privacy Policy
         </p>
       </div>
+
+      {/* PIN Setup Modal */}
+      {showPinSetup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <PinSetup 
+            onComplete={handlePinComplete}
+            onSkip={handlePinSkip}
+          />
+        </div>
+      )}
     </div>
   )
 }

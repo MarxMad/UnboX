@@ -159,7 +159,7 @@ export function Header() {
                   Sign In
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/register">
                 <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                   Get Started
                 </Button>

@@ -4,6 +4,7 @@ import { Space_Grotesk, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
+import { PinProvider } from "@/lib/pin-context"
 import { NotificationContainer } from "@/components/Notification"
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] })
@@ -24,8 +25,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${spaceGrotesk.className} font-sans antialiased`}>
         <AuthProvider>
-          {children}
-          <NotificationContainer />
+          <PinProvider>
+            {children}
+            <NotificationContainer />
+          </PinProvider>
         </AuthProvider>
         <Analytics />
       </body>

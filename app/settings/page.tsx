@@ -11,13 +11,20 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, User, Mail, Shield, Bell, Trash2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
+import { usePin } from "@/lib/pin-context"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { PinSetup } from "@/components/PinSetup"
+import { PinModal } from "@/components/PinModal"
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
   const { connected, publicKey, disconnect } = useWallet()
+  const { isPinSet, setUserPin, clearPin } = usePin()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPinSetup, setShowPinSetup] = useState(false)
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pinAction, setPinAction] = useState<'setup' | 'change' | 'remove'>('setup')
 
   const handleSave = async () => {
     setIsLoading(true)
@@ -44,13 +51,42 @@ export default function SettingsPage() {
     }
   }
 
-  const handleDeleteAccount = () => {
-    if (confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.")) {
-      logout()
+  const handlePinComplete = (pin: string) => {
+    setUserPin(pin)
+    setShowPinSetup(false)
+    (window as any).addNotification?.({
+      type: "success",
+      title: "PIN configurado",
+      message: "Tu PIN de seguridad ha sido configurado exitosamente"
+    })
+  }
+
+  const handlePinSkip = () => {
+    setShowPinSetup(false)
+  }
+
+  const handlePinVerify = (pin: string): boolean => {
+    // Aquí se verificaría el PIN actual antes de permitir cambios
+    return true // Por simplicidad, siempre retorna true
+  }
+
+  const handleSetupPin = () => {
+    setPinAction('setup')
+    setShowPinSetup(true)
+  }
+
+  const handleChangePin = () => {
+    setPinAction('change')
+    setShowPinModal(true)
+  }
+
+  const handleRemovePin = () => {
+    if (confirm("¿Estás seguro de que quieres eliminar tu PIN? Esto reducirá la seguridad de tus transacciones.")) {
+      clearPin()
       (window as any).addNotification?.({
         type: "warning",
-        title: "Cuenta eliminada",
-        message: "Tu cuenta ha sido eliminada exitosamente"
+        title: "PIN eliminado",
+        message: "Tu PIN ha sido eliminado. Te recomendamos configurar uno nuevo."
       })
     }
   }
@@ -102,12 +138,48 @@ export default function SettingsPage() {
               </div>
             </Card>
 
-            {/* Wallet Settings */}
+            {/* PIN Settings */}
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Wallet Connection</h3>
+                <h3 className="text-lg font-semibold">PIN de Seguridad</h3>
               </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Estado del PIN</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isPinSet ? "PIN configurado" : "PIN no configurado"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {!isPinSet ? (
+                      <Button size="sm" onClick={handleSetupPin}>
+                        Configurar PIN
+                      </Button>
+                    ) : (
+                      <>
+                        <Button size="sm" variant="outline" onClick={handleChangePin}>
+                          Cambiar PIN
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={handleRemovePin}>
+                          Eliminar PIN
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {isPinSet && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      ✅ Tu PIN está configurado y protege tus transacciones importantes.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
               
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -186,6 +258,25 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* PIN Setup Modal */}
+      {showPinSetup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <PinSetup 
+            onComplete={handlePinComplete}
+            onSkip={handlePinSkip}
+          />
+        </div>
+      )}
+
+      {/* PIN Verification Modal */}
+      <PinModal
+        isOpen={showPinModal}
+        onClose={() => setShowPinModal(false)}
+        onVerify={handlePinVerify}
+        title="Cambiar PIN"
+        description="Ingresa tu PIN actual para poder cambiarlo"
+      />
     </div>
   )
 }

@@ -95,7 +95,7 @@ export default function LandingPage() {
               trade with confidence on the blockchain.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/login">
+              <Link href="/register">
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
                   Start Tokenizing
                 </Button>
@@ -225,7 +225,7 @@ export default function LandingPage() {
               Join thousands of collectors showcasing and trading their streetwear on Solana
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/login">
+              <Link href="/register">
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-base px-8">
                   Launch App
                 </Button>
