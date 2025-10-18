@@ -21,7 +21,9 @@ import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 import { uploadImageToIPFS, uploadMetadataToIPFS, createNFTMetadata, mockUploadToIPFS, mockUploadMetadataToIPFS } from '../services/ipfs';
-import idl from '../idl/streetwear_tokenizer.json';
+// Import the IDL with proper typing
+import idlData from '../idl/streetwear_tokenizer.json';
+const idl = idlData as any;
 
 interface TokenizeParams {
   name: string;
@@ -138,7 +140,16 @@ export function useTokenizeStreetwear() {
         }
       );
 
-      const program = new Program(idl as any, new PublicKey(idl.address), provider);
+      // Validar IDL antes de crear el programa
+      console.log('🔍 Validando IDL...');
+      console.log('IDL address:', idl.address);
+      console.log('IDL instructions:', idl.instructions?.length);
+      
+      if (!idl || !idl.address || !idl.instructions) {
+        throw new Error('IDL inválido o incompleto');
+      }
+      
+      const program = new Program(idl, new PublicKey(idl.address), provider);
 
       // Mapear rarity a enum de Anchor
       const rarityMap: Record<string, any> = {
