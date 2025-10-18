@@ -10,8 +10,7 @@
   },
   "env": {
     "NODE_ENV": "production",
-    "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "@google_client_id",
-    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
-    "NEXT_PUBLIC_SOLANA_RPC_ENDPOINT": "https://api.devnet.solana.com"
+    "NEXT_PUBLIC_SOLANA_RPC_ENDPOINT": "https://api.devnet.solana.com",
+    "NEXT_PUBLIC_SOLANA_NETWORK": "devnet"
   }
 }
