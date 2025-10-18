@@ -75,7 +75,22 @@ export function useProgram() {
       console.log('useProgram - IDL type:', typeof idl);
       console.log('useProgram - PROGRAM_ID:', PROGRAM_ID.toString());
       
-      const program = new Program(idl as Idl, PROGRAM_ID, provider);
+      // Create a clean IDL object to avoid any issues
+      const cleanIdl: Idl = {
+        address: idl.address,
+        metadata: idl.metadata,
+        instructions: idl.instructions,
+        accounts: idl.accounts || [],
+        types: idl.types || [],
+        errors: idl.errors || [],
+        events: idl.events || [],
+        constants: idl.constants || [],
+        state: idl.state || null,
+      };
+      
+      console.log('useProgram - Clean IDL created');
+      
+      const program = new Program(cleanIdl, PROGRAM_ID, provider);
       console.log('useProgram - Program created successfully');
 
       return { program, provider };
