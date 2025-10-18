@@ -5,6 +5,14 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 
+// RPC endpoints de respaldo
+const FALLBACK_RPC_ENDPOINTS = [
+  'https://api.devnet.solana.com',
+  'https://devnet.helius-rpc.com/?api-key=',
+  'https://rpc-devnet.helius.xyz/?api-key=',
+  'https://devnet.genesysgo.com'
+];
+
 export interface UserNFT {
   mint: string;
   name: string;
@@ -41,13 +49,48 @@ export function useUserNFTs() {
       console.log('👤 Wallet:', wallet.publicKey?.toString());
       console.log('🔗 Connection:', provider.connection.rpcEndpoint);
       
-      // 1. Obtener todos los token accounts del usuario
-      const tokenAccounts = await provider.connection.getTokenAccountsByOwner(
-        wallet.publicKey,
-        {
-          programId: TOKEN_PROGRAM_ID,
+      // 1. Obtener todos los token accounts del usuario con retry y fallback
+      let tokenAccounts;
+      let retryCount = 0;
+      const maxRetries = 3;
+      let currentConnection = provider.connection;
+      
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`🔄 Intento ${retryCount + 1} de ${maxRetries} para obtener token accounts...`);
+          console.log(`🌐 Usando endpoint: ${currentConnection.rpcEndpoint}`);
+          
+          tokenAccounts = await currentConnection.getTokenAccountsByOwner(
+            wallet.publicKey,
+            {
+              programId: TOKEN_PROGRAM_ID,
+            }
+          );
+          break; // Si llegamos aquí, la petición fue exitosa
+        } catch (fetchError) {
+          retryCount++;
+          console.error(`❌ Error en intento ${retryCount}:`, fetchError);
+          
+          // Si es el último intento con el endpoint actual, probar con otro endpoint
+          if (retryCount >= maxRetries) {
+            const currentEndpoint = currentConnection.rpcEndpoint;
+            const nextEndpointIndex = FALLBACK_RPC_ENDPOINTS.findIndex(ep => ep === currentEndpoint) + 1;
+            
+            if (nextEndpointIndex < FALLBACK_RPC_ENDPOINTS.length) {
+              const newEndpoint = FALLBACK_RPC_ENDPOINTS[nextEndpointIndex];
+              console.log(`🔄 Cambiando a endpoint de respaldo: ${newEndpoint}`);
+              currentConnection = new Connection(newEndpoint, 'confirmed');
+              retryCount = 0; // Reset retry count para el nuevo endpoint
+              continue;
+            } else {
+              throw new Error(`Failed to fetch token accounts after trying all endpoints: ${fetchError.message}`);
+            }
+          }
+          
+          // Esperar antes del siguiente intento
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-      );
+      }
 
       console.log(`📊 Encontrados ${tokenAccounts.value.length} token accounts`);
       
