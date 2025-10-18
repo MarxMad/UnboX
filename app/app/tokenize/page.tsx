@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { Upload, Shirt, AlertCircle, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Upload, Shirt, AlertCircle, ExternalLink, Wifi, WifiOff } from 'lucide-react';
 import { useTokenizeStreetwear } from '../hooks/useTokenizeStreetwear';
+import { Connection } from '@solana/web3.js';
 
 export default function TokenizePage() {
   const wallet = useWallet();
+  const { connection } = useConnection();
   const { tokenize, loading, error } = useTokenizeStreetwear();
   const [formData, setFormData] = useState({
     name: '',
@@ -21,6 +23,43 @@ export default function TokenizePage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [txSignature, setTxSignature] = useState<string>('');
   const [mintAddress, setMintAddress] = useState<string>('');
+  const [isDevnet, setIsDevnet] = useState<boolean | null>(null);
+  const [checkingNetwork, setCheckingNetwork] = useState(false);
+
+  // Verificar si estamos en Devnet
+  useEffect(() => {
+    const checkNetwork = async () => {
+      if (!connection) return;
+      
+      setCheckingNetwork(true);
+      try {
+        const endpoint = connection.rpcEndpoint;
+        const isDevnetEndpoint = endpoint.includes('devnet');
+        setIsDevnet(isDevnetEndpoint);
+      } catch (error) {
+        console.error('Error checking network:', error);
+        setIsDevnet(false);
+      } finally {
+        setCheckingNetwork(false);
+      }
+    };
+
+    checkNetwork();
+  }, [connection]);
+
+  // Función para cambiar a Devnet
+  const switchToDevnet = async () => {
+    try {
+      // Intentar cambiar la red del wallet
+      if (wallet.adapter && 'connect' in wallet.adapter) {
+        await wallet.disconnect();
+        // El usuario necesitará cambiar manualmente en su wallet
+        alert('Por favor cambia tu wallet a Devnet y reconecta');
+      }
+    } catch (error) {
+      console.error('Error switching to Devnet:', error);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,6 +129,59 @@ export default function TokenizePage() {
           Convierte tu artículo físico en un NFT y demuestra su autenticidad on-chain
         </p>
       </div>
+
+      {/* Network Warning */}
+      {isDevnet === false && (
+        <div className="glass-card p-6 border-red-500/50 bg-red-500/5 space-y-4">
+          <div className="flex items-center space-x-3">
+            <WifiOff className="w-6 h-6 text-red-400" />
+            <div>
+              <h3 className="text-lg font-semibold text-red-400">⚠️ Red Incorrecta</h3>
+              <p className="text-red-200">
+                Tu wallet está conectado a <strong>Mainnet</strong>, pero este programa está en <strong>Devnet</strong>
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-black/30 p-4 rounded-lg space-y-3">
+            <p className="text-sm text-gray-300">
+              <strong>Para solucionarlo:</strong>
+            </p>
+            <ol className="text-sm text-gray-300 space-y-1 ml-4">
+              <li>1. Abre tu wallet (Phantom/Solflare)</li>
+              <li>2. Ve a Configuración → Red</li>
+              <li>3. Cambia a <strong>Devnet</strong></li>
+              <li>4. Reconecta tu wallet</li>
+            </ol>
+          </div>
+
+          <button
+            onClick={switchToDevnet}
+            className="w-full bg-gradient-to-r from-red-500 to-orange-500 px-6 py-3 rounded-lg font-semibold hover:from-red-600 hover:to-orange-600 transition-all flex items-center justify-center space-x-2"
+          >
+            <Wifi className="w-5 h-5" />
+            <span>Cambiar a Devnet</span>
+          </button>
+        </div>
+      )}
+
+      {/* Network Status */}
+      {isDevnet === true && (
+        <div className="glass-card p-4 flex items-center space-x-3 border-green-500/50 bg-green-500/5">
+          <Wifi className="w-5 h-5 text-green-400" />
+          <p className="text-green-200">
+            ✅ Conectado a Devnet - Listo para tokenizar
+          </p>
+        </div>
+      )}
+
+      {/* Checking Network */}
+      {checkingNetwork && (
+        <div className="glass-card p-4 flex items-center space-x-3 border-blue-500/50">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
+          <p className="text-blue-200">Verificando red...</p>
+        </div>
+      )}
 
       {/* Wallet Connection Warning */}
       {!wallet.connected && (
