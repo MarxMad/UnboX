@@ -2,9 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { useSupabaseAuth } from "@/app/hooks/useSupabaseAuth"
+import { supabaseTyped, isSupabaseAvailable } from "@/lib/supabase"
 
 interface SupabaseContextType {
   isSupabaseReady: boolean
+  supabase: any
   supabaseUser: any
   userPreferences: any
   walletAddress: string | undefined
@@ -25,16 +27,24 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
   const [isSupabaseReady, setIsSupabaseReady] = useState(false)
 
   useEffect(() => {
-    // Marcar como listo después de un breve delay para permitir inicialización
-    const timer = setTimeout(() => {
-      setIsSupabaseReady(true)
-    }, 1000)
+    // Verificar si Supabase está disponible
+    if (isSupabaseAvailable()) {
+      console.log('✅ Supabase está disponible');
+      setIsSupabaseReady(true);
+    } else {
+      console.log('❌ Supabase no está configurado correctamente');
+      // Marcar como listo después de un breve delay para permitir inicialización
+      const timer = setTimeout(() => {
+        setIsSupabaseReady(true)
+      }, 1000)
 
-    return () => clearTimeout(timer)
+      return () => clearTimeout(timer)
+    }
   }, [])
 
   const value = {
     isSupabaseReady,
+    supabase: supabaseTyped,
     supabaseUser,
     userPreferences,
     walletAddress,
