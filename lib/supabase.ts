@@ -188,7 +188,72 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_or_create_user_preferences: {
+        Args: {
+          user_wallet: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          email_notifications: boolean
+          push_notifications: boolean
+          like_notifications: boolean
+          follow_notifications: boolean
+          profile_visibility: 'public' | 'friends' | 'private'
+          show_collection: boolean
+          show_likes: boolean
+          preferred_brands: string[]
+          preferred_categories: string[]
+          feed_sort_order: 'trending' | 'newest' | 'popular' | 'following'
+          auto_ipfs_upload: boolean
+          default_condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor'
+          theme_preference: 'light' | 'dark' | 'system'
+          language_preference: 'es' | 'en'
+          currency_preference: 'USD' | 'EUR' | 'SOL'
+          allow_direct_messages: boolean
+          show_price_history: boolean
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      update_user_preference: {
+        Args: {
+          user_wallet: string
+          preference_key: string
+          preference_value: string
+        }
+        Returns: boolean
+      }
+      set_current_user_wallet: {
+        Args: {
+          wallet_address: string
+        }
+        Returns: void
+      }
+      user_liked_article: {
+        Args: {
+          user_wallet: string
+          article_uuid: string
+        }
+        Returns: boolean
+      }
+      get_popular_articles: {
+        Args: {
+          limit_count: number
+        }
+        Returns: {
+          id: string
+          title: string
+          brand: string
+          year: number
+          image_url: string
+          username: string
+          display_name: string
+          avatar_url: string
+          likes_count: number
+          created_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

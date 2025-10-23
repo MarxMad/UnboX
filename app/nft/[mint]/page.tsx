@@ -146,6 +146,11 @@ export default function NFTDetailPage() {
           }
         }
         
+        // Type guard para verificar si es AllNFT (tiene owner y price)
+        const isAllNFT = (nft: any): nft is import('../../hooks/useAllNFTs').AllNFT => {
+          return 'owner' in nft && 'price' in nft;
+        };
+
         const realNFT: NFTDetail = {
           mint: foundNFT.mint,
           name: foundNFT.name,
@@ -158,9 +163,9 @@ export default function NFTDetailPage() {
           year: foundNFT.year,
           rarity: foundNFT.rarity,
           isListed: foundNFT.isListed,
-          image: realImage,
-          owner: foundNFT.owner,
-          price: foundNFT.price,
+          image: realImage || 'https://via.placeholder.com/600x600/1a1a1a/ffffff?text=No+Image',
+          owner: isAllNFT(foundNFT) ? (foundNFT.owner || 'Unknown') : 'Unknown',
+          price: isAllNFT(foundNFT) ? foundNFT.price : undefined,
           description: `${foundNFT.brand} ${foundNFT.model} - ${foundNFT.condition} (${foundNFT.year})`,
           attributes: [
             { trait_type: "Brand", value: foundNFT.brand },
@@ -428,14 +433,24 @@ export default function NFTDetailPage() {
                 <User className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Owner</p>
-                  <p className="font-semibold text-sm">{nft.owner.slice(0, 8)}...{nft.owner.slice(-8)}</p>
+                  <p className="font-semibold text-sm">
+                    {nft.owner && nft.owner !== 'Unknown' 
+                      ? `${nft.owner.slice(0, 8)}...${nft.owner.slice(-8)}`
+                      : 'Unknown'
+                    }
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Mint</p>
-                  <p className="font-semibold text-sm">{nft.mint.slice(0, 8)}...{nft.mint.slice(-8)}</p>
+                  <p className="font-semibold text-sm">
+                    {nft.mint && nft.mint.length > 16
+                      ? `${nft.mint.slice(0, 8)}...${nft.mint.slice(-8)}`
+                      : nft.mint || 'Unknown'
+                    }
+                  </p>
                 </div>
               </div>
             </div>
