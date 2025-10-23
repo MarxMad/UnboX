@@ -10,6 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/header';
 import { ListNFTModal } from '@/components/ListNFTModal';
+import { useListNFT } from '@/hooks/useListNFT';
+import { useBuyNFT } from '@/hooks/useBuyNFT';
+import { useCancelListing } from '@/hooks/useCancelListing';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -21,7 +24,8 @@ import {
   Share2,
   DollarSign,
   ShoppingCart,
-  XCircle
+  XCircle,
+  Loader2
 } from 'lucide-react';
 
 interface NFTDetail {
@@ -55,6 +59,11 @@ export default function NFTDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showListModal, setShowListModal] = useState(false);
   const [liked, setLiked] = useState(false);
+  
+  // Hooks para funciones del contrato
+  const { listNFT, loading: listLoading, error: listError } = useListNFT();
+  const { buyNFT, loading: buyLoading, error: buyError } = useBuyNFT();
+  const { cancelListing, loading: cancelLoading, error: cancelError } = useCancelListing();
 
   const mintAddress = params.mint as string;
 
@@ -112,9 +121,42 @@ export default function NFTDetailPage() {
     setShowListModal(true);
   };
 
-  const handleBuy = () => {
-    // Implementar lógica de compra
-    alert(`Comprando ${nft?.name} por ${nft?.price} SOL`);
+  const handleBuy = async () => {
+    if (!nft || !nft.price) return;
+    
+    try {
+      console.log(`Comprando ${nft.name} por ${nft.price} SOL`);
+      const result = await buyNFT(nft.mint, nft.owner);
+      console.log('✅ Compra exitosa:', result);
+      
+      // Mostrar notificación de éxito
+      alert(`¡NFT comprado exitosamente! Transaction: ${result.signature}`);
+      
+      // Refrescar datos del NFT
+      fetchNFTDetails();
+    } catch (error) {
+      console.error('Error comprando NFT:', error);
+      alert(`Error al comprar NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  };
+
+  const handleCancelListing = async () => {
+    if (!nft) return;
+    
+    try {
+      console.log(`Cancelando listado de ${nft.name}`);
+      const result = await cancelListing(nft.mint);
+      console.log('✅ Listado cancelado:', result);
+      
+      // Mostrar notificación de éxito
+      alert(`¡Listado cancelado exitosamente! Transaction: ${result.signature}`);
+      
+      // Refrescar datos del NFT
+      fetchNFTDetails();
+    } catch (error) {
+      console.error('Error cancelando listado:', error);
+      alert(`Error al cancelar listado: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
   };
 
   const handleLike = () => {
@@ -331,18 +373,28 @@ export default function NFTDetailPage() {
                   <Button 
                     variant="destructive" 
                     className="w-full"
-                    onClick={() => alert('Cancel listing functionality to be implemented')}
+                    onClick={handleCancelListing}
+                    disabled={cancelLoading}
                   >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Cancel Listing
+                    {cancelLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <XCircle className="w-4 h-4 mr-2" />
+                    )}
+                    {cancelLoading ? 'Cancelando...' : 'Cancel Listing'}
                   </Button>
                 ) : (
                   <Button 
                     className="w-full"
                     onClick={handleList}
+                    disabled={listLoading}
                   >
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    List for Sale
+                    {listLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <DollarSign className="w-4 h-4 mr-2" />
+                    )}
+                    {listLoading ? 'Listando...' : 'List for Sale'}
                   </Button>
                 )
               ) : (
@@ -351,9 +403,14 @@ export default function NFTDetailPage() {
                   <Button 
                     className="w-full"
                     onClick={handleBuy}
+                    disabled={buyLoading}
                   >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Buy for {nft.price} SOL
+                    {buyLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                    )}
+                    {buyLoading ? 'Comprando...' : `Buy for ${nft.price} SOL`}
                   </Button>
                 ) : (
                   <div className="text-center text-muted-foreground">
@@ -378,10 +435,22 @@ export default function NFTDetailPage() {
             model: nft.model,
             image: nft.image
           }}
-          onSuccess={() => {
-            setShowListModal(false);
-            // Refresh NFT data
-            fetchNFTDetails();
+          onSuccess={async (price: number) => {
+            try {
+              console.log(`Listando ${nft.name} por ${price} SOL`);
+              const result = await listNFT(nft.mint, price);
+              console.log('✅ NFT listado exitosamente:', result);
+              
+              // Mostrar notificación de éxito
+              alert(`¡NFT listado exitosamente! Transaction: ${result.signature}`);
+              
+              setShowListModal(false);
+              // Refresh NFT data
+              fetchNFTDetails();
+            } catch (error) {
+              console.error('Error listando NFT:', error);
+              alert(`Error al listar NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+            }
           }}
         />
       )}

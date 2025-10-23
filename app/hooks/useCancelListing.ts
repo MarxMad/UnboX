@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
+import { Program, AnchorProvider } from '@coral-xyz/anchor';
 import idlData from '../idl/streetwear_tokenizer_simple.json';
 
 const idl = idlData as any;
 
-export function useListNFT() {
+export function useCancelListing() {
   const { publicKey, signTransaction, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const listNFT = async (nftMint: string, price: number) => {
+  const cancelListing = async (nftMint: string) => {
     if (!publicKey || !connection || !signTransaction) {
       throw new Error('Wallet not connected');
     }
@@ -21,13 +21,9 @@ export function useListNFT() {
     setError(null);
 
     try {
-      console.log('🚀 Iniciando listado de NFT...');
+      console.log('❌ Iniciando cancelación de listado...');
       console.log('NFT Mint:', nftMint);
-      console.log('Price:', price, 'SOL');
-
-      // Convertir precio a lamports
-      const priceInLamports = Math.floor(price * 1e9);
-      console.log('Price in lamports:', priceInLamports);
+      console.log('Seller:', publicKey.toString());
 
       // Crear programa
       const programId = new PublicKey(idl.address);
@@ -53,19 +49,18 @@ export function useListNFT() {
       // Crear transacción
       const transaction = new Transaction();
 
-      // Agregar instrucción de list_nft
-      const listInstruction = await program.methods
-        .listNft(new BN(priceInLamports))
+      // Agregar instrucción de cancel_listing
+      const cancelInstruction = await program.methods
+        .cancelListing()
         .accounts({
           seller: publicKey,
           escrowAccount: escrowPda,
           nftMint: new PublicKey(nftMint),
           assetAccount: assetPda,
-          systemProgram: SystemProgram.programId,
         })
         .instruction();
 
-      transaction.add(listInstruction);
+      transaction.add(cancelInstruction);
 
       // Obtener blockhash
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
@@ -93,28 +88,25 @@ export function useListNFT() {
         throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
       }
 
-      console.log('✅ NFT listado exitosamente!');
+      console.log('✅ Listado cancelado exitosamente!');
       console.log('📝 Transaction:', tx);
       console.log('🔗 Explorer:', `https://explorer.solana.com/tx/${tx}?cluster=devnet`);
 
       return {
         signature: tx,
-        escrowPda: escrowPda.toString(),
       };
 
     } catch (err: unknown) {
-      console.error('❌ Error listing NFT:', err);
+      console.error('❌ Error canceling listing:', err);
 
-      let errorMessage = 'Error al listar NFT';
+      let errorMessage = 'Error al cancelar listado';
 
       if (err instanceof Error) {
         errorMessage = err.message;
 
         // Mejorar mensajes de error
-        if (err.message.includes('AlreadyListed')) {
-          errorMessage = 'Este NFT ya está listado para venta';
-        } else if (err.message.includes('InvalidPrice')) {
-          errorMessage = 'El precio debe ser mayor a 0';
+        if (err.message.includes('NotListed')) {
+          errorMessage = 'Este NFT no está listado para venta';
         } else if (err.message.includes('User rejected')) {
           errorMessage = 'Transacción cancelada por el usuario';
         } else if (err.message.includes('insufficient funds')) {
@@ -129,5 +121,5 @@ export function useListNFT() {
     }
   };
 
-  return { listNFT, loading, error };
+  return { cancelListing, loading, error };
 }
