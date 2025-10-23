@@ -4,6 +4,7 @@ import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
+import { getImageFromMetadata } from '../services/imageService';
 
 // RPC endpoints de respaldo (comentado por ahora)
 // const FALLBACK_RPC_ENDPOINTS = [
@@ -228,31 +229,10 @@ export function useUserNFTs() {
                   name, brand, model, size, condition, year, rarity, uri, isListed
                 });
                 
-                // Leer metadata real desde IPFS para obtener imagen
-                let realImage = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Loading...";
-                
-                try {
-                  console.log(`🔍 Leyendo metadata desde IPFS: ${uri}`);
-                  
-                  // Hacer fetch al metadata JSON
-                  const metadataResponse = await fetch(uri);
-                  if (metadataResponse.ok) {
-                    const metadata = await metadataResponse.json();
-                    console.log(`📋 Metadata leído:`, metadata);
-                    
-                    // Extraer la imagen real del metadata
-                    if (metadata.image) {
-                      realImage = metadata.image;
-                      console.log(`🖼️ Imagen real encontrada: ${realImage}`);
-                    } else {
-                      console.log(`⚠️ No se encontró campo 'image' en metadata`);
-                    }
-                  } else {
-                    console.log(`❌ Error fetchando metadata: ${metadataResponse.status}`);
-                  }
-                } catch (metadataError) {
-                  console.log(`❌ Error leyendo metadata:`, metadataError);
-                }
+                // Obtener imagen usando el servicio mejorado
+                console.log(`🖼️ Obteniendo imagen para NFT: ${name}`);
+                const realImage = await getImageFromMetadata(uri);
+                console.log(`✅ Imagen obtenida: ${realImage}`);
                 
                 // Crear NFT con datos reales
                 const nft: UserNFT = {

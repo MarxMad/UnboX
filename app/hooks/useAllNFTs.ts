@@ -4,6 +4,7 @@ import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
+import { getImageFromMetadata } from '../services/imageService';
 
 export interface AllNFT {
   mint: string;
@@ -187,31 +188,10 @@ export function useAllNFTs() {
             name, brand, model, size, condition, year, rarity, isListed, owner: owner.toString(), uri
           });
 
-          // Validar URI y obtener imagen
-          let realImage = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image";
-          
-          if (uri && uri.length > 0 && !uri.includes('\0') && uri.startsWith('http')) {
-            try {
-              console.log(`🔍 Leyendo metadata desde IPFS: ${uri}`);
-              const metadataResponse = await fetch(uri);
-              if (metadataResponse.ok) {
-                const metadata = await metadataResponse.json();
-                console.log(`📄 Metadata obtenida:`, metadata);
-                if (metadata.image) {
-                  realImage = metadata.image;
-                  console.log(`🖼️ Imagen encontrada: ${realImage}`);
-                } else {
-                  console.log(`⚠️ No se encontró campo 'image' en metadata`);
-                }
-              } else {
-                console.log(`❌ Error HTTP al obtener metadata: ${metadataResponse.status}`);
-              }
-            } catch (metadataError) {
-              console.log(`❌ Error leyendo metadata:`, metadataError);
-            }
-          } else {
-            console.log(`⚠️ URI inválida o vacía: "${uri}"`);
-          }
+          // Obtener imagen usando el servicio mejorado
+          console.log(`🖼️ Obteniendo imagen para NFT: ${name}`);
+          const realImage = await getImageFromMetadata(uri);
+          console.log(`✅ Imagen obtenida: ${realImage}`);
 
           // Crear NFT para marketplace
           const nft: AllNFT = {
