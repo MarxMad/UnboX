@@ -209,14 +209,14 @@ export default function NFTDetailPage() {
     }
   };
 
-  const isOwner = connected && publicKey && nft && publicKey.toString() === nft.owner;
+  const isOwner = connected && publicKey && nft && nft.owner && publicKey.toString() === nft.owner;
 
   const handleList = () => {
     setShowListModal(true);
   };
 
   const handleBuy = async () => {
-    if (!nft || !nft.price) return;
+    if (!nft || !nft.price || !nft.owner) return;
     
     try {
       console.log(`Comprando ${nft.name} por ${nft.price} SOL`);
@@ -428,14 +428,14 @@ export default function NFTDetailPage() {
                 <User className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Owner</p>
-                  <p className="font-semibold text-sm">{nft.owner.slice(0, 8)}...{nft.owner.slice(-8)}</p>
+                  <p className="font-semibold text-sm">{nft.owner ? `${nft.owner.slice(0, 8)}...${nft.owner.slice(-8)}` : 'Unknown'}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Mint</p>
-                  <p className="font-semibold text-sm">{nft.mint.slice(0, 8)}...{nft.mint.slice(-8)}</p>
+                  <p className="font-semibold text-sm">{nft.mint ? `${nft.mint.slice(0, 8)}...${nft.mint.slice(-8)}` : 'Unknown'}</p>
                 </div>
               </div>
             </div>
