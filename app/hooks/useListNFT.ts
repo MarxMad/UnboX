@@ -49,6 +49,9 @@ export function useListNFT() {
 
       console.log('🔧 Usando Anchor con IDL actualizado...');
       console.log('Program ID:', programId.toString());
+      console.log('IDL address:', idl.address);
+      console.log('IDL instructions:', Object.keys(program.methods));
+      console.log('listNft method exists:', !!program.methods.listNft);
 
       // Obtener PDA del escrow
       const [escrowPda] = await PublicKey.findProgramAddress(
@@ -71,6 +74,12 @@ export function useListNFT() {
 
       // Usar Anchor para crear la instrucción
       console.log('🔧 Creando instrucción con Anchor...');
+      console.log('📋 Parámetros para listNft:');
+      console.log('  - priceInLamports:', priceInLamports);
+      console.log('  - seller:', publicKey.toString());
+      console.log('  - escrowAccount:', escrowPda.toString());
+      console.log('  - nftMint:', nftMint);
+      console.log('  - assetAccount:', assetPda.toString());
       
       const listInstruction = await program.methods
         .listNft(new BN(priceInLamports))
