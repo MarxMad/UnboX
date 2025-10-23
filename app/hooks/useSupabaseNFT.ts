@@ -92,6 +92,32 @@ export function useSupabaseNFT(mintAddress: string) {
       } else {
         console.log('⏳ Esperando que Supabase esté listo...');
         setLoading(true);
+        
+        // Timeout para evitar espera infinita
+        const timeout = setTimeout(() => {
+          console.log('⏰ Timeout esperando Supabase, usando fallback');
+          setLoading(false);
+          setError('Supabase no está disponible');
+          
+          // Crear NFT placeholder como fallback
+          const fallbackNFT: SupabaseNFT = {
+            id: 'fallback',
+            nft_mint: mintAddress,
+            title: 'NFT Cargando...',
+            brand: 'Loading',
+            year: 2024,
+            condition: 'unknown',
+            image_url: 'https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Loading...',
+            user_id: 'unknown',
+            likes_count: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          setNft(fallbackNFT);
+        }, 5000); // 5 segundos timeout
+        
+        return () => clearTimeout(timeout);
       }
     }
   }, [mintAddress, supabase, isSupabaseReady]);

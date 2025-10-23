@@ -91,6 +91,37 @@ export default function NFTDetailPage() {
   useEffect(() => {
     if (mintAddress) {
       fetchNFTDetails();
+      
+      // Timeout para evitar carga infinita
+      const timeout = setTimeout(() => {
+        if (!nft) {
+          console.log('⏰ Timeout en fetchNFTDetails, creando NFT de timeout');
+          const timeoutNFT: NFTDetail = {
+            mint: mintAddress,
+            name: "NFT Timeout",
+            symbol: "TIMEOUT",
+            uri: "",
+            brand: "Timeout",
+            model: "Timeout Model",
+            size: "N/A",
+            condition: "Unknown",
+            year: 2024,
+            rarity: "Common",
+            isListed: false,
+            image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Timeout",
+            owner: "Unknown",
+            price: 0,
+            description: "Timeout cargando NFT desde Supabase.",
+            attributes: [
+              { trait_type: "Status", value: "Timeout" },
+              { trait_type: "Mint", value: mintAddress }
+            ]
+          };
+          setNft(timeoutNFT);
+        }
+      }, 10000); // 10 segundos timeout
+      
+      return () => clearTimeout(timeout);
     }
   }, [mintAddress]);
 
@@ -117,7 +148,32 @@ export default function NFTDetailPage() {
 
       if (supabaseError) {
         console.log('❌ Error cargando de Supabase:', supabaseError);
-        setError('Error cargando NFT desde Supabase');
+        
+        // Crear NFT de error con información básica
+        const errorNFT: NFTDetail = {
+          mint: mintAddress,
+          name: "Error Cargando NFT",
+          symbol: "ERROR",
+          uri: "",
+          brand: "Error",
+          model: "Error Model",
+          size: "N/A",
+          condition: "Unknown",
+          year: 2024,
+          rarity: "Common",
+          isListed: false,
+          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Error+Loading",
+          owner: "Unknown",
+          price: 0,
+          description: `Error cargando NFT: ${supabaseError}`,
+          attributes: [
+            { trait_type: "Status", value: "Error" },
+            { trait_type: "Mint", value: mintAddress },
+            { trait_type: "Error", value: supabaseError }
+          ]
+        };
+        
+        setNft(errorNFT);
         return;
       }
 
