@@ -13,6 +13,8 @@ import { ListNFTModal } from '../../components/ListNFTModal';
 import { useListNFT } from '../../hooks/useListNFT';
 import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
+import { useAllNFTs } from '../../hooks/useAllNFTs';
+import { useUserNFTs } from '../../hooks/useUserNFTs';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -64,6 +66,10 @@ export default function NFTDetailPage() {
   const { listNFT, loading: listLoading, error: listError } = useListNFT();
   const { buyNFT, loading: buyLoading, error: buyError } = useBuyNFT();
   const { cancelListing, loading: cancelLoading, error: cancelError } = useCancelListing();
+  
+  // Hooks para obtener datos reales
+  const { allNFTs } = useAllNFTs();
+  const { nfts: userNFTs } = useUserNFTs();
 
   const mintAddress = params.mint as string;
   
@@ -77,47 +83,110 @@ export default function NFTDetailPage() {
     }
   }, [mintAddress]);
 
+  // Re-ejecutar cuando cambien los datos de los hooks
+  useEffect(() => {
+    if (mintAddress && (allNFTs || userNFTs)) {
+      console.log('🔄 Datos de hooks actualizados, re-ejecutando fetchNFTDetails');
+      fetchNFTDetails();
+    }
+  }, [mintAddress, allNFTs, userNFTs]);
+
   const fetchNFTDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
       console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
+      console.log('🔍 AllNFTs disponibles:', allNFTs?.length || 0);
+      console.log('🔍 UserNFTs disponibles:', userNFTs?.length || 0);
 
-      // Importar el servicio de imágenes
-      const { getImageFromMetadata } = await import('../../services/imageService');
-
-      // Aquí implementarías la lógica para obtener los detalles del NFT desde el blockchain
-      // Por ahora, vamos a simular los datos pero con imagen real de Pinata
-      const mockNFT: NFTDetail = {
-        mint: mintAddress,
-        name: "Supreme Box Logo Hoodie",
-        symbol: "SUPREME",
-        uri: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh",
-        brand: "Supreme",
-        model: "Box Logo Hoodie",
-        size: "L",
-        condition: "Used - Excellent",
-        year: 2023,
-        rarity: "Rare",
-        isListed: false,
-        image: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh", // Imagen real de Pinata
-        owner: publicKey?.toString() || "Unknown",
-        price: 850,
-        description: "Classic Supreme Box Logo Hoodie in excellent condition. Perfect for streetwear enthusiasts.",
-        attributes: [
-          { trait_type: "Brand", value: "Supreme" },
-          { trait_type: "Model", value: "Box Logo Hoodie" },
-          { trait_type: "Size", value: "L" },
-          { trait_type: "Condition", value: "Used - Excellent" },
-          { trait_type: "Year", value: 2023 },
-          { trait_type: "Rarity", value: "Rare" }
-        ]
-      };
-
-      console.log('🖼️ Usando imagen directa de Pinata:', mockNFT.image);
-
-      setNft(mockNFT);
+      // Buscar el NFT en todas las listas
+      let foundNFT = null;
+      
+      // Buscar en allNFTs (feed)
+      if (allNFTs && allNFTs.length > 0) {
+        foundNFT = allNFTs.find(nft => nft.mint === mintAddress);
+        console.log('🔍 Buscado en allNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+      }
+      
+      // Si no se encontró, buscar en userNFTs (perfil)
+      if (!foundNFT && userNFTs && userNFTs.length > 0) {
+        foundNFT = userNFTs.find(nft => nft.mint === mintAddress);
+        console.log('🔍 Buscado en userNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+      }
+      
+      if (foundNFT) {
+        console.log('✅ NFT encontrado:', foundNFT);
+        
+        // Importar el servicio de imágenes
+        const { getImageFromMetadata } = await import('../../services/imageService');
+        
+        // Obtener imagen real desde metadata
+        let realImage = foundNFT.image;
+        if (foundNFT.uri) {
+          try {
+            realImage = await getImageFromMetadata(foundNFT.uri);
+            console.log('🖼️ Imagen obtenida desde metadata:', realImage);
+          } catch (error) {
+            console.log('⚠️ Error obteniendo imagen desde metadata:', error);
+          }
+        }
+        
+        const realNFT: NFTDetail = {
+          mint: foundNFT.mint,
+          name: foundNFT.name,
+          symbol: foundNFT.symbol,
+          uri: foundNFT.uri,
+          brand: foundNFT.brand,
+          model: foundNFT.model,
+          size: foundNFT.size,
+          condition: foundNFT.condition,
+          year: foundNFT.year,
+          rarity: foundNFT.rarity,
+          isListed: foundNFT.isListed,
+          image: realImage,
+          owner: foundNFT.owner,
+          price: foundNFT.price,
+          description: `${foundNFT.brand} ${foundNFT.model} - ${foundNFT.condition} (${foundNFT.year})`,
+          attributes: [
+            { trait_type: "Brand", value: foundNFT.brand },
+            { trait_type: "Model", value: foundNFT.model },
+            { trait_type: "Size", value: foundNFT.size },
+            { trait_type: "Condition", value: foundNFT.condition },
+            { trait_type: "Year", value: foundNFT.year },
+            { trait_type: "Rarity", value: foundNFT.rarity }
+          ]
+        };
+        
+        console.log('✅ NFT real obtenido:', realNFT);
+        setNft(realNFT);
+      } else {
+        console.log('❌ NFT no encontrado, usando datos mockeados como fallback');
+        
+        // Fallback a datos mockeados si no se encuentra el NFT
+        const mockNFT: NFTDetail = {
+          mint: mintAddress,
+          name: "NFT No Encontrado",
+          symbol: "UNKNOWN",
+          uri: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh",
+          brand: "Unknown",
+          model: "Unknown Model",
+          size: "N/A",
+          condition: "Unknown",
+          year: 2024,
+          rarity: "Common",
+          isListed: false,
+          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=NFT+Not+Found",
+          owner: "Unknown",
+          price: 0,
+          description: "Este NFT no se pudo encontrar en la blockchain.",
+          attributes: [
+            { trait_type: "Status", value: "Not Found" }
+          ]
+        };
+        
+        setNft(mockNFT);
+      }
     } catch (err) {
       console.error('Error fetching NFT details:', err);
       setError('Error loading NFT details');
