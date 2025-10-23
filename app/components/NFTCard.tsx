@@ -37,12 +37,14 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
 
   const isOwner = wallet && wallet.publicKey?.toString() === nft.owner;
 
-  const handleBuy = () => {
+  const handleBuy = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se propague al click de la tarjeta
     // Aquí implementarías la lógica de compra
     alert(`Comprando ${nft.name} por ${nft.price} SOL`);
   };
 
-  const handleList = () => {
+  const handleList = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se propague al click de la tarjeta
     setShowListModal(true);
   };
 
@@ -51,7 +53,8 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
     window.location.reload();
   };
 
-  const handleDelist = () => {
+  const handleDelist = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se propague al click de la tarjeta
     // Aquí implementarías la lógica de deslistar
     alert(`Deslistando ${nft.name}`);
   };

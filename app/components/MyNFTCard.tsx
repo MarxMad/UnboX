@@ -40,7 +40,8 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
     window.location.reload();
   };
 
-  const handleCancelListing = () => {
+  const handleCancelListing = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se propague al click de la tarjeta
     // Aquí implementarías la lógica para cancelar el listado
     console.log(`Cancelling listing for ${nft.name}`);
     alert('Listado cancelado');
