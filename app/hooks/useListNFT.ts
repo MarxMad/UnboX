@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
+import idlData from '../idl/streetwear_tokenizer_updated.json';
+
+const idl = idlData as any;
 
 export function useListNFT() {
   const { publicKey, signTransaction, sendTransaction } = useWallet();
@@ -38,13 +42,15 @@ export function useListNFT() {
       console.log('Price in lamports:', priceInLamports);
       console.log('Price in lamports is valid:', !isNaN(priceInLamports) && priceInLamports > 0);
 
-      // Usar program ID hardcodeado para evitar problemas con IDL
-      const programId = new PublicKey('DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho');
-      
-      console.log('🔧 Creando instrucción completamente manual...');
+      // Crear programa con IDL actualizado
+      const programId = new PublicKey(idl.address);
+      const provider = new AnchorProvider(connection, { publicKey, signTransaction } as any, {});
+      const program = new Program(idl, programId, provider);
+
+      console.log('🔧 Usando Anchor con IDL actualizado...');
       console.log('Program ID:', programId.toString());
 
-      // Obtener PDA del escrow manualmente
+      // Obtener PDA del escrow
       const [escrowPda] = await PublicKey.findProgramAddress(
         [Buffer.from('escrow'), publicKey.toBuffer(), new PublicKey(nftMint).toBuffer()],
         programId
@@ -52,7 +58,7 @@ export function useListNFT() {
 
       console.log('Escrow PDA:', escrowPda.toString());
 
-      // Obtener PDA del asset manualmente
+      // Obtener PDA del asset
       const [assetPda] = await PublicKey.findProgramAddress(
         [Buffer.from('asset'), publicKey.toBuffer(), new PublicKey(nftMint).toBuffer()],
         programId
@@ -63,33 +69,19 @@ export function useListNFT() {
       // Crear transacción
       const transaction = new Transaction();
 
-      // Crear instrucción manual SIN usar Anchor
-      console.log('🔧 Creando instrucción manual de list_nft...');
+      // Usar Anchor para crear la instrucción
+      console.log('🔧 Creando instrucción con Anchor...');
       
-      // Discriminator para list_nft: [88, 221, 93, 166, 63, 220, 106, 232]
-      const discriminator = Buffer.from([88, 221, 93, 166, 63, 220, 106, 232]);
-      
-      // Serializar el precio (u64 = 8 bytes)
-      const priceBuffer = Buffer.alloc(8);
-      priceBuffer.writeBigUInt64LE(BigInt(priceInLamports), 0);
-      
-      // Crear datos de la instrucción
-      const instructionData = Buffer.concat([discriminator, priceBuffer]);
-      
-      console.log('📦 Datos de instrucción:', instructionData.toString('hex'));
-      console.log('📏 Tamaño de datos:', instructionData.length, 'bytes');
-      
-      const listInstruction = new TransactionInstruction({
-        keys: [
-          { pubkey: publicKey, isSigner: true, isWritable: true }, // seller
-          { pubkey: escrowPda, isSigner: false, isWritable: true }, // escrow_account
-          { pubkey: new PublicKey(nftMint), isSigner: false, isWritable: false }, // nft_mint
-          { pubkey: assetPda, isSigner: false, isWritable: true }, // asset_account
-          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }, // system_program
-        ],
-        programId: programId,
-        data: instructionData,
-      });
+      const listInstruction = await program.methods
+        .listNft(new BN(priceInLamports))
+        .accounts({
+          seller: publicKey,
+          escrowAccount: escrowPda,
+          nftMint: new PublicKey(nftMint),
+          assetAccount: assetPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction();
 
       transaction.add(listInstruction);
 
