@@ -14,7 +14,7 @@ interface ListNFTModalProps {
     model: string;
     image: string;
   };
-  onSuccess: () => void;
+  onSuccess: (price: number) => void;
 }
 
 export const ListNFTModal = ({ isOpen, onClose, nft, onSuccess }: ListNFTModalProps) => {
@@ -36,10 +36,7 @@ export const ListNFTModal = ({ isOpen, onClose, nft, onSuccess }: ListNFTModalPr
     try {
       console.log('🚀 Listando NFT:', nft.name, 'por', priceValue, 'SOL');
       
-      const result = await listNFT({
-        mint: nft.mint,
-        price: priceValue
-      });
+      const result = await listNFT(nft.mint, priceValue);
 
       console.log('✅ NFT listado exitosamente:', result);
       

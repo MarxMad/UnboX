@@ -17,6 +17,15 @@ export function useListNFT() {
       throw new Error('Wallet not connected');
     }
 
+    // Validar parámetros
+    if (!nftMint || nftMint.trim() === '') {
+      throw new Error('NFT Mint address is required');
+    }
+
+    if (!price || isNaN(price) || price <= 0) {
+      throw new Error('Valid price is required (must be greater than 0)');
+    }
+
     setLoading(true);
     setError(null);
 
@@ -24,10 +33,14 @@ export function useListNFT() {
       console.log('🚀 Iniciando listado de NFT...');
       console.log('NFT Mint:', nftMint);
       console.log('Price:', price, 'SOL');
+      console.log('Price type:', typeof price);
+      console.log('Price is NaN:', isNaN(price));
+      console.log('Price > 0:', price > 0);
 
       // Convertir precio a lamports
       const priceInLamports = Math.floor(price * 1e9);
       console.log('Price in lamports:', priceInLamports);
+      console.log('Price in lamports is valid:', !isNaN(priceInLamports) && priceInLamports > 0);
 
       // Crear programa
       const programId = new PublicKey(idl.address);
