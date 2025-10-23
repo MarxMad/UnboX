@@ -72,10 +72,17 @@ export default function NFTDetailPage() {
   // const { allNFTs } = useAllNFTs();
   // const { nfts: userNFTs } = useUserNFTs();
   
+  const mintAddress = params.mint as string;
+  
   // Usar Supabase para obtener datos reales del NFT
   const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
-
-  const mintAddress = params.mint as string;
+  
+  console.log('🔍 NFT Detail Page - Estado de Supabase:', {
+    mintAddress,
+    supabaseNFT: !!supabaseNFT,
+    supabaseLoading,
+    supabaseError
+  });
   
   console.log('🔍 NFTDetailPage renderizado');
   console.log('📍 Mint address:', mintAddress);
@@ -115,8 +122,32 @@ export default function NFTDetailPage() {
       }
 
       if (!supabaseNFT) {
-        console.log('❌ NFT no encontrado en Supabase');
-        setError('NFT no encontrado en la base de datos');
+        console.log('❌ NFT no encontrado en Supabase, creando NFT placeholder');
+        
+        // Crear NFT placeholder con datos básicos
+        const placeholderNFT: NFTDetail = {
+          mint: mintAddress,
+          name: "NFT No Encontrado",
+          symbol: "UNKNOWN",
+          uri: "",
+          brand: "Unknown",
+          model: "Unknown Model",
+          size: "N/A",
+          condition: "Unknown",
+          year: 2024,
+          rarity: "Common",
+          isListed: false,
+          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=NFT+Not+Found",
+          owner: "Unknown",
+          price: 0,
+          description: "Este NFT no se encontró en la base de datos de Supabase.",
+          attributes: [
+            { trait_type: "Status", value: "Not Found" },
+            { trait_type: "Mint", value: mintAddress }
+          ]
+        };
+        
+        setNft(placeholderNFT);
         return;
       }
 

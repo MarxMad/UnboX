@@ -24,11 +24,27 @@ export function useSupabaseNFT(mintAddress: string) {
   const [nft, setNft] = useState<SupabaseNFT | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { supabase, isSupabaseReady } = useSupabaseContext();
+  
+  // Verificar que el contexto esté disponible antes de usarlo
+  let supabaseContext;
+  try {
+    supabaseContext = useSupabaseContext();
+  } catch (err) {
+    console.log('⚠️ useSupabaseContext no disponible:', err);
+    supabaseContext = { supabase: null, isSupabaseReady: false };
+  }
+  
+  const { supabase, isSupabaseReady } = supabaseContext || { supabase: null, isSupabaseReady: false };
 
   const fetchNFT = async () => {
-    if (!supabase || !isSupabaseReady || !mintAddress) {
-      console.log('🔍 useSupabaseNFT - Supabase no disponible o mintAddress vacío');
+    if (!mintAddress) {
+      console.log('🔍 useSupabaseNFT - mintAddress vacío');
+      return;
+    }
+
+    if (!supabase || !isSupabaseReady) {
+      console.log('🔍 useSupabaseNFT - Supabase no disponible, esperando...');
+      setError('Supabase no está disponible');
       return;
     }
 
@@ -50,24 +66,33 @@ export function useSupabaseNFT(mintAddress: string) {
           // No se encontró el NFT
           console.log('❌ NFT no encontrado en Supabase:', mintAddress);
           setNft(null);
+          setError('NFT no encontrado en la base de datos');
         } else {
+          console.error('❌ Error de Supabase:', fetchError);
           throw fetchError;
         }
       } else {
         console.log('✅ NFT encontrado en Supabase:', data);
         setNft(data);
+        setError(null);
       }
     } catch (err) {
       console.error('❌ Error buscando NFT en Supabase:', err);
       setError('Error cargando NFT desde Supabase');
+      setNft(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (mintAddress && supabase && isSupabaseReady) {
-      fetchNFT();
+    if (mintAddress) {
+      if (supabase && isSupabaseReady) {
+        fetchNFT();
+      } else {
+        console.log('⏳ Esperando que Supabase esté listo...');
+        setLoading(true);
+      }
     }
   }, [mintAddress, supabase, isSupabaseReady]);
 
