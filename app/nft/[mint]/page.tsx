@@ -66,6 +66,10 @@ export default function NFTDetailPage() {
   const { cancelListing, loading: cancelLoading, error: cancelError } = useCancelListing();
 
   const mintAddress = params.mint as string;
+  
+  console.log('🔍 NFTDetailPage renderizado');
+  console.log('📍 Mint address:', mintAddress);
+  console.log('📍 Params:', params);
 
   useEffect(() => {
     if (mintAddress) {
