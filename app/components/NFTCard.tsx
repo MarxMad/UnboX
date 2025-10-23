@@ -61,6 +61,11 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
 
   const handleCardClick = () => {
     console.log('🖱️ Click en tarjeta detectado');
+    console.log('📍 NFT data:', {
+      mint: nft.mint,
+      name: nft.name,
+      brand: nft.brand
+    });
     console.log('📍 Navegando a:', `/nft/${nft.mint}`);
     router.push(`/nft/${nft.mint}`);
   };

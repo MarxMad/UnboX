@@ -16,7 +16,7 @@ export default function FeedPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [likedItems, setLikedItems] = useState<Set<number>>(new Set())
+  const [likedItems, setLikedItems] = useState<Set<string>>(new Set())
   
   // Hooks para obtener NFTs reales
   const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
@@ -33,21 +33,29 @@ export default function FeedPage() {
   }
 
   // Solo usar NFTs reales - sin productos mock
-  const combinedNFTs = (allNFTs || []).map((nft, index) => ({
-    id: `real-${index}`,
-    name: nft.name || "NFT Item",
-    brand: nft.brand || "Unknown",
-    year: nft.year || "2024",
-    condition: nft.condition || "New",
-    price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
-    image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
-    likes: Math.floor(Math.random() * 100),
-    verified: true,
-    trending: Math.random() > 0.7,
-    isReal: true
-  }))
+  const combinedNFTs = (allNFTs || []).map((nft, index) => {
+    console.log(`🔍 NFT ${index}:`, {
+      mint: nft.mint,
+      name: nft.name,
+      brand: nft.brand
+    });
+    
+    return {
+      id: nft.mint, // Usar el mint real del NFT
+      name: nft.name || "NFT Item",
+      brand: nft.brand || "Unknown",
+      year: nft.year || "2024",
+      condition: nft.condition || "New",
+      price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
+      image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+      likes: Math.floor(Math.random() * 100),
+      verified: true,
+      trending: Math.random() > 0.7,
+      isReal: true
+    };
+  })
 
-  const handleLike = (itemId: number) => {
+  const handleLike = (itemId: string) => {
     setLikedItems(prev => {
       const newSet = new Set(prev)
       if (newSet.has(itemId)) {
@@ -128,66 +136,24 @@ export default function FeedPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {filteredNFTs.map((item) => (
-              <Card
+              <NFTCard
                 key={item.id}
-                className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
-              >
-                <div className="relative aspect-square overflow-hidden bg-muted/20">
-                  <img src={item.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
-                  {item.trending && (
-                    <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">HOT</Badge>
-                  )}
-                  {item.verified && (
-                    <Badge className="absolute top-2 right-2 bg-secondary text-secondary-foreground">Verified</Badge>
-                  )}
-                  {item.isReal && (
-                    <Badge className="absolute bottom-2 left-2 bg-green-500 text-white text-xs">On-Chain</Badge>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute bottom-2 right-2 flex gap-2">
-                      <Button 
-                        size="icon" 
-                        variant="secondary" 
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleLike(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id)
-                        }}
-                      >
-                        <Heart className={`h-4 w-4 ${likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="secondary" 
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleShare(item)
-                        }}
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-3 space-y-1">
-                  <h3 className="font-semibold text-sm line-clamp-1">{item.name}</h3>
-                  <p className="text-xs text-muted-foreground">{item.brand}</p>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-sm font-bold text-primary">{item.price}</span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Heart className="h-3 w-3" />
-                      {item.likes + (likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 1 : 0)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="text-xs">
-                      {item.condition}
-                    </Badge>
-                    <span>{item.year}</span>
-                  </div>
-                </div>
-              </Card>
+                nft={{
+                  mint: item.id, // Ahora item.id es el mint real
+                  name: item.name,
+                  brand: item.brand,
+                  model: item.name,
+                  size: 'N/A',
+                  condition: item.condition || 'New',
+                  year: item.year || 2024,
+                  rarity: 'Common',
+                  isListed: item.price !== 'No listado',
+                  image: item.image,
+                  owner: 'Unknown',
+                  price: typeof item.price === 'string' && item.price !== 'No listado' ? 
+                    parseFloat(item.price.replace('USD ', '')) : undefined
+                }}
+              />
             ))}
           </div>
         </div>

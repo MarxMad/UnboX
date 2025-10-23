@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
-import idlData from '../idl/streetwear_tokenizer.json';
+import idlData from '../idl/streetwear_tokenizer_updated.json';
 
 const idl = idlData as any;
 
@@ -42,10 +42,13 @@ export function useListNFT() {
       console.log('Price in lamports:', priceInLamports);
       console.log('Price in lamports is valid:', !isNaN(priceInLamports) && priceInLamports > 0);
 
-      // Crear programa
+      // Crear programa con IDL actualizado
       const programId = new PublicKey(idl.address);
       const provider = new AnchorProvider(connection, { publicKey, signTransaction } as any, {});
       const program = new Program(idl, programId, provider);
+
+      console.log('🔧 Usando Anchor con IDL actualizado...');
+      console.log('Program ID:', programId.toString());
 
       // Obtener PDA del escrow
       const [escrowPda] = await PublicKey.findProgramAddress(
@@ -66,7 +69,9 @@ export function useListNFT() {
       // Crear transacción
       const transaction = new Transaction();
 
-      // Agregar instrucción de list_nft
+      // Usar Anchor para crear la instrucción
+      console.log('🔧 Creando instrucción con Anchor...');
+      
       const listInstruction = await program.methods
         .listNft(new BN(priceInLamports))
         .accounts({
