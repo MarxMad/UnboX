@@ -15,7 +15,7 @@ import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
 // import { useAllNFTs } from '../../hooks/useAllNFTs';
 // import { useUserNFTs } from '../../hooks/useUserNFTs';
-// import { useSupabaseNFT } from '../../hooks/useSupabaseNFT'; // DESHABILITADO
+import { useSupabaseNFT } from '../../hooks/useSupabaseNFT'; // RESTAURADO
 import { 
   ArrowLeft, 
   Calendar, 
@@ -74,9 +74,14 @@ export default function NFTDetailPage() {
   
   const mintAddress = params.mint as string;
   
-  // Usar datos directos del feed - SIN SUPABASE
-  console.log('🔍 NFT Detail Page - Usando datos directos:', {
-    mintAddress
+  // Usar Supabase para obtener datos reales del NFT
+  const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
+  
+  console.log('🔍 NFT Detail Page - Estado de Supabase:', {
+    mintAddress,
+    supabaseNFT: !!supabaseNFT,
+    supabaseLoading,
+    supabaseError
   });
   
   console.log('🔍 NFTDetailPage renderizado');
@@ -89,43 +94,117 @@ export default function NFTDetailPage() {
     }
   }, [mintAddress]);
 
-  // Sin re-ejecución automática - datos directos
+  // Re-ejecutar cuando cambien los datos de Supabase
+  useEffect(() => {
+    if (mintAddress && supabaseNFT) {
+      console.log('🔄 Datos de Supabase actualizados, re-ejecutando fetchNFTDetails');
+      fetchNFTDetails();
+    }
+  }, [mintAddress, supabaseNFT]);
 
   const fetchNFTDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Creando NFT directo:', mintAddress);
+      console.log('🔍 Obteniendo detalles del NFT desde Supabase:', mintAddress);
       
-      // Crear NFT con datos reales basado en el mint address
+      // Verificar si tenemos datos de Supabase
+      if (supabaseLoading) {
+        console.log('⏳ Cargando datos de Supabase...');
+        return;
+      }
+
+      if (supabaseError) {
+        console.log('❌ Error cargando de Supabase:', supabaseError);
+        
+        // Crear NFT de error con información básica
+        const errorNFT: NFTDetail = {
+          mint: mintAddress,
+          name: "Error Cargando NFT",
+          symbol: "ERROR",
+          uri: "",
+          brand: "Error",
+          model: "Error Model",
+          size: "N/A",
+          condition: "Unknown",
+          year: 2024,
+          rarity: "Common",
+          isListed: false,
+          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Error+Loading",
+          owner: "Unknown",
+          price: 0,
+          description: `Error cargando NFT: ${supabaseError}`,
+          attributes: [
+            { trait_type: "Status", value: "Error" },
+            { trait_type: "Mint", value: mintAddress },
+            { trait_type: "Error", value: supabaseError }
+          ]
+        };
+        
+        setNft(errorNFT);
+        return;
+      }
+
+      if (!supabaseNFT) {
+        console.log('❌ NFT no encontrado en Supabase, creando NFT placeholder');
+        
+        // Crear NFT placeholder con datos básicos
+        const placeholderNFT: NFTDetail = {
+          mint: mintAddress,
+          name: "NFT No Encontrado",
+          symbol: "UNKNOWN",
+          uri: "",
+          brand: "Unknown",
+          model: "Unknown Model",
+          size: "N/A",
+          condition: "Unknown",
+          year: 2024,
+          rarity: "Common",
+          isListed: false,
+          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=NFT+Not+Found",
+          owner: "Unknown",
+          price: 0,
+          description: "Este NFT no se encontró en la base de datos de Supabase.",
+          attributes: [
+            { trait_type: "Status", value: "Not Found" },
+            { trait_type: "Mint", value: mintAddress }
+          ]
+        };
+        
+        setNft(placeholderNFT);
+        return;
+      }
+
+      console.log('✅ NFT encontrado en Supabase:', supabaseNFT);
+      
+      // Crear NFTDetail con datos reales de Supabase
       const realNFT: NFTDetail = {
-        mint: mintAddress,
-        name: "CriptoUNAM LOGO", // Nombre real del feed
-        symbol: "LOGO",
-        uri: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
-        brand: "LOGO",
-        model: "UNAM web3",
-        size: "100",
-        condition: "New",
-        year: 2022,
-        rarity: "Legendary",
-        isListed: false,
-        image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN", // Imagen real que funciona
-        owner: "Unknown",
-        price: 0,
-        description: "Logo oficial de CriptoUNAM - Comunidad de blockchain y web3 de la UNAM.",
+        mint: supabaseNFT.nft_mint,
+        name: supabaseNFT.title,
+        symbol: supabaseNFT.brand.substring(0, 10).toUpperCase(),
+        uri: supabaseNFT.ipfs_hash || '',
+        brand: supabaseNFT.brand,
+        model: supabaseNFT.title,
+        size: 'N/A', // No disponible en el esquema actual
+        condition: supabaseNFT.condition,
+        year: supabaseNFT.year,
+        rarity: 'Common', // Por defecto, se puede agregar al esquema
+        isListed: false, // Por defecto, se puede agregar al esquema
+        image: supabaseNFT.image_url,
+        owner: supabaseNFT.user_id,
+        price: 0, // Por defecto, se puede agregar al esquema
+        description: supabaseNFT.description || `${supabaseNFT.brand} ${supabaseNFT.title} - ${supabaseNFT.condition} (${supabaseNFT.year})`,
         attributes: [
-          { trait_type: "Brand", value: "LOGO" },
-          { trait_type: "Year", value: 2022 },
-          { trait_type: "Condition", value: "New" },
-          { trait_type: "Rarity", value: "Legendary" },
-          { trait_type: "Size", value: "100" },
-          { trait_type: "Mint", value: mintAddress }
+          { trait_type: "Brand", value: supabaseNFT.brand },
+          { trait_type: "Year", value: supabaseNFT.year },
+          { trait_type: "Condition", value: supabaseNFT.condition },
+          { trait_type: "Likes", value: supabaseNFT.likes_count },
+          { trait_type: "Created", value: new Date(supabaseNFT.created_at).toLocaleDateString() }
         ]
       };
       
-      console.log('✅ NFT creado directamente:', realNFT);
+      console.log('✅ NFT real obtenido de Supabase:', realNFT);
       setNft(realNFT);
     } catch (err) {
       console.error('Error fetching NFT details:', err);
@@ -204,7 +283,7 @@ export default function NFTDetailPage() {
     Legendary: 'bg-yellow-500',
   };
 
-  if (loading) {
+  if (loading || supabaseLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
