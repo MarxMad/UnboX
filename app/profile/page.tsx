@@ -12,6 +12,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useUserNFTs } from "@/app/hooks/useUserNFTs"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { MyNFTCard } from "@/components/MyNFTCard"
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth()
@@ -164,58 +165,23 @@ export default function ProfilePage() {
           <TabsContent value="collection">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {combinedUserItems.map((item) => (
-                <Card
+                <MyNFTCard
                   key={item.id}
-                  className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-muted/20">
-                    <img
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                    {item.isReal && (
-                      <Badge className="absolute top-2 left-2 bg-green-500 text-white text-xs">On-Chain</Badge>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="absolute bottom-2 right-2 flex gap-2">
-                        <Button 
-                          size="icon" 
-                          variant="secondary" 
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleLike(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id)
-                          }}
-                        >
-                          <Heart className={`h-4 w-4 ${likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="secondary" 
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleShare(item)
-                          }}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3 space-y-1">
-                    <h3 className="font-semibold text-sm line-clamp-1">{item.name}</h3>
-                    <p className="text-xs text-muted-foreground">{item.brand}</p>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-sm font-bold text-primary">{item.price}</span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Heart className="h-3 w-3" />
-                        {item.likes + (likedItems.has(typeof item.id === 'string' ? parseInt(item.id.split('-')[1]) : item.id) ? 1 : 0)}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
+                  nft={{
+                    mint: item.id.replace('user-', ''), // Extraer el mint del ID
+                    name: item.name,
+                    brand: item.brand,
+                    model: item.name, // Usar name como model si no hay model específico
+                    size: 'N/A',
+                    condition: 'New',
+                    year: 2024,
+                    rarity: 'Common',
+                    isListed: false,
+                    image: item.image,
+                    owner: publicKey?.toString() || '',
+                    listPrice: 0
+                  }}
+                />
               ))}
             </div>
           </TabsContent>

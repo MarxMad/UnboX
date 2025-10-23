@@ -10,6 +10,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useAllNFTs } from "@/app/hooks/useAllNFTs"
 import { useMarketplaceNFTs } from "@/app/hooks/useMarketplaceNFTs"
+import { NFTCard } from "@/components/NFTCard"
 
 export default function FeedPage() {
   const { user, isLoading } = useAuth()
@@ -202,28 +203,24 @@ export default function FeedPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {combinedNFTs.slice(0, 6).map((item) => (
-              <Card
+              <NFTCard
                 key={`recent-${item.id}`}
-                className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
-              >
-                <div className="relative aspect-square overflow-hidden bg-muted/20">
-                  <img src={item.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
-                  {item.verified && (
-                    <Badge className="absolute top-2 right-2 bg-secondary text-secondary-foreground">Verified</Badge>
-                  )}
-                </div>
-                <div className="p-3 space-y-1">
-                  <h3 className="font-semibold text-sm line-clamp-1">{item.name}</h3>
-                  <p className="text-xs text-muted-foreground">{item.brand}</p>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-sm font-bold text-primary">{item.price}</span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Heart className="h-3 w-3" />
-                      {item.likes}
-                    </span>
-                  </div>
-                </div>
-              </Card>
+                nft={{
+                  mint: item.id.replace('real-', ''), // Extraer el mint del ID
+                  name: item.name,
+                  brand: item.brand,
+                  model: item.name, // Usar name como model si no hay model específico
+                  size: 'N/A',
+                  condition: item.condition || 'New',
+                  year: item.year || 2024,
+                  rarity: 'Common',
+                  isListed: item.price !== 'No listado',
+                  image: item.image,
+                  owner: 'Unknown', // Se determinará en el componente
+                  price: typeof item.price === 'string' && item.price !== 'No listado' ? 
+                    parseFloat(item.price.replace('USD ', '')) : undefined
+                }}
+              />
             ))}
           </div>
         </div>
