@@ -24,6 +24,7 @@ export default function TokenizePage() {
   const [images, setImages] = useState<string[]>([])
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [mintingStep, setMintingStep] = useState<string>("")
+  const [isMounted, setIsMounted] = useState(true)
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPinModal, setShowPinModal] = useState(false)
   const [showPinSetup, setShowPinSetup] = useState(false)
@@ -50,6 +51,12 @@ export default function TokenizePage() {
       router.push("/login")
     }
   }, [user, isLoading, router])
+
+  useEffect(() => {
+    return () => {
+      setIsMounted(false)
+    }
+  }, [])
 
   if (isLoading || !user) {
     return null
@@ -142,6 +149,7 @@ export default function TokenizePage() {
 
   const performTokenization = async () => {
     try {
+      console.log('🚀 Iniciando performTokenization...');
       setIsSuccess(false)
       setMintingStep("Subiendo imagen a IPFS...")
       
@@ -156,7 +164,10 @@ export default function TokenizePage() {
       ]
 
       for (let i = 0; i < steps.length; i++) {
-        setMintingStep(steps[i])
+        console.log(`📝 Paso ${i + 1}: ${steps[i]}`);
+        if (isMounted) {
+          setMintingStep(steps[i])
+        }
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
 
@@ -164,6 +175,17 @@ export default function TokenizePage() {
       if (!selectedFile) {
         throw new Error("No se ha seleccionado ninguna imagen")
       }
+      
+      console.log('🔄 Llamando a tokenize con datos:', {
+        name: formData.name,
+        brand: formData.brand,
+        model: formData.model || formData.name,
+        size: formData.size,
+        condition: formData.condition,
+        year: formData.year,
+        rarity: formData.rarity,
+        image: selectedFile.name
+      });
       
       const result = await tokenize({
         name: formData.name,
@@ -176,8 +198,11 @@ export default function TokenizePage() {
         image: selectedFile
       })
       
+      console.log('✅ Tokenización completada, resultado:', result);
       setIsSuccess(true)
-      setMintingStep("")
+      if (isMounted) {
+        setMintingStep("")
+      }
       setMintResult(result)
       
       console.log('🎉 Resultado de tokenización:', result);
@@ -195,7 +220,9 @@ export default function TokenizePage() {
       
     } catch (error) {
       console.error("Tokenization failed:", error)
-      setMintingStep("")
+      if (isMounted) {
+        setMintingStep("")
+      }
       
       (window as any).addNotification?.({
         type: "error",
