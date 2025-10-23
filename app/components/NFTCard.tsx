@@ -131,7 +131,7 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
             ) : (
               <button
                 onClick={handleList}
-                className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 flex items-center space-x-2"
+                className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-3 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 flex items-center space-x-2 text-white"
               >
                 <List className="w-4 h-4" />
                 <span>Listar</span>

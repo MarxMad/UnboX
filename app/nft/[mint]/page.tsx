@@ -82,8 +82,13 @@ export default function NFTDetailPage() {
       setLoading(true);
       setError(null);
 
-      // Aquí implementarías la lógica para obtener los detalles del NFT
-      // Por ahora, vamos a simular los datos
+      console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
+
+      // Importar el servicio de imágenes
+      const { getImageFromMetadata } = await import('../../services/imageService');
+
+      // Aquí implementarías la lógica para obtener los detalles del NFT desde el blockchain
+      // Por ahora, vamos a simular los datos pero con imagen real de Pinata
       const mockNFT: NFTDetail = {
         mint: mintAddress,
         name: "Supreme Box Logo Hoodie",
@@ -96,7 +101,7 @@ export default function NFTDetailPage() {
         year: 2023,
         rarity: "Rare",
         isListed: false,
-        image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Supreme+Hoodie",
+        image: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh", // Imagen real de Pinata
         owner: publicKey?.toString() || "Unknown",
         price: 850,
         description: "Classic Supreme Box Logo Hoodie in excellent condition. Perfect for streetwear enthusiasts.",
@@ -109,6 +114,12 @@ export default function NFTDetailPage() {
           { trait_type: "Rarity", value: "Rare" }
         ]
       };
+
+      // Obtener imagen real desde metadata
+      console.log('🖼️ Obteniendo imagen desde metadata...');
+      const realImage = await getImageFromMetadata(mockNFT.uri);
+      mockNFT.image = realImage;
+      console.log('✅ Imagen obtenida:', realImage);
 
       setNft(mockNFT);
     } catch (err) {
