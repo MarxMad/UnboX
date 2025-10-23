@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
 import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
 import idlData from '../idl/streetwear_tokenizer.json';
 
@@ -66,17 +66,33 @@ export function useListNFT() {
       // Crear transacción
       const transaction = new Transaction();
 
-      // Agregar instrucción de list_nft
-      const listInstruction = await program.methods
-        .listNft(new BN(priceInLamports))
-        .accounts({
-          seller: publicKey,
-          escrowAccount: escrowPda,
-          nftMint: new PublicKey(nftMint),
-          assetAccount: assetPda,
-          systemProgram: SystemProgram.programId,
-        })
-        .instruction();
+      // Crear instrucción manual para evitar problemas de serialización
+      console.log('🔧 Creando instrucción manual de list_nft...');
+      
+      // Discriminator para list_nft: [88, 221, 93, 166, 63, 220, 106, 232]
+      const discriminator = Buffer.from([88, 221, 93, 166, 63, 220, 106, 232]);
+      
+      // Serializar el precio (u64 = 8 bytes)
+      const priceBuffer = Buffer.alloc(8);
+      priceBuffer.writeBigUInt64LE(BigInt(priceInLamports), 0);
+      
+      // Crear datos de la instrucción
+      const instructionData = Buffer.concat([discriminator, priceBuffer]);
+      
+      console.log('📦 Datos de instrucción:', instructionData.toString('hex'));
+      console.log('📏 Tamaño de datos:', instructionData.length, 'bytes');
+      
+      const listInstruction = new TransactionInstruction({
+        keys: [
+          { pubkey: publicKey, isSigner: true, isWritable: true }, // seller
+          { pubkey: escrowPda, isSigner: false, isWritable: true }, // escrow_account
+          { pubkey: new PublicKey(nftMint), isSigner: false, isWritable: false }, // nft_mint
+          { pubkey: assetPda, isSigner: false, isWritable: true }, // asset_account
+          { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }, // system_program
+        ],
+        programId: programId,
+        data: instructionData,
+      });
 
       transaction.add(listInstruction);
 
