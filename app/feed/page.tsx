@@ -16,7 +16,7 @@ export default function FeedPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [likedItems, setLikedItems] = useState<Set<number>>(new Set())
+  const [likedItems, setLikedItems] = useState<Set<string>>(new Set())
   
   // Hooks para obtener NFTs reales
   const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
@@ -34,7 +34,7 @@ export default function FeedPage() {
 
   // Solo usar NFTs reales - sin productos mock
   const combinedNFTs = (allNFTs || []).map((nft, index) => ({
-    id: `real-${index}`,
+    id: nft.mint, // Usar el mint real del NFT
     name: nft.name || "NFT Item",
     brand: nft.brand || "Unknown",
     year: nft.year || "2024",
@@ -47,7 +47,7 @@ export default function FeedPage() {
     isReal: true
   }))
 
-  const handleLike = (itemId: number) => {
+  const handleLike = (itemId: string) => {
     setLikedItems(prev => {
       const newSet = new Set(prev)
       if (newSet.has(itemId)) {
@@ -131,7 +131,7 @@ export default function FeedPage() {
               <NFTCard
                 key={item.id}
                 nft={{
-                  mint: item.id.replace('real-', ''),
+                  mint: item.id, // Ahora item.id es el mint real
                   name: item.name,
                   brand: item.brand,
                   model: item.name,
