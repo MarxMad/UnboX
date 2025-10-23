@@ -112,6 +112,77 @@ export interface Database {
           created_at?: string
         }
       }
+      user_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          email_notifications: boolean
+          push_notifications: boolean
+          like_notifications: boolean
+          follow_notifications: boolean
+          profile_visibility: 'public' | 'friends' | 'private'
+          show_collection: boolean
+          show_likes: boolean
+          preferred_brands: string[]
+          preferred_categories: string[]
+          feed_sort_order: 'trending' | 'newest' | 'popular' | 'following'
+          auto_ipfs_upload: boolean
+          default_condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor'
+          theme_preference: 'light' | 'dark' | 'system'
+          language_preference: 'es' | 'en'
+          currency_preference: 'USD' | 'EUR' | 'SOL'
+          allow_direct_messages: boolean
+          show_price_history: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          like_notifications?: boolean
+          follow_notifications?: boolean
+          profile_visibility?: 'public' | 'friends' | 'private'
+          show_collection?: boolean
+          show_likes?: boolean
+          preferred_brands?: string[]
+          preferred_categories?: string[]
+          feed_sort_order?: 'trending' | 'newest' | 'popular' | 'following'
+          auto_ipfs_upload?: boolean
+          default_condition?: 'new' | 'like_new' | 'good' | 'fair' | 'poor'
+          theme_preference?: 'light' | 'dark' | 'system'
+          language_preference?: 'es' | 'en'
+          currency_preference?: 'USD' | 'EUR' | 'SOL'
+          allow_direct_messages?: boolean
+          show_price_history?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          like_notifications?: boolean
+          follow_notifications?: boolean
+          profile_visibility?: 'public' | 'friends' | 'private'
+          show_collection?: boolean
+          show_likes?: boolean
+          preferred_brands?: string[]
+          preferred_categories?: string[]
+          feed_sort_order?: 'trending' | 'newest' | 'popular' | 'following'
+          auto_ipfs_upload?: boolean
+          default_condition?: 'new' | 'like_new' | 'good' | 'fair' | 'poor'
+          theme_preference?: 'light' | 'dark' | 'system'
+          language_preference?: 'es' | 'en'
+          currency_preference?: 'USD' | 'EUR' | 'SOL'
+          allow_direct_messages?: boolean
+          show_price_history?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
