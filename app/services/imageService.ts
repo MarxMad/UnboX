@@ -13,7 +13,7 @@ export interface NFTMetadata {
 }
 
 /**
- * Obtiene la imagen desde el metadata de IPFS
+ * Obtiene la imagen desde el metadata de IPFS con fallback robusto
  * @param uri - URI del metadata (IPFS hash o URL completa)
  * @returns URL de la imagen o placeholder si falla
  */
@@ -44,15 +44,47 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
 
     console.log('📡 URL final del metadata:', metadataUrl);
 
-    const response = await fetch(metadataUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    // Intentar múltiples gateways de IPFS para mayor confiabilidad
+    const gateways = [
+      `https://gateway.pinata.cloud/ipfs/${uri.replace(/^(ipfs:\/\/|Qm|baf)/, '')}`,
+      `https://ipfs.io/ipfs/${uri.replace(/^(ipfs:\/\/|Qm|baf)/, '')}`,
+      `https://cloudflare-ipfs.com/ipfs/${uri.replace(/^(ipfs:\/\/|Qm|baf)/, '')}`,
+      metadataUrl // URL original como fallback
+    ];
 
-    if (!response.ok) {
-      console.log('❌ Error HTTP al obtener metadata:', response.status, response.statusText);
+    let response: Response | null = null;
+    let lastError: Error | null = null;
+
+    // Intentar cada gateway hasta que uno funcione
+    for (const gatewayUrl of gateways) {
+      try {
+        console.log('🔄 Intentando gateway:', gatewayUrl);
+        
+        response = await fetch(gatewayUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          // Agregar timeout para evitar esperas largas
+          signal: AbortSignal.timeout(10000) // 10 segundos timeout
+        });
+
+        if (response.ok) {
+          console.log('✅ Gateway exitoso:', gatewayUrl);
+          break;
+        } else {
+          console.log('❌ Gateway falló:', gatewayUrl, response.status);
+          response = null;
+        }
+      } catch (error) {
+        console.log('❌ Error en gateway:', gatewayUrl, error);
+        lastError = error instanceof Error ? error : new Error('Error desconocido');
+        response = null;
+      }
+    }
+
+    if (!response) {
+      console.log('❌ Todos los gateways fallaron. Último error:', lastError?.message);
       return placeholder;
     }
 
@@ -81,10 +113,13 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
 
     console.log('🖼️ URL final de la imagen:', imageUrl);
 
-    // Verificar que la imagen sea accesible
+    // Verificar que la imagen sea accesible (con timeout)
     try {
       console.log('🔍 Verificando accesibilidad de imagen:', imageUrl);
-      const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
+      const imageResponse = await fetch(imageUrl, { 
+        method: 'HEAD',
+        signal: AbortSignal.timeout(5000) // 5 segundos timeout
+      });
       if (imageResponse.ok) {
         console.log('✅ Imagen verificada y accesible');
         return imageUrl;
@@ -94,11 +129,28 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
       }
     } catch (imageError) {
       console.log('❌ Error verificando imagen:', imageError);
-      return placeholder;
+      // En caso de error de verificación, devolver la URL de todos modos
+      // El componente puede manejar el error de carga
+      console.log('⚠️ Devolviendo URL sin verificar:', imageUrl);
+      return imageUrl;
     }
 
   } catch (error) {
     console.error('❌ Error obteniendo imagen desde metadata:', error);
+    
+    // Si es un error de red, intentar generar una URL de imagen basada en el hash
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.log('🔄 Error de red detectado, intentando generar URL de imagen directa...');
+      
+      // Extraer hash IPFS del URI original
+      const hash = uri.replace(/^(ipfs:\/\/|Qm|baf)/, '').replace(/^.*\/([Qmbaf][a-zA-Z0-9]+).*$/, '$1');
+      if (hash && hash.length > 10) {
+        const directImageUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+        console.log('🖼️ URL de imagen directa generada:', directImageUrl);
+        return directImageUrl;
+      }
+    }
+    
     return placeholder;
   }
 }
@@ -120,7 +172,10 @@ export async function getMultipleImagesFromMetadata(uris: string[]): Promise<str
  */
 export async function validateImageUrl(imageUrl: string): Promise<boolean> {
   try {
-    const response = await fetch(imageUrl, { method: 'HEAD' });
+    const response = await fetch(imageUrl, { 
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000) // 5 segundos timeout
+    });
     return response.ok;
   } catch {
     return false;

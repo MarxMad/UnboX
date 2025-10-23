@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useTokenizeStreetwear } from './useTokenizeStreetwear'
 import { useSupabaseAuth } from './useSupabaseAuth'
-import { supabaseTyped } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface TokenizeWithSupabaseParams {
   name: string
@@ -44,11 +44,47 @@ export function useTokenizeWithSupabase() {
     setError(null)
 
     try {
-      console.log('🚀 Iniciando tokenización con Supabase...')
+      console.log('🚀 Iniciando tokenización híbrida (Blockchain + Supabase)...')
 
-      // 1. Tokenizar NFT en Solana
-      console.log('📸 1. Tokenizando NFT en Solana...')
-      const nftResult = await tokenizeNFT({
+      // ESTRATEGIA HÍBRIDA:
+      // 1. Blockchain: Solo datos esenciales (mint, datos básicos)
+      // 2. Supabase: Datos completos, metadata, imágenes, etc.
+
+      // 1. Tokenizar NFT en Solana (solo datos esenciales)
+      console.log('⛓️ 1. Tokenizando NFT en Solana (datos esenciales)...')
+      
+      let nftResult: { signature: string; mint: string; assetPda: string }
+      
+      try {
+        nftResult = await tokenizeNFT({
+          name: params.name,
+          brand: params.brand,
+          model: params.model,
+          size: params.size,
+          condition: params.condition,
+          year: params.year,
+          rarity: params.rarity,
+          image: params.image
+        })
+      } catch (error) {
+        throw new Error(`Error tokenizando NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      }
+
+      console.log('✅ NFT tokenizado en Solana:', nftResult.mint)
+
+      // 2. Preparar datos completos para Supabase
+      console.log('💾 2. Preparando datos completos para Supabase...')
+      
+      // Obtener imagen como base64 para Supabase
+      const imageBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.readAsDataURL(params.image)
+      })
+
+      // Crear metadata completa para Supabase
+      const fullMetadata = {
+        // Datos originales completos
         name: params.name,
         brand: params.brand,
         model: params.model,
@@ -56,35 +92,66 @@ export function useTokenizeWithSupabase() {
         condition: params.condition,
         year: params.year,
         rarity: params.rarity,
-        image: params.image
-      })
-
-      if (!nftResult.success || !nftResult.mint) {
-        throw new Error(nftResult.error || 'Error tokenizando NFT')
+        description: params.description || `${params.brand} ${params.model} - ${params.condition} (${params.year})`,
+        
+        // Datos de imagen
+        image: imageBase64,
+        image_file_name: params.image.name,
+        image_file_size: params.image.size,
+        image_file_type: params.image.type,
+        
+        // Datos de blockchain (relación)
+        blockchain_data: {
+          mint: nftResult.mint,
+          signature: nftResult.signature,
+          asset_pda: nftResult.assetPda,
+          blockchain_version: 'solana',
+          created_at: new Date().toISOString()
+        },
+        
+        // Metadatos adicionales
+        metadata: {
+          original_params: params,
+          tokenization_date: new Date().toISOString(),
+          platform: 'unbox',
+          version: '1.0'
+        }
       }
 
-      console.log('✅ NFT tokenizado:', nftResult.mint)
-
-      // 2. Guardar artículo en Supabase
-      console.log('💾 2. Guardando artículo en Supabase...')
+      // 3. Guardar datos completos en Supabase
+      console.log('💾 3. Guardando datos completos en Supabase...')
+      
+      // Los valores del frontend ya coinciden con la DB, solo hacer trim por seguridad
+      const normalizedCondition = params.condition.trim()
+      console.log('🔍 Condición seleccionada:', `"${normalizedCondition}"`)
       
       // Configurar usuario actual para RLS
-      await supabaseTyped.rpc('set_current_user_wallet', {
+      await supabase.rpc('set_current_user_wallet', {
         wallet_address: walletAddress
       })
 
-      const { data: articleData, error: articleError } = await supabaseTyped
+      const { data: articleData, error: articleError } = await supabase
         .from('articles')
         .insert({
           user_id: user.id,
-          nft_mint: nftResult.mint,
+          nft_mint: nftResult.mint, // Clave de relación con blockchain
           title: params.name,
-          description: params.description || `${params.brand} ${params.model} - ${params.condition} (${params.year})`,
+          description: fullMetadata.description,
           brand: params.brand,
+          model: params.model,
+          size: params.size,
+          condition: normalizedCondition, // Usar condición normalizada
           year: params.year,
-          condition: params.condition,
-          image_url: nftResult.imageUri || '', // URL de la imagen subida
-          ipfs_hash: nftResult.metadataUri || '' // URI del metadata en IPFS
+          rarity: params.rarity,
+          image_url: imageBase64, // Imagen completa en base64
+          ipfs_hash: '', // URI del metadata en IPFS (se puede agregar después)
+          metadata: fullMetadata, // Metadata completa
+          blockchain_signature: nftResult.signature,
+          asset_pda: nftResult.assetPda,
+          // Campos adicionales para la estrategia híbrida
+          blockchain_mint: nftResult.mint,
+          data_source: 'hybrid', // Indica que viene de blockchain + DB
+          sync_status: 'synced' // Estado de sincronización
         })
         .select()
         .single()
@@ -99,7 +166,8 @@ export function useTokenizeWithSupabase() {
         }
       }
 
-      console.log('✅ Artículo guardado:', articleData.id)
+      console.log('✅ Datos completos guardados en Supabase:', articleData.id)
+      console.log('🔗 Relación establecida: Blockchain mint <-> Supabase article')
 
       return {
         success: true,
@@ -146,11 +214,11 @@ export function useUserArticles() {
 
     try {
       // Configurar usuario actual para RLS
-      await supabaseTyped.rpc('set_current_user_wallet', {
+      await supabase.rpc('set_current_user_wallet', {
         wallet_address: walletAddress
       })
 
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('articles')
         .select(`
           *,
@@ -193,7 +261,7 @@ export function useAllArticles() {
     setError(null)
 
     try {
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('articles_with_likes')
         .select('*')
         .order('created_at', { ascending: false })
@@ -233,7 +301,7 @@ export function usePopularArticles() {
     setError(null)
 
     try {
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .rpc('get_popular_articles', {
           limit_count: limit
         })

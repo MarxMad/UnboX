@@ -157,8 +157,24 @@ export async function mockUploadToIPFS(file: File): Promise<string> {
  */
 export async function mockUploadMetadataToIPFS(metadata: NFTMetadata): Promise<string> {
   return new Promise((resolve) => {
-    // En desarrollo, retorna una URL mock con los datos del metadata
-    const mockUri = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+    // En desarrollo, crear metadata simplificado sin imagen completa
+    const simplifiedMetadata = {
+      name: metadata.name,
+      symbol: metadata.symbol,
+      description: metadata.description,
+      image: "https://via.placeholder.com/400x400/1a1a1a/ffffff?text=NFT+Image", // URL placeholder en lugar de base64
+      attributes: metadata.attributes,
+      properties: {
+        files: [{
+          uri: "https://via.placeholder.com/400x400/1a1a1a/ffffff?text=NFT+Image",
+          type: "image/png"
+        }],
+        category: "image"
+      }
+    };
+    
+    // Crear URI más pequeño
+    const mockUri = `data:application/json;base64,${btoa(JSON.stringify(simplifiedMetadata))}`;
     resolve(mockUri);
   });
 }

@@ -11,8 +11,11 @@ interface Article {
   title: string
   description: string | null
   brand: string
+  model?: string
+  size?: string
   year: number
   condition: string
+  rarity?: string
   image_url: string
   ipfs_hash: string | null
   created_at: string
@@ -21,6 +24,13 @@ interface Article {
   display_name: string | null
   avatar_url: string | null
   likes_count: number
+  // Campos híbridos
+  metadata?: any // Metadata completa de Supabase
+  blockchain_signature?: string
+  asset_pda?: string
+  blockchain_mint?: string
+  data_source?: string
+  sync_status?: string
 }
 
 export function useRealtimeFeed() {

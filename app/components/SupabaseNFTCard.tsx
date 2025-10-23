@@ -14,8 +14,11 @@ interface SupabaseNFTCardProps {
     mint: string
     name: string
     brand: string
+    model?: string
+    size?: string
     year: string | number
     condition: string
+    rarity?: string
     price: string
     image: string
     likes: number
@@ -25,6 +28,12 @@ interface SupabaseNFTCardProps {
     username?: string
     display_name?: string
     avatar_url?: string
+    // Campos híbridos
+    metadata?: any
+    blockchain_signature?: string
+    asset_pda?: string
+    data_source?: string
+    sync_status?: string
   }
   onLike?: (itemId: string) => void
 }
@@ -106,6 +115,18 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
               ⚡ Live
             </Badge>
           )}
+          {/* Badge híbrido */}
+          {nft.data_source === 'hybrid' && (
+            <Badge variant="secondary" className="text-xs bg-purple-500/90 text-white">
+              🔗 Hybrid
+            </Badge>
+          )}
+          {/* Badge de sincronización */}
+          {nft.sync_status === 'synced' && (
+            <Badge variant="secondary" className="text-xs bg-green-600/90 text-white">
+              ✅ Synced
+            </Badge>
+          )}
         </div>
 
         {/* Like Button */}
@@ -146,6 +167,17 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
 
           <h3 className="font-semibold text-sm line-clamp-1">{nft.name}</h3>
           <p className="text-xs text-muted-foreground">{nft.brand}</p>
+          
+          {/* Información adicional para datos híbridos */}
+          {nft.model && (
+            <p className="text-xs text-muted-foreground">Model: {nft.model}</p>
+          )}
+          {nft.size && (
+            <p className="text-xs text-muted-foreground">Size: {nft.size}</p>
+          )}
+          {nft.rarity && (
+            <p className="text-xs text-muted-foreground">Rarity: {nft.rarity}</p>
+          )}
           
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{nft.year}</span>

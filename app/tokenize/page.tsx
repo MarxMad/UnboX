@@ -227,7 +227,9 @@ export default function TokenizePage() {
       console.log('🎉 Resultado de tokenización:', result);
       
       // Mostrar modal de éxito
-      setShowSuccessModal(true)
+      if (typeof setShowSuccessModal === 'function') {
+        setShowSuccessModal(true)
+      }
       
       // También mostrar notificación
       (window as any).addNotification?.({

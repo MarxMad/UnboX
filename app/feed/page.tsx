@@ -61,8 +61,11 @@ export default function FeedPage() {
           mint: article.nft_mint,
           name: article.title || "NFT Item",
           brand: article.brand || "Unknown",
+          model: article.model,
+          size: article.size,
           year: article.year || "2024",
           condition: article.condition || "New",
+          rarity: article.rarity,
           price: "No listado", // Los artículos de Supabase no tienen precio por ahora
           image: article.image_url || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
           likes: article.likes_count || 0,
@@ -72,7 +75,13 @@ export default function FeedPage() {
           isSupabase: true,
           username: article.username,
           display_name: article.display_name,
-          avatar_url: article.avatar_url
+          avatar_url: article.avatar_url,
+          // Campos híbridos
+          metadata: article.metadata,
+          blockchain_signature: article.blockchain_signature,
+          asset_pda: article.asset_pda,
+          data_source: article.data_source,
+          sync_status: article.sync_status
         });
       });
     }
