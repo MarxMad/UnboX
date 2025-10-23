@@ -15,7 +15,8 @@ import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
 // import { useAllNFTs } from '../../hooks/useAllNFTs';
 // import { useUserNFTs } from '../../hooks/useUserNFTs';
-import { useSupabaseNFT } from '../../hooks/useSupabaseNFT'; // RESTAURADO
+import { useSupabaseNFT } from '../../hooks/useSupabaseNFT';
+import { useSupabaseTest } from '../../hooks/useSupabaseTest'; // RESTAURADO
 import { 
   ArrowLeft, 
   Calendar, 
@@ -77,11 +78,17 @@ export default function NFTDetailPage() {
   // Usar Supabase para obtener datos reales del NFT
   const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
   
+  // Hook de prueba para verificar conexión con Supabase
+  const { isConnected, error: testError, testData } = useSupabaseTest();
+  
   console.log('🔍 NFT Detail Page - Estado de Supabase:', {
     mintAddress,
     supabaseNFT: !!supabaseNFT,
     supabaseLoading,
-    supabaseError
+    supabaseError,
+    isConnected,
+    testError,
+    testDataCount: testData?.length || 0
   });
   
   console.log('🔍 NFTDetailPage renderizado');
