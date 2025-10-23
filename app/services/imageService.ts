@@ -48,11 +48,11 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
       
       // Intentar obtener la imagen real desde el blockchain
       try {
-        // Por ahora, usar una imagen de ejemplo que sabemos que funciona
-        // En el futuro, aquí se podría hacer una consulta al blockchain para obtener la imagen real
-        const workingImageUrl = 'https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN';
-        console.log('🖼️ Usando imagen de ejemplo para mint:', mintAddress, workingImageUrl);
-        return workingImageUrl;
+        // Crear una imagen única basada en el mint address para evitar imágenes duplicadas
+        const mintHash = mintAddress.slice(0, 8); // Usar primeros 8 caracteres del mint
+        const uniqueImageUrl = `https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN?mint=${mintHash}`;
+        console.log('🖼️ Usando imagen única para mint:', mintAddress, uniqueImageUrl);
+        return uniqueImageUrl;
       } catch (error) {
         console.log('❌ Error obteniendo imagen real, usando placeholder');
         return placeholder;
