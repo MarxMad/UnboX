@@ -13,8 +13,8 @@ import { ListNFTModal } from '../../components/ListNFTModal';
 import { useListNFT } from '../../hooks/useListNFT';
 import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
-import { useAllNFTs } from '../../hooks/useAllNFTs';
-import { useUserNFTs } from '../../hooks/useUserNFTs';
+// import { useAllNFTs } from '../../hooks/useAllNFTs';
+// import { useUserNFTs } from '../../hooks/useUserNFTs';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -67,9 +67,13 @@ export default function NFTDetailPage() {
   const { buyNFT, loading: buyLoading, error: buyError } = useBuyNFT();
   const { cancelListing, loading: cancelLoading, error: cancelError } = useCancelListing();
   
-  // Hooks para obtener datos reales
-  const { allNFTs } = useAllNFTs();
-  const { nfts: userNFTs } = useUserNFTs();
+  // Hooks para obtener datos reales - DESHABILITADOS PARA MEJOR RENDIMIENTO
+  // const { allNFTs } = useAllNFTs();
+  // const { nfts: userNFTs } = useUserNFTs();
+  
+  // Usar solo Supabase para mejor rendimiento
+  const allNFTs = null;
+  const userNFTs = null;
 
   const mintAddress = params.mint as string;
   
@@ -83,52 +87,87 @@ export default function NFTDetailPage() {
     }
   }, [mintAddress]);
 
-  // Re-ejecutar cuando cambien los datos de los hooks
-  useEffect(() => {
-    if (mintAddress && (allNFTs || userNFTs)) {
-      console.log('🔄 Datos de hooks actualizados, re-ejecutando fetchNFTDetails');
-      fetchNFTDetails();
-    }
-  }, [mintAddress, allNFTs, userNFTs]);
+  // Re-ejecutar cuando cambien los datos de los hooks - DESHABILITADO
+  // useEffect(() => {
+  //   if (mintAddress && (allNFTs || userNFTs)) {
+  //     console.log('🔄 Datos de hooks actualizados, re-ejecutando fetchNFTDetails');
+  //     fetchNFTDetails();
+  //   }
+  // }, [mintAddress, allNFTs, userNFTs]);
 
   const fetchNFTDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
-      console.log('🔍 AllNFTs disponibles:', allNFTs?.length || 0);
-      console.log('🔍 UserNFTs disponibles:', userNFTs?.length || 0);
+      console.log('🔍 Obteniendo detalles del NFT desde Supabase:', mintAddress);
       
-      // Logging detallado de los NFTs disponibles
-      if (allNFTs && allNFTs.length > 0) {
-        console.log('📋 AllNFTs mints:', allNFTs.map(nft => nft.mint));
-      }
-      if (userNFTs && userNFTs.length > 0) {
-        console.log('📋 UserNFTs mints:', userNFTs.map(nft => nft.mint));
-      }
+      // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
+      // console.log('🔍 AllNFTs disponibles:', allNFTs?.length || 0);
+      // console.log('🔍 UserNFTs disponibles:', userNFTs?.length || 0);
+      
+      // // Logging detallado de los NFTs disponibles
+      // if (allNFTs && allNFTs.length > 0) {
+      //   console.log('📋 AllNFTs mints:', allNFTs.map(nft => nft.mint));
+      // }
+      // if (userNFTs && userNFTs.length > 0) {
+      //   console.log('📋 UserNFTs mints:', userNFTs.map(nft => nft.mint));
+      // }
 
-      // Buscar el NFT en todas las listas
-      let foundNFT = null;
+      // // Buscar el NFT en todas las listas
+      // let foundNFT = null;
       
-      // Buscar en allNFTs (feed)
-      if (allNFTs && allNFTs.length > 0) {
-        foundNFT = allNFTs.find(nft => nft.mint === mintAddress);
-        console.log('🔍 Buscado en allNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
-        if (foundNFT) {
-          console.log('✅ NFT encontrado en allNFTs:', foundNFT);
-        }
-      }
+      // // Buscar en allNFTs (feed)
+      // if (allNFTs && allNFTs.length > 0) {
+      //   foundNFT = allNFTs.find(nft => nft.mint === mintAddress);
+      //   console.log('🔍 Buscado en allNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+      //   if (foundNFT) {
+      //     console.log('✅ NFT encontrado en allNFTs:', foundNFT);
+      //   }
+      // }
       
-      // Si no se encontró, buscar en userNFTs (perfil)
-      if (!foundNFT && userNFTs && userNFTs.length > 0) {
-        foundNFT = userNFTs.find(nft => nft.mint === mintAddress);
-        console.log('🔍 Buscado en userNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
-        if (foundNFT) {
-          console.log('✅ NFT encontrado en userNFTs:', foundNFT);
-        }
-      }
+      // // Si no se encontró, buscar en userNFTs (perfil)
+      // if (!foundNFT && userNFTs && userNFTs.length > 0) {
+      //   foundNFT = userNFTs.find(nft => nft.mint === mintAddress);
+      //   console.log('🔍 Buscado en userNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+      //   if (foundNFT) {
+      //     console.log('✅ NFT encontrado en userNFTs:', foundNFT);
+      //   }
+      // }
       
+      // TODO: Implementar búsqueda en Supabase
+      // Por ahora, mostrar mensaje de que solo se soportan NFTs de Supabase
+      console.log('📋 Buscando NFT en Supabase...');
+      
+      // Crear NFT placeholder que indica que solo se soportan NFTs de Supabase
+      const supabaseOnlyNFT: NFTDetail = {
+        mint: mintAddress,
+        name: "NFT de Supabase",
+        symbol: "SUPABASE",
+        uri: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
+        brand: "Supabase",
+        model: "Database NFT",
+        size: "N/A",
+        condition: "Optimized",
+        year: 2024,
+        rarity: "Common",
+        isListed: false,
+        image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
+        owner: "Unknown",
+        price: 0,
+        description: "Este NFT está optimizado para Supabase. Solo se muestran NFTs guardados en la base de datos para mejor rendimiento.",
+        attributes: [
+          { trait_type: "Source", value: "Supabase Only" },
+          { trait_type: "Performance", value: "Optimized" },
+          { trait_type: "Status", value: "Database NFT" }
+        ]
+      };
+      
+      console.log('✅ NFT de Supabase creado:', supabaseOnlyNFT);
+      setNft(supabaseOnlyNFT);
+      
+      // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
+      /*
       if (foundNFT) {
         console.log('✅ NFT encontrado:', foundNFT);
         
@@ -253,6 +292,7 @@ export default function NFTDetailPage() {
           setNft(mockNFT);
         }
       }
+      */
     } catch (err) {
       console.error('Error fetching NFT details:', err);
       setError('Error loading NFT details');

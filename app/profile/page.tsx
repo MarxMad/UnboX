@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Settings, Share2, Heart, Grid3x3, LayoutGrid, Box } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
-import { useUserNFTs } from "@/app/hooks/useUserNFTs"
+// import { useUserNFTs } from "@/app/hooks/useUserNFTs"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { SupabaseNFTCard } from "../components/SupabaseNFTCard"
 
@@ -18,7 +18,11 @@ export default function ProfilePage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
-  const { nfts: userNFTs, loading: userNFTsLoading } = useUserNFTs()
+  // const { nfts: userNFTs, loading: userNFTsLoading } = useUserNFTs()
+  
+  // Usar solo Supabase para mejor rendimiento
+  const userNFTs = null;
+  const userNFTsLoading = false;
   const [likedItems, setLikedItems] = useState<Set<number>>(new Set())
 
   useEffect(() => {
@@ -31,16 +35,20 @@ export default function ProfilePage() {
     return null
   }
 
-  // Solo usar NFTs reales del usuario - sin productos mock
-  const combinedUserItems = (userNFTs || []).map((nft, index) => ({
-    id: `user-${index}`,
-    name: nft.name || "My NFT",
-    brand: nft.brand || "Unknown",
-    image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
-    price: nft.isListed && nft.listPrice ? `USD ${nft.listPrice}` : "No listado",
-    likes: Math.floor(Math.random() * 50),
-    isReal: true
-  }))
+  // Solo usar NFTs de Supabase para mejor rendimiento
+  // TODO: Implementar búsqueda de NFTs del usuario en Supabase
+  const combinedUserItems: any[] = []
+  
+  // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
+  // const combinedUserItems = (userNFTs || []).map((nft, index) => ({
+  //   id: `user-${index}`,
+  //   name: nft.name || "My NFT",
+  //   brand: nft.brand || "Unknown",
+  //   image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+  //   price: nft.isListed && nft.listPrice ? `USD ${nft.listPrice}` : "No listado",
+  //   likes: Math.floor(Math.random() * 50),
+  //   isReal: true
+  // }))
 
   const handleLike = (itemId: number) => {
     setLikedItems(prev => {

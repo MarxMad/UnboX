@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Heart, Share2, Filter } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
-import { useAllNFTs } from "@/app/hooks/useAllNFTs"
-import { useMarketplaceNFTs } from "@/app/hooks/useMarketplaceNFTs"
+// import { useAllNFTs } from "@/app/hooks/useAllNFTs"
+// import { useMarketplaceNFTs } from "@/app/hooks/useMarketplaceNFTs"
 import { useRealtimeFeed } from "@/app/hooks/useRealtimeFeed"
 import { useSupabaseContext } from "@/app/components/SupabaseProvider"
 import { NFTCard } from "../components/NFTCard"
@@ -22,9 +22,15 @@ export default function FeedPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set())
   
-  // Hooks para obtener NFTs reales (fallback)
-  const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
-  const { marketplaceNFTs, loading: marketplaceLoading } = useMarketplaceNFTs()
+  // Hooks para obtener NFTs reales (fallback) - DESHABILITADOS PARA MEJOR RENDIMIENTO
+  // const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
+  // const { marketplaceNFTs, loading: marketplaceLoading } = useMarketplaceNFTs()
+  
+  // Usar solo Supabase para mejor rendimiento
+  const allNFTs = null;
+  const marketplaceNFTs = null;
+  const allNFTsLoading = false;
+  const marketplaceLoading = false;
   
   // Hook principal para feed en tiempo real con Supabase
   const { articles: supabaseArticles, loading: supabaseLoading, error: supabaseError } = useRealtimeFeed()
@@ -39,14 +45,14 @@ export default function FeedPage() {
     return null
   }
 
-  // Estado de loading combinado
-  const isLoading = allNFTsLoading || marketplaceLoading || supabaseLoading
+  // Estado de loading combinado - SOLO SUPABASE
+  const isLoading = supabaseLoading
 
-  // Combinar artículos de Supabase con NFTs existentes
+  // Solo usar artículos de Supabase para mejor rendimiento
   const combinedNFTs = React.useMemo(() => {
     const items: any[] = []
     
-    // 1. Agregar artículos de Supabase (prioridad alta)
+    // Solo agregar artículos de Supabase
     if (supabaseArticles && supabaseArticles.length > 0) {
       supabaseArticles.forEach((article, index) => {
         console.log(`🔍 Supabase Article ${index}:`, {
@@ -86,39 +92,40 @@ export default function FeedPage() {
       });
     }
     
+    // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
     // 2. Agregar NFTs existentes como fallback
-    if (allNFTs && allNFTs.length > 0) {
-      allNFTs.forEach((nft, index) => {
-        // Solo agregar si no existe ya en Supabase
-        const existsInSupabase = supabaseArticles?.some(article => article.nft_mint === nft.mint)
-        if (!existsInSupabase) {
-          console.log(`🔍 Fallback NFT ${index}:`, {
-            mint: nft.mint,
-            name: nft.name,
-            brand: nft.brand
-          });
-          
-          items.push({
-            id: nft.mint,
-            mint: nft.mint,
-            name: nft.name || "NFT Item",
-            brand: nft.brand || "Unknown",
-            year: nft.year || "2024",
-            condition: nft.condition || "New",
-            price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
-            image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
-            likes: Math.floor(Math.random() * 100),
-            verified: true,
-            trending: Math.random() > 0.7,
-            isReal: true,
-            isSupabase: false
-          });
-        }
-      });
-    }
+    // if (allNFTs && allNFTs.length > 0) {
+    //   allNFTs.forEach((nft, index) => {
+    //     // Solo agregar si no existe ya en Supabase
+    //     const existsInSupabase = supabaseArticles?.some(article => article.nft_mint === nft.mint)
+    //     if (!existsInSupabase) {
+    //       console.log(`🔍 Fallback NFT ${index}:`, {
+    //         mint: nft.mint,
+    //         name: nft.name,
+    //         brand: nft.brand
+    //       });
+    //       
+    //       items.push({
+    //         id: nft.mint,
+    //         mint: nft.mint,
+    //         name: nft.name || "NFT Item",
+    //         brand: nft.brand || "Unknown",
+    //         year: nft.year || "2024",
+    //         condition: nft.condition || "New",
+    //         price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
+    //         image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+    //         likes: Math.floor(Math.random() * 100),
+    //         verified: true,
+    //         trending: Math.random() > 0.7,
+    //         isReal: true,
+    //         isSupabase: false
+    //       });
+    //     }
+    //   });
+    // }
     
     return items
-  }, [supabaseArticles, allNFTs])
+  }, [supabaseArticles])
 
   const handleLike = (itemId: string) => {
     setLikedItems(prev => {
