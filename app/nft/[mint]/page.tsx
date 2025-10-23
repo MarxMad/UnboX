@@ -9,10 +9,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/header';
-import { ListNFTModal } from '@/components/ListNFTModal';
-import { useListNFT } from '@/hooks/useListNFT';
-import { useBuyNFT } from '@/hooks/useBuyNFT';
-import { useCancelListing } from '@/hooks/useCancelListing';
+import { ListNFTModal } from '../../components/ListNFTModal';
+import { useListNFT } from '../../hooks/useListNFT';
+import { useBuyNFT } from '../../hooks/useBuyNFT';
+import { useCancelListing } from '../../hooks/useCancelListing';
 import { 
   ArrowLeft, 
   Calendar, 
