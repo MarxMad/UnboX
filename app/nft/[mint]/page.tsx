@@ -15,7 +15,7 @@ import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
 // import { useAllNFTs } from '../../hooks/useAllNFTs';
 // import { useUserNFTs } from '../../hooks/useUserNFTs';
-import { useSupabaseNFT } from '../../hooks/useSupabaseNFT';
+// import { useSupabaseNFT } from '../../hooks/useSupabaseNFT'; // DESHABILITADO
 import { 
   ArrowLeft, 
   Calendar, 
@@ -74,19 +74,9 @@ export default function NFTDetailPage() {
   
   const mintAddress = params.mint as string;
   
-  // Usar Supabase para obtener datos reales del NFT - DESHABILITADO TEMPORALMENTE
-  // const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
-  
-  // Por ahora, usar datos mockeados hasta que Supabase esté funcionando
-  const supabaseNFT = null;
-  const supabaseLoading = false;
-  const supabaseError = null;
-  
-  console.log('🔍 NFT Detail Page - Usando datos del feed:', {
-    mintAddress,
-    supabaseNFT: !!supabaseNFT,
-    supabaseLoading,
-    supabaseError
+  // Usar datos directos del feed - SIN SUPABASE
+  console.log('🔍 NFT Detail Page - Usando datos directos:', {
+    mintAddress
   });
   
   console.log('🔍 NFTDetailPage renderizado');
@@ -99,23 +89,16 @@ export default function NFTDetailPage() {
     }
   }, [mintAddress]);
 
-  // Re-ejecutar cuando cambien los datos de Supabase
-  useEffect(() => {
-    if (mintAddress && supabaseNFT) {
-      console.log('🔄 Datos de Supabase actualizados, re-ejecutando fetchNFTDetails');
-      fetchNFTDetails();
-    }
-  }, [mintAddress, supabaseNFT]);
+  // Sin re-ejecución automática - datos directos
 
   const fetchNFTDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
+      console.log('🔍 Creando NFT directo:', mintAddress);
       
       // Crear NFT con datos reales basado en el mint address
-      // Usar información que sabemos del feed
       const realNFT: NFTDetail = {
         mint: mintAddress,
         name: "CriptoUNAM LOGO", // Nombre real del feed
@@ -142,136 +125,8 @@ export default function NFTDetailPage() {
         ]
       };
       
-      console.log('✅ NFT creado con datos del feed:', realNFT);
+      console.log('✅ NFT creado directamente:', realNFT);
       setNft(realNFT);
-      
-      // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
-      /*
-      if (foundNFT) {
-        console.log('✅ NFT encontrado:', foundNFT);
-        
-        // Importar el servicio de imágenes
-        const { getImageFromMetadata } = await import('../../services/imageService');
-        
-        // Obtener imagen real desde metadata
-        let realImage = foundNFT.image;
-        if (foundNFT.uri) {
-          try {
-            realImage = await getImageFromMetadata(foundNFT.uri);
-            console.log('🖼️ Imagen obtenida desde metadata:', realImage);
-          } catch (error) {
-            console.log('⚠️ Error obteniendo imagen desde metadata:', error);
-          }
-        }
-        
-        // Type guard para verificar si es AllNFT (tiene owner y price)
-        const isAllNFT = (nft: any): nft is import('../../hooks/useAllNFTs').AllNFT => {
-          return 'owner' in nft && 'price' in nft;
-        };
-
-        const realNFT: NFTDetail = {
-          mint: foundNFT.mint,
-          name: foundNFT.name,
-          symbol: foundNFT.symbol,
-          uri: foundNFT.uri,
-          brand: foundNFT.brand,
-          model: foundNFT.model,
-          size: foundNFT.size,
-          condition: foundNFT.condition,
-          year: foundNFT.year,
-          rarity: foundNFT.rarity,
-          isListed: foundNFT.isListed,
-          image: realImage || 'https://via.placeholder.com/600x600/1a1a1a/ffffff?text=No+Image',
-          owner: isAllNFT(foundNFT) ? (foundNFT.owner || 'Unknown') : 'Unknown',
-          price: isAllNFT(foundNFT) ? foundNFT.price : undefined,
-          description: `${foundNFT.brand} ${foundNFT.model} - ${foundNFT.condition} (${foundNFT.year})`,
-          attributes: [
-            { trait_type: "Brand", value: foundNFT.brand },
-            { trait_type: "Model", value: foundNFT.model },
-            { trait_type: "Size", value: foundNFT.size },
-            { trait_type: "Condition", value: foundNFT.condition },
-            { trait_type: "Year", value: foundNFT.year },
-            { trait_type: "Rarity", value: foundNFT.rarity }
-          ]
-        };
-        
-        console.log('✅ NFT real obtenido:', realNFT);
-        setNft(realNFT);
-      } else {
-        console.log('❌ NFT no encontrado en listas, intentando buscar directamente en blockchain...');
-        
-        // Intentar obtener datos del NFT directamente desde el blockchain
-        try {
-          const { connection } = await import('@solana/web3.js');
-          const { TOKEN_PROGRAM_ID, AccountLayout } = await import('@solana/spl-token');
-          
-          const mintPubkey = new PublicKey(mintAddress);
-          console.log('🔍 Buscando NFT directamente en blockchain:', mintAddress);
-          
-          // Verificar si el mint existe
-          const mintInfo = await connection.getAccountInfo(mintPubkey);
-          if (!mintInfo) {
-            throw new Error('Mint no existe en blockchain');
-          }
-          
-          console.log('✅ Mint encontrado en blockchain');
-          
-          // Intentar obtener metadata desde el mint
-          // Por ahora, crear un NFT básico con datos del blockchain
-          const blockchainNFT: NFTDetail = {
-            mint: mintAddress,
-            name: "NFT de Blockchain",
-            symbol: "BLOCKCHAIN",
-            uri: `https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN`, // Usar imagen que sabemos que funciona
-            brand: "Blockchain",
-            model: "Direct Mint",
-            size: "N/A",
-            condition: "Unknown",
-            year: 2024,
-            rarity: "Common",
-            isListed: false,
-            image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN", // Imagen real que funciona
-            owner: "Unknown",
-            price: 0,
-            description: "NFT encontrado directamente en blockchain.",
-            attributes: [
-              { trait_type: "Source", value: "Blockchain Direct" },
-              { trait_type: "Mint", value: mintAddress }
-            ]
-          };
-          
-          console.log('✅ NFT creado desde blockchain:', blockchainNFT);
-          setNft(blockchainNFT);
-          
-        } catch (blockchainError) {
-          console.log('❌ Error buscando en blockchain:', blockchainError);
-          
-          // Fallback final a datos mockeados
-          const mockNFT: NFTDetail = {
-            mint: mintAddress,
-            name: "NFT No Encontrado",
-            symbol: "UNKNOWN",
-            uri: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh",
-            brand: "Unknown",
-            model: "Unknown Model",
-            size: "N/A",
-            condition: "Unknown",
-            year: 2024,
-            rarity: "Common",
-            isListed: false,
-            image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN", // Usar imagen real en lugar de placeholder
-            owner: "Unknown",
-            price: 0,
-            description: "Este NFT no se pudo encontrar en la blockchain.",
-            attributes: [
-              { trait_type: "Status", value: "Not Found" }
-            ]
-          };
-          
-          setNft(mockNFT);
-        }
-      }
-      */
     } catch (err) {
       console.error('Error fetching NFT details:', err);
       setError('Error loading NFT details');
@@ -349,7 +204,7 @@ export default function NFTDetailPage() {
     Legendary: 'bg-yellow-500',
   };
 
-  if (loading || supabaseLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
