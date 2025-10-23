@@ -289,8 +289,9 @@ export function useTokenizeStreetwear() {
           const optimizedSize = params.size.substring(0, 4); // Solo 4 caracteres
           const optimizedCondition = params.condition.substring(0, 4); // Solo 4 caracteres
           
-          // URI que apunta a Supabase para datos completos
-          const shortUri = `https://unbox.app/nft/${mint.toString()}`; // URI que apunta a nuestra API
+          // Para blockchain: usar URI corto que apunta a Supabase
+          // El metadata completo se guarda en Supabase, no en blockchain
+          const shortUri = `https://unbox.app/nft/${mint.toString()}`;
           
           // Serializar en el orden correcto según el IDL
           const dataBuffer = Buffer.concat([

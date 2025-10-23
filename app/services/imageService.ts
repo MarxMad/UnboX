@@ -37,6 +37,10 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
     } else if (uri.startsWith('Qm') || uri.startsWith('baf')) {
       // Es un hash IPFS directo
       metadataUrl = `https://gateway.pinata.cloud/ipfs/${uri}`;
+    } else if (uri.startsWith('https://unbox.app/nft/')) {
+      // URI que apunta a nuestra aplicación - usar placeholder por ahora
+      console.log('🔗 URI apunta a nuestra app, usando placeholder');
+      return placeholder;
     } else if (!uri.startsWith('http')) {
       // Asumir que es un hash IPFS
       metadataUrl = `https://gateway.pinata.cloud/ipfs/${uri}`;
