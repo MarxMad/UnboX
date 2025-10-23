@@ -12,7 +12,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useUserNFTs } from "@/app/hooks/useUserNFTs"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { MyNFTCard } from "@/components/MyNFTCard"
+import { MyNFTCard } from "../components/MyNFTCard"
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth()

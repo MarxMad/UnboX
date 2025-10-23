@@ -10,7 +10,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useAllNFTs } from "@/app/hooks/useAllNFTs"
 import { useMarketplaceNFTs } from "@/app/hooks/useMarketplaceNFTs"
-import { NFTCard } from "@/components/NFTCard"
+import { NFTCard } from "../components/NFTCard"
 
 export default function FeedPage() {
   const { user, isLoading } = useAuth()
