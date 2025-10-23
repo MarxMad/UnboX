@@ -20,6 +20,11 @@ NEXT_PUBLIC_SOLANA_NETWORK=devnet
 # Obtén tu token en: https://web3.storage
 # NEXT_PUBLIC_WEB3_STORAGE_TOKEN=tu_token_aqui
 
+# Supabase Configuration (requerido para likes y datos de usuario)
+# Obtén estos valores en: https://supabase.com/dashboard
+NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url_aqui
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key_aqui
+
 # Environment
 NODE_ENV=production
 ```
@@ -33,6 +38,8 @@ Para desplegar en Vercel, configura estas variables en el dashboard:
 3. Agrega las siguientes variables:
    - `NEXT_PUBLIC_SOLANA_RPC_ENDPOINT`: `https://api.devnet.solana.com`
    - `NEXT_PUBLIC_SOLANA_NETWORK`: `devnet`
+   - `NEXT_PUBLIC_SUPABASE_URL`: `tu_url_de_supabase`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `tu_anon_key_de_supabase`
    - `NODE_ENV`: `production`
 
 ## Notas
