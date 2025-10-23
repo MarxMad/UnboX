@@ -1,0 +1,13 @@
+/Users/gerryp/UnBoX-App/UnboX/target/debug/deps/blake3-8f55b18181fff372.d: /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/guts.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/hazmat.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/platform.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/ffi_neon.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/portable.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/traits.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/io.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/join.rs
+
+/Users/gerryp/UnBoX-App/UnboX/target/debug/deps/libblake3-8f55b18181fff372.rmeta: /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/guts.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/hazmat.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/platform.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/ffi_neon.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/portable.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/traits.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/io.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/join.rs
+
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/lib.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/guts.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/hazmat.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/platform.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/ffi_neon.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/portable.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/traits.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/io.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/blake3-1.8.2/src/join.rs:

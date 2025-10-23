@@ -201,39 +201,39 @@ export default function FeedPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {filteredNFTs.map((item) => {
-              // Usar SupabaseNFTCard para artículos de Supabase, NFTCard para el resto
-              if (item.isSupabase) {
-                return (
-                  <SupabaseNFTCard
-                    key={item.id}
-                    nft={item}
-                    onLike={handleLike}
-                  />
-                )
-              } else {
-                return (
-                  <NFTCard
-                    key={item.id}
-                    nft={{
-                      mint: item.mint,
-                      name: item.name,
-                      brand: item.brand,
-                      model: item.name,
-                      size: 'N/A',
-                      condition: item.condition || 'New',
-                      year: item.year || 2024,
-                      rarity: 'Common',
-                      isListed: item.price !== 'No listado',
-                      image: item.image,
-                      owner: 'Unknown',
-                      price: typeof item.price === 'string' && item.price !== 'No listado' ? 
-                        parseFloat(item.price.replace('USD ', '')) : undefined,
-                      symbol: 'UNBOX',
-                      uri: ''
-                    }}
-                  />
-                )
-              }
+              // Usar SupabaseNFTCard para TODOS los items (diseño unificado)
+              return (
+                <SupabaseNFTCard
+                  key={item.id}
+                  nft={{
+                    id: item.id,
+                    mint: item.mint || item.id,
+                    name: item.name,
+                    brand: item.brand,
+                    model: item.model || item.name,
+                    size: item.size || 'N/A',
+                    year: item.year || 2024,
+                    condition: item.condition || 'New',
+                    rarity: item.rarity || 'Common',
+                    price: typeof item.price === 'string' && item.price !== 'No listado' ? 
+                      item.price : 'No listado',
+                    image: item.image,
+                    likes: item.likes || 0,
+                    verified: item.verified || false,
+                    trending: item.trending || false,
+                    isSupabase: item.isSupabase || false,
+                    username: item.username,
+                    display_name: item.display_name,
+                    avatar_url: item.avatar_url,
+                    metadata: item.metadata,
+                    blockchain_signature: item.blockchain_signature,
+                    asset_pda: item.asset_pda,
+                    data_source: item.data_source || 'blockchain',
+                    sync_status: item.sync_status
+                  }}
+                  onLike={handleLike}
+                />
+              )
             })}
           </div>
         </div>
@@ -249,25 +249,35 @@ export default function FeedPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {combinedNFTs.slice(0, 6).map((item) => (
-              <NFTCard
+              <SupabaseNFTCard
                 key={`recent-${item.id}`}
                 nft={{
+                  id: item.id,
                   mint: item.id.replace('real-', ''), // Extraer el mint del ID
                   name: item.name,
                   brand: item.brand,
                   model: item.name, // Usar name como model si no hay model específico
                   size: 'N/A',
-                  condition: item.condition || 'New',
                   year: item.year || 2024,
+                  condition: item.condition || 'New',
                   rarity: 'Common',
-                  isListed: item.price !== 'No listado',
-                  image: item.image,
-                  owner: 'Unknown', // Se determinará en el componente
                   price: typeof item.price === 'string' && item.price !== 'No listado' ? 
-                    parseFloat(item.price.replace('USD ', '')) : undefined,
-                  symbol: 'UNBOX',
-                  uri: ''
+                    item.price : 'No listado',
+                  image: item.image,
+                  likes: item.likes || 0,
+                  verified: item.verified || false,
+                  trending: item.trending || false,
+                  isSupabase: item.isSupabase || false,
+                  username: item.username,
+                  display_name: item.display_name,
+                  avatar_url: item.avatar_url,
+                  metadata: item.metadata,
+                  blockchain_signature: item.blockchain_signature,
+                  asset_pda: item.asset_pda,
+                  data_source: item.data_source || 'blockchain',
+                  sync_status: item.sync_status
                 }}
+                onLike={handleLike}
               />
             ))}
           </div>

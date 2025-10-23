@@ -1,0 +1,14 @@
+/Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/deps/libserde-17f01f2f200b6097.rmeta: /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/build/serde-9933e1ed5d84c542/out/private.rs
+
+/Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/deps/libserde-17f01f2f200b6097.rlib: /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/build/serde-9933e1ed5d84c542/out/private.rs
+
+/Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/deps/serde-17f01f2f200b6097.d: /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/build/serde-9933e1ed5d84c542/out/private.rs
+
+/Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs:
+/Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/build/serde-9933e1ed5d84c542/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/gerryp/UnBoX-App/UnboX/target/sbpf-solana-solana/release/build/serde-9933e1ed5d84c542/out

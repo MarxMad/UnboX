@@ -1,0 +1,9 @@
+/Users/gerryp/UnBoX-App/UnboX/target/debug/deps/spl_type_length_value-55902621105bf182.d: /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/error.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/length.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/state.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/variable_len_pack.rs
+
+/Users/gerryp/UnBoX-App/UnboX/target/debug/deps/libspl_type_length_value-55902621105bf182.rmeta: /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/lib.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/error.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/length.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/state.rs /Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/variable_len_pack.rs
+
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/lib.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/error.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/length.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/state.rs:
+/Users/gerryp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-type-length-value-0.8.0/src/variable_len_pack.rs:

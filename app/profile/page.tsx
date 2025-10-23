@@ -12,7 +12,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useUserNFTs } from "@/app/hooks/useUserNFTs"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { MyNFTCard } from "../components/MyNFTCard"
+import { SupabaseNFTCard } from "../components/SupabaseNFTCard"
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth()
@@ -165,21 +165,43 @@ export default function ProfilePage() {
           <TabsContent value="collection">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {combinedUserItems.map((item) => (
-                <MyNFTCard
+                <SupabaseNFTCard
                   key={item.id}
                   nft={{
+                    id: item.id,
                     mint: item.id.replace('user-', ''), // Extraer el mint del ID
                     name: item.name,
                     brand: item.brand,
                     model: item.name, // Usar name como model si no hay model específico
                     size: 'N/A',
-                    condition: 'New',
                     year: 2024,
+                    condition: 'New',
                     rarity: 'Common',
-                    isListed: false,
+                    price: 'No listado',
                     image: item.image,
-                    owner: publicKey?.toString() || '',
-                    listPrice: 0
+                    likes: item.likes || 0,
+                    verified: item.verified || false,
+                    trending: item.trending || false,
+                    isSupabase: item.isSupabase || false,
+                    username: item.username,
+                    display_name: item.display_name,
+                    avatar_url: item.avatar_url,
+                    metadata: item.metadata,
+                    blockchain_signature: item.blockchain_signature,
+                    asset_pda: item.asset_pda,
+                    data_source: item.data_source || 'blockchain',
+                    sync_status: item.sync_status
+                  }}
+                  onLike={(itemId) => {
+                    setLikedItems(prev => {
+                      const newSet = new Set(prev)
+                      if (newSet.has(parseInt(itemId))) {
+                        newSet.delete(parseInt(itemId))
+                      } else {
+                        newSet.add(parseInt(itemId))
+                      }
+                      return newSet
+                    })
                   }}
                 />
               ))}

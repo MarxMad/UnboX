@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,7 @@ interface SupabaseNFTCardProps {
 
 export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
   const { walletAddress } = useSupabaseContext()
+  const router = useRouter()
   const { likeArticle, loading: likeLoading } = useLikeArticle()
   const { unlikeArticle, loading: unlikeLoading } = useUnlikeArticle()
   const { checkUserLiked, loading: checkLoading } = useCheckUserLiked()
@@ -86,8 +88,22 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
 
   const isLoading = likeLoading || unlikeLoading || checkLoading || isCheckingLike
 
+  const handleCardClick = () => {
+    console.log('🖱️ Click en SupabaseNFTCard detectado');
+    console.log('📍 NFT data:', {
+      mint: nft.mint,
+      name: nft.name,
+      brand: nft.brand
+    });
+    console.log('📍 Navegando a:', `/nft/${nft.mint}`);
+    router.push(`/nft/${nft.mint}`);
+  };
+
   return (
-    <Card className="group relative overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+    <Card 
+      className="group relative overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative">
         <img
           src={nft.image}
@@ -134,7 +150,10 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
           variant="ghost"
           size="sm"
           className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
-          onClick={handleLike}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLike();
+          }}
           disabled={isLoading}
         >
           <Heart 
@@ -198,7 +217,10 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
               variant="outline"
               size="sm"
               className="flex-1 text-xs"
-              onClick={() => window.open(`/nft/${nft.mint}`, '_blank')}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`/nft/${nft.mint}`, '_blank');
+              }}
             >
               <ExternalLink className="h-3 w-3 mr-1" />
               View
@@ -207,7 +229,8 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
               variant="outline"
               size="sm"
               className="text-xs"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (navigator.share) {
                   navigator.share({
                     title: nft.name,
