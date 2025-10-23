@@ -82,17 +82,17 @@ export function useTokenizeWithSupabase() {
         reader.readAsDataURL(params.image)
       })
 
-      // Crear metadata completa para Supabase
+      // Crear metadata completa para Supabase (datos completos sin límites)
       const fullMetadata = {
-        // Datos originales completos
-        name: params.name,
-        brand: params.brand,
-        model: params.model,
-        size: params.size,
-        condition: params.condition,
+        // Datos originales completos (sin truncar)
+        name: params.name, // Nombre completo
+        brand: params.brand, // Marca completa
+        model: params.model, // Modelo completo
+        size: params.size, // Talla completa
+        condition: params.condition, // Condición completa
         year: params.year,
-        rarity: params.rarity,
-        description: params.description || `${params.brand} ${params.model} - ${params.condition} (${params.year})`,
+        rarity: params.rarity, // Rareza completa
+        description: params.description || `${params.brand} ${params.model} - ${params.condition} (${params.year})`, // Descripción completa
         
         // Datos de imagen
         image: imageBase64,
@@ -106,7 +106,13 @@ export function useTokenizeWithSupabase() {
           signature: nftResult.signature,
           asset_pda: nftResult.assetPda,
           blockchain_version: 'solana',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          // Nota: Los datos en blockchain están truncados para mantener transacciones pequeñas
+          blockchain_name: params.name.substring(0, 8), // Solo 8 caracteres en blockchain
+          blockchain_brand: params.brand.substring(0, 6), // Solo 6 caracteres en blockchain
+          blockchain_model: (params.model || params.name).substring(0, 6), // Solo 6 caracteres en blockchain
+          blockchain_size: params.size.substring(0, 4), // Solo 4 caracteres en blockchain
+          blockchain_condition: params.condition.substring(0, 4) // Solo 4 caracteres en blockchain
         },
         
         // Metadatos adicionales
@@ -114,7 +120,10 @@ export function useTokenizeWithSupabase() {
           original_params: params,
           tokenization_date: new Date().toISOString(),
           platform: 'unbox',
-          version: '1.0'
+          version: '1.0',
+          architecture: 'hybrid', // Indica arquitectura híbrida
+          data_completeness: 'full', // Datos completos en Supabase
+          blockchain_optimization: 'minimal' // Datos mínimos en blockchain
         }
       }
 
@@ -135,17 +144,17 @@ export function useTokenizeWithSupabase() {
         .insert({
           user_id: user.id,
           nft_mint: nftResult.mint, // Clave de relación con blockchain
-          title: params.name,
-          description: fullMetadata.description,
-          brand: params.brand,
-          model: params.model,
-          size: params.size,
-          condition: normalizedCondition, // Usar condición normalizada
+          title: params.name, // Nombre completo (sin límite)
+          description: fullMetadata.description, // Descripción completa (sin límite)
+          brand: params.brand, // Marca completa (sin límite)
+          model: params.model, // Modelo completo (sin límite)
+          size: params.size, // Talla completa (sin límite)
+          condition: normalizedCondition, // Condición completa (sin límite)
           year: params.year,
-          rarity: params.rarity,
+          rarity: params.rarity, // Rareza completa (sin límite)
           image_url: imageBase64, // Imagen completa en base64
           ipfs_hash: '', // URI del metadata en IPFS (se puede agregar después)
-          metadata: fullMetadata, // Metadata completa
+          metadata: fullMetadata, // Metadata completa con datos completos
           blockchain_signature: nftResult.signature,
           asset_pda: nftResult.assetPda,
           // Campos adicionales para la estrategia híbrida

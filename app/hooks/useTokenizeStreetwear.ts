@@ -282,6 +282,11 @@ export function useTokenizeStreetwear() {
           
           // ESTRATEGIA HÍBRIDA: Solo datos esenciales en blockchain
           // Los datos completos se guardarán en Supabase después del mint
+          // 
+          // OPTIMIZACIÓN PARA BLOCKCHAIN:
+          // - Mantener transacciones pequeñas (< 1232 bytes)
+          // - Solo datos esenciales para identificación
+          // - Datos completos se almacenan en Supabase
           const optimizedName = params.name.substring(0, 8); // Solo 8 caracteres para blockchain
           const optimizedSymbol = "UNBX"; // Símbolo fijo para todos los NFTs
           const optimizedBrand = params.brand.substring(0, 6); // Solo 6 caracteres
