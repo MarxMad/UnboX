@@ -60,11 +60,17 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
   };
 
   const handleCardClick = () => {
+    console.log('🖱️ Click en tarjeta detectado');
+    console.log('📍 Navegando a:', `/nft/${nft.mint}`);
     router.push(`/nft/${nft.mint}`);
   };
 
   return (
-    <div className="glass-card overflow-hidden group cursor-pointer" onClick={handleCardClick}>
+    <div 
+      className="glass-card overflow-hidden group cursor-pointer" 
+      onClick={handleCardClick}
+      style={{ position: 'relative', zIndex: 1 }}
+    >
       {/* Image */}
       <div className="relative h-64 bg-gray-800 overflow-hidden">
         <img
