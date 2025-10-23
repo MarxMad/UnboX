@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
-import { Program, AnchorProvider, BN } from '@coral-xyz/anchor';
-import idlData from '../idl/streetwear_tokenizer.json';
-
-const idl = idlData as any;
 
 export function useListNFT() {
   const { publicKey, signTransaction, sendTransaction } = useWallet();
@@ -42,12 +38,13 @@ export function useListNFT() {
       console.log('Price in lamports:', priceInLamports);
       console.log('Price in lamports is valid:', !isNaN(priceInLamports) && priceInLamports > 0);
 
-      // Crear programa
-      const programId = new PublicKey(idl.address);
-      const provider = new AnchorProvider(connection, { publicKey, signTransaction } as any, {});
-      const program = new Program(idl, programId, provider);
+      // Usar program ID hardcodeado para evitar problemas con IDL
+      const programId = new PublicKey('DeU8a2JeJVR5Wq2g6xBSPtAxc3teSAcNTYqcWTEYN2ho');
+      
+      console.log('🔧 Creando instrucción completamente manual...');
+      console.log('Program ID:', programId.toString());
 
-      // Obtener PDA del escrow
+      // Obtener PDA del escrow manualmente
       const [escrowPda] = await PublicKey.findProgramAddress(
         [Buffer.from('escrow'), publicKey.toBuffer(), new PublicKey(nftMint).toBuffer()],
         programId
@@ -55,7 +52,7 @@ export function useListNFT() {
 
       console.log('Escrow PDA:', escrowPda.toString());
 
-      // Obtener PDA del asset
+      // Obtener PDA del asset manualmente
       const [assetPda] = await PublicKey.findProgramAddress(
         [Buffer.from('asset'), publicKey.toBuffer(), new PublicKey(nftMint).toBuffer()],
         programId
@@ -66,7 +63,7 @@ export function useListNFT() {
       // Crear transacción
       const transaction = new Transaction();
 
-      // Crear instrucción manual para evitar problemas de serialización
+      // Crear instrucción manual SIN usar Anchor
       console.log('🔧 Creando instrucción manual de list_nft...');
       
       // Discriminator para list_nft: [88, 221, 93, 166, 63, 220, 106, 232]
