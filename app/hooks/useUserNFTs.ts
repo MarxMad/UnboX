@@ -5,6 +5,7 @@ import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { getAssetPDA } from '../config/program';
 import { getImageFromMetadata } from '../services/imageService';
+import { supabase } from '@/lib/supabase';
 
 // RPC endpoints de respaldo (comentado por ahora)
 // const FALLBACK_RPC_ENDPOINTS = [
@@ -29,6 +30,30 @@ export interface UserNFT {
   image?: string;
   metadata?: Record<string, unknown>;
 }
+
+// Función para obtener imagen desde Supabase cuando el URI apunta a nuestra app
+const getImageFromSupabase = async (mint: string): Promise<string> => {
+  try {
+    console.log(`🔍 Buscando imagen en Supabase para mint: ${mint}`);
+    
+    const { data, error } = await supabase
+      .from('articles')
+      .select('image_url')
+      .eq('nft_mint', mint)
+      .single();
+    
+    if (error || !data) {
+      console.log(`⚠️ No se encontró imagen en Supabase para mint: ${mint}`);
+      return 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image';
+    }
+    
+    console.log(`✅ Imagen encontrada en Supabase para mint: ${mint}`);
+    return data.image_url || 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image';
+  } catch (error) {
+    console.error(`❌ Error obteniendo imagen desde Supabase:`, error);
+    return 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image';
+  }
+};
 
 export function useUserNFTs() {
   const { program, provider, isReady } = useProgram();
@@ -229,9 +254,18 @@ export function useUserNFTs() {
                   name, brand, model, size, condition, year, rarity, uri, isListed
                 });
                 
-                // Obtener imagen usando el servicio mejorado
+                // Obtener imagen - usar Supabase si el URI apunta a nuestra app
                 console.log(`🖼️ Obteniendo imagen para NFT: ${name}`);
-                const realImage = await getImageFromMetadata(uri);
+                let realImage: string;
+                
+                if (uri.startsWith('https://unbox.app/nft/')) {
+                  // URI apunta a nuestra app, obtener imagen desde Supabase
+                  realImage = await getImageFromSupabase(mint);
+                } else {
+                  // URI es IPFS real, usar imageService
+                  realImage = await getImageFromMetadata(uri);
+                }
+                
                 console.log(`✅ Imagen obtenida: ${realImage}`);
                 
                 // Crear NFT con datos reales

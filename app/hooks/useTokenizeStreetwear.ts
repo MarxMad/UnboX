@@ -180,7 +180,7 @@ export function useTokenizeStreetwear() {
               const signed = await signTransaction!(tx);
               signedTxs.push(signed);
             }
-            return signedTxs;
+            return signedTxs as typeof txs;
           }
         },
         { 
@@ -280,16 +280,34 @@ export function useTokenizeStreetwear() {
             return Buffer.concat([lengthBuffer, strBuffer]);
           };
           
+          // ESTRATEGIA HÍBRIDA: Solo datos esenciales en blockchain
+          // Los datos completos se guardarán en Supabase después del mint
+          // 
+          // OPTIMIZACIÓN PARA BLOCKCHAIN:
+          // - Mantener transacciones pequeñas (< 1232 bytes)
+          // - Solo datos esenciales para identificación
+          // - Datos completos se almacenan en Supabase
+          const optimizedName = params.name.substring(0, 8); // Solo 8 caracteres para blockchain
+          const optimizedSymbol = "UNBX"; // Símbolo fijo para todos los NFTs
+          const optimizedBrand = params.brand.substring(0, 6); // Solo 6 caracteres
+          const optimizedModel = (params.model || params.name).substring(0, 6); // Solo 6 caracteres
+          const optimizedSize = params.size.substring(0, 4); // Solo 4 caracteres
+          const optimizedCondition = params.condition.substring(0, 4); // Solo 4 caracteres
+          
+          // Para blockchain: usar URI corto que apunta a Supabase
+          // El metadata completo se guarda en Supabase, no en blockchain
+          const shortUri = `https://unbox.app/nft/${mint.toString()}`;
+          
           // Serializar en el orden correcto según el IDL
           const dataBuffer = Buffer.concat([
             discriminator,                    // 8 bytes discriminator
-            serializeString(params.name),      // string
-            serializeString(symbol),           // string  
-            serializeString(uri),             // string
-            serializeString(params.brand),     // string
-            serializeString(params.model || params.name), // string
-            serializeString(params.size),      // string
-            serializeString(params.condition), // string
+            serializeString(optimizedName),    // string optimizado
+            serializeString(optimizedSymbol),  // string optimizado
+            serializeString(shortUri),        // string optimizado
+            serializeString(optimizedBrand),   // string optimizado
+            serializeString(optimizedModel),   // string optimizado
+            serializeString(optimizedSize),    // string optimizado
+            serializeString(optimizedCondition), // string optimizado
             yearBuffer,                       // u16 (2 bytes)
             rarityBuffer,                     // enum (1 byte)
           ]);
@@ -318,6 +336,14 @@ export function useTokenizeStreetwear() {
           });
           
           transaction.add(instruction);
+
+          // Verificar el tamaño de la transacción completa
+          const transactionSize = transaction.serialize({ requireAllSignatures: false }).length;
+          console.log('📏 Tamaño de transacción completa:', transactionSize, 'bytes');
+          
+          if (transactionSize > 1232) {
+            throw new Error(`Transacción demasiado grande: ${transactionSize} bytes (máximo 1232)`);
+          }
 
           // Loggear las instrucciones generadas para depuración
           console.log('🔍 Instrucciones en la transacción:');

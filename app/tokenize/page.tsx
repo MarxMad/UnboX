@@ -15,6 +15,7 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { usePin } from "@/lib/pin-context"
 import { useTokenizeStreetwear } from "@/app/hooks/useTokenizeStreetwear"
+import { useTokenizeWithSupabase } from "@/app/hooks/useTokenizeWithSupabase"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PinModal } from "@/components/PinModal"
 import { PinSetup } from "@/components/PinSetup"
@@ -44,7 +45,16 @@ export default function TokenizePage() {
   const { isPinSet, verifyPin, setUserPin } = usePin()
   const router = useRouter()
   const { connected, publicKey } = useWallet()
-  const { tokenize, loading: tokenizeLoading, error } = useTokenizeStreetwear()
+  
+  // Hook original (fallback)
+  const { tokenize, loading: originalTokenizeLoading, error } = useTokenizeStreetwear()
+  
+  // Hook principal con integración Supabase
+  const { tokenizeWithSupabase, loading: supabaseTokenizeLoading, error: supabaseError } = useTokenizeWithSupabase()
+  
+  // Usar el hook de Supabase como principal
+  const tokenizeLoading = supabaseTokenizeLoading
+  const tokenizeError = supabaseError || error
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -187,7 +197,8 @@ export default function TokenizePage() {
         image: selectedFile.name
       });
       
-      const result = await tokenize({
+      // Usar el hook de Supabase que maneja tanto Solana como Supabase
+      const result = await tokenizeWithSupabase({
         name: formData.name,
         brand: formData.brand,
         model: formData.model || formData.name,
@@ -203,18 +214,28 @@ export default function TokenizePage() {
       if (isMounted) {
         setMintingStep("")
       }
-      setMintResult(result)
+      
+      // Convertir el resultado de Supabase al formato esperado
+      if (result.success && result.nftMint) {
+        setMintResult({
+          signature: result.nftMint, // Usar el mint como signature por ahora
+          mint: result.nftMint,
+          assetPda: result.nftMint // Usar el mint como assetPda por ahora
+        })
+      }
       
       console.log('🎉 Resultado de tokenización:', result);
       
       // Mostrar modal de éxito
-      setShowSuccessModal(true)
+      if (typeof setShowSuccessModal === 'function') {
+        setShowSuccessModal(true)
+      }
       
       // También mostrar notificación
       (window as any).addNotification?.({
         type: "success",
         title: "¡Tokenización Exitosa!",
-        message: `Tu ${formData.brand} ${formData.name} ha sido tokenizado exitosamente`,
+        message: `Tu ${formData.brand} ${formData.name} ha sido tokenizado en Solana y guardado en Supabase`,
         duration: 10000
       })
       

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,50 +10,115 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { useAllNFTs } from "@/app/hooks/useAllNFTs"
 import { useMarketplaceNFTs } from "@/app/hooks/useMarketplaceNFTs"
+import { useRealtimeFeed } from "@/app/hooks/useRealtimeFeed"
+import { useSupabaseContext } from "@/app/components/SupabaseProvider"
 import { NFTCard } from "../components/NFTCard"
+import { SupabaseNFTCard } from "../components/SupabaseNFTCard"
 
 export default function FeedPage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
+  const { isSupabaseReady, walletAddress } = useSupabaseContext()
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set())
   
-  // Hooks para obtener NFTs reales
+  // Hooks para obtener NFTs reales (fallback)
   const { allNFTs, loading: allNFTsLoading } = useAllNFTs()
   const { marketplaceNFTs, loading: marketplaceLoading } = useMarketplaceNFTs()
+  
+  // Hook principal para feed en tiempo real con Supabase
+  const { articles: supabaseArticles, loading: supabaseLoading, error: supabaseError } = useRealtimeFeed()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!authLoading && !user) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [user, authLoading, router])
 
-  if (isLoading || !user) {
+  if (authLoading || !user) {
     return null
   }
 
-  // Solo usar NFTs reales - sin productos mock
-  const combinedNFTs = (allNFTs || []).map((nft, index) => {
-    console.log(`🔍 NFT ${index}:`, {
-      mint: nft.mint,
-      name: nft.name,
-      brand: nft.brand
-    });
+  // Estado de loading combinado
+  const isLoading = allNFTsLoading || marketplaceLoading || supabaseLoading
+
+  // Combinar artículos de Supabase con NFTs existentes
+  const combinedNFTs = React.useMemo(() => {
+    const items: any[] = []
     
-    return {
-      id: nft.mint, // Usar el mint real del NFT
-      name: nft.name || "NFT Item",
-      brand: nft.brand || "Unknown",
-      year: nft.year || "2024",
-      condition: nft.condition || "New",
-      price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
-      image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
-      likes: Math.floor(Math.random() * 100),
-      verified: true,
-      trending: Math.random() > 0.7,
-      isReal: true
-    };
-  })
+    // 1. Agregar artículos de Supabase (prioridad alta)
+    if (supabaseArticles && supabaseArticles.length > 0) {
+      supabaseArticles.forEach((article, index) => {
+        console.log(`🔍 Supabase Article ${index}:`, {
+          id: article.id,
+          title: article.title,
+          brand: article.brand,
+          likes_count: article.likes_count
+        });
+        
+        items.push({
+          id: article.id,
+          mint: article.nft_mint,
+          name: article.title || "NFT Item",
+          brand: article.brand || "Unknown",
+          model: article.model,
+          size: article.size,
+          year: article.year || "2024",
+          condition: article.condition || "New",
+          rarity: article.rarity,
+          price: "No listado", // Los artículos de Supabase no tienen precio por ahora
+          image: article.image_url || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+          likes: article.likes_count || 0,
+          verified: true,
+          trending: (article.likes_count || 0) > 5,
+          isReal: true,
+          isSupabase: true,
+          username: article.username,
+          display_name: article.display_name,
+          avatar_url: article.avatar_url,
+          // Campos híbridos
+          metadata: article.metadata,
+          blockchain_signature: article.blockchain_signature,
+          asset_pda: article.asset_pda,
+          data_source: article.data_source,
+          sync_status: article.sync_status
+        });
+      });
+    }
+    
+    // 2. Agregar NFTs existentes como fallback
+    if (allNFTs && allNFTs.length > 0) {
+      allNFTs.forEach((nft, index) => {
+        // Solo agregar si no existe ya en Supabase
+        const existsInSupabase = supabaseArticles?.some(article => article.nft_mint === nft.mint)
+        if (!existsInSupabase) {
+          console.log(`🔍 Fallback NFT ${index}:`, {
+            mint: nft.mint,
+            name: nft.name,
+            brand: nft.brand
+          });
+          
+          items.push({
+            id: nft.mint,
+            mint: nft.mint,
+            name: nft.name || "NFT Item",
+            brand: nft.brand || "Unknown",
+            year: nft.year || "2024",
+            condition: nft.condition || "New",
+            price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
+            image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+            likes: Math.floor(Math.random() * 100),
+            verified: true,
+            trending: Math.random() > 0.7,
+            isReal: true,
+            isSupabase: false
+          });
+        }
+      });
+    }
+    
+    return items
+  }, [supabaseArticles, allNFTs])
 
   const handleLike = (itemId: string) => {
     setLikedItems(prev => {
@@ -135,26 +200,41 @@ export default function FeedPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {filteredNFTs.map((item) => (
-              <NFTCard
-                key={item.id}
-                nft={{
-                  mint: item.id, // Ahora item.id es el mint real
-                  name: item.name,
-                  brand: item.brand,
-                  model: item.name,
-                  size: 'N/A',
-                  condition: item.condition || 'New',
-                  year: item.year || 2024,
-                  rarity: 'Common',
-                  isListed: item.price !== 'No listado',
-                  image: item.image,
-                  owner: 'Unknown',
-                  price: typeof item.price === 'string' && item.price !== 'No listado' ? 
-                    parseFloat(item.price.replace('USD ', '')) : undefined
-                }}
-              />
-            ))}
+            {filteredNFTs.map((item) => {
+              // Usar SupabaseNFTCard para artículos de Supabase, NFTCard para el resto
+              if (item.isSupabase) {
+                return (
+                  <SupabaseNFTCard
+                    key={item.id}
+                    nft={item}
+                    onLike={handleLike}
+                  />
+                )
+              } else {
+                return (
+                  <NFTCard
+                    key={item.id}
+                    nft={{
+                      mint: item.mint,
+                      name: item.name,
+                      brand: item.brand,
+                      model: item.name,
+                      size: 'N/A',
+                      condition: item.condition || 'New',
+                      year: item.year || 2024,
+                      rarity: 'Common',
+                      isListed: item.price !== 'No listado',
+                      image: item.image,
+                      owner: 'Unknown',
+                      price: typeof item.price === 'string' && item.price !== 'No listado' ? 
+                        parseFloat(item.price.replace('USD ', '')) : undefined,
+                      symbol: 'UNBOX',
+                      uri: ''
+                    }}
+                  />
+                )
+              }
+            })}
           </div>
         </div>
 
@@ -184,7 +264,9 @@ export default function FeedPage() {
                   image: item.image,
                   owner: 'Unknown', // Se determinará en el componente
                   price: typeof item.price === 'string' && item.price !== 'No listado' ? 
-                    parseFloat(item.price.replace('USD ', '')) : undefined
+                    parseFloat(item.price.replace('USD ', '')) : undefined,
+                  symbol: 'UNBOX',
+                  uri: ''
                 }}
               />
             ))}
