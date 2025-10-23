@@ -49,6 +49,11 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
 
   const handleCardClick = () => {
     console.log('🖱️ Click en tarjeta MyNFT detectado');
+    console.log('📍 MyNFT data:', {
+      mint: nft.mint,
+      name: nft.name,
+      brand: nft.brand
+    });
     console.log('📍 Navegando a:', `/nft/${nft.mint}`);
     router.push(`/nft/${nft.mint}`);
   };

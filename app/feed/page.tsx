@@ -33,19 +33,27 @@ export default function FeedPage() {
   }
 
   // Solo usar NFTs reales - sin productos mock
-  const combinedNFTs = (allNFTs || []).map((nft, index) => ({
-    id: nft.mint, // Usar el mint real del NFT
-    name: nft.name || "NFT Item",
-    brand: nft.brand || "Unknown",
-    year: nft.year || "2024",
-    condition: nft.condition || "New",
-    price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
-    image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
-    likes: Math.floor(Math.random() * 100),
-    verified: true,
-    trending: Math.random() > 0.7,
-    isReal: true
-  }))
+  const combinedNFTs = (allNFTs || []).map((nft, index) => {
+    console.log(`🔍 NFT ${index}:`, {
+      mint: nft.mint,
+      name: nft.name,
+      brand: nft.brand
+    });
+    
+    return {
+      id: nft.mint, // Usar el mint real del NFT
+      name: nft.name || "NFT Item",
+      brand: nft.brand || "Unknown",
+      year: nft.year || "2024",
+      condition: nft.condition || "New",
+      price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
+      image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+      likes: Math.floor(Math.random() * 100),
+      verified: true,
+      trending: Math.random() > 0.7,
+      isReal: true
+    };
+  })
 
   const handleLike = (itemId: string) => {
     setLikedItems(prev => {
