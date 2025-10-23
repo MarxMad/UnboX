@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { useSupabaseAuth } from "@/app/hooks/useSupabaseAuth"
-import { supabaseTyped, isSupabaseAvailable } from "@/lib/supabase"
+import { supabaseTyped } from "@/lib/supabase"
 
 interface SupabaseContextType {
   isSupabaseReady: boolean
@@ -27,19 +27,13 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
   const [isSupabaseReady, setIsSupabaseReady] = useState(false)
 
   useEffect(() => {
-    // Verificar si Supabase está disponible
-    if (isSupabaseAvailable()) {
-      console.log('✅ Supabase está disponible');
+    // Marcar como listo después de un breve delay para permitir inicialización
+    const timer = setTimeout(() => {
+      console.log('✅ SupabaseProvider inicializado');
       setIsSupabaseReady(true);
-    } else {
-      console.log('❌ Supabase no está configurado correctamente');
-      // Marcar como listo después de un breve delay para permitir inicialización
-      const timer = setTimeout(() => {
-        setIsSupabaseReady(true)
-      }, 1000)
+    }, 1000)
 
-      return () => clearTimeout(timer)
-    }
+    return () => clearTimeout(timer)
   }, [])
 
   const value = {
