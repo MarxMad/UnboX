@@ -132,7 +132,7 @@ export default function FeedPage() {
                 className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
               >
                 <div className="relative aspect-square overflow-hidden bg-muted/20">
-                  <img src={item.image || "/placeholder.svg"} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={item.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
                   {item.trending && (
                     <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">HOT</Badge>
                   )}
@@ -201,13 +201,13 @@ export default function FeedPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {trendingItems.slice(0, 6).map((item) => (
+            {combinedNFTs.slice(0, 6).map((item) => (
               <Card
                 key={`recent-${item.id}`}
                 className="group overflow-hidden border-border hover:border-primary/50 transition-all cursor-pointer"
               >
                 <div className="relative aspect-square overflow-hidden bg-muted/20">
-                  <img src={item.image || "/placeholder.svg"} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={item.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
                   {item.verified && (
                     <Badge className="absolute top-2 right-2 bg-secondary text-secondary-foreground">Verified</Badge>
                   )}
