@@ -99,6 +99,14 @@ export default function NFTDetailPage() {
       console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
       console.log('🔍 AllNFTs disponibles:', allNFTs?.length || 0);
       console.log('🔍 UserNFTs disponibles:', userNFTs?.length || 0);
+      
+      // Logging detallado de los NFTs disponibles
+      if (allNFTs && allNFTs.length > 0) {
+        console.log('📋 AllNFTs mints:', allNFTs.map(nft => nft.mint));
+      }
+      if (userNFTs && userNFTs.length > 0) {
+        console.log('📋 UserNFTs mints:', userNFTs.map(nft => nft.mint));
+      }
 
       // Buscar el NFT en todas las listas
       let foundNFT = null;
@@ -107,12 +115,18 @@ export default function NFTDetailPage() {
       if (allNFTs && allNFTs.length > 0) {
         foundNFT = allNFTs.find(nft => nft.mint === mintAddress);
         console.log('🔍 Buscado en allNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+        if (foundNFT) {
+          console.log('✅ NFT encontrado en allNFTs:', foundNFT);
+        }
       }
       
       // Si no se encontró, buscar en userNFTs (perfil)
       if (!foundNFT && userNFTs && userNFTs.length > 0) {
         foundNFT = userNFTs.find(nft => nft.mint === mintAddress);
         console.log('🔍 Buscado en userNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
+        if (foundNFT) {
+          console.log('✅ NFT encontrado en userNFTs:', foundNFT);
+        }
       }
       
       if (foundNFT) {
