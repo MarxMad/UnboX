@@ -93,7 +93,7 @@ export default function NFTDetailPage() {
         mint: mintAddress,
         name: "Supreme Box Logo Hoodie",
         symbol: "SUPREME",
-        uri: "https://gateway.pinata.cloud/ipfs/QmExample",
+        uri: "https://gateway.pinata.cloud/ipfs/QmQc3YmAuVhKVA3avXjgTZAgage2EmXVLjbDJ3D11xqKsh",
         brand: "Supreme",
         model: "Box Logo Hoodie",
         size: "L",
@@ -115,11 +115,7 @@ export default function NFTDetailPage() {
         ]
       };
 
-      // Obtener imagen real desde metadata
-      console.log('🖼️ Obteniendo imagen desde metadata...');
-      const realImage = await getImageFromMetadata(mockNFT.uri);
-      mockNFT.image = realImage;
-      console.log('✅ Imagen obtenida:', realImage);
+      console.log('🖼️ Usando imagen directa de Pinata:', mockNFT.image);
 
       setNft(mockNFT);
     } catch (err) {
@@ -261,6 +257,14 @@ export default function NFTDetailPage() {
                 src={nft.image} 
                 alt={nft.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.log('❌ Error cargando imagen:', nft.image);
+                  // Fallback a imagen placeholder
+                  e.currentTarget.src = 'https://via.placeholder.com/600x600/1a1a1a/ffffff?text=' + encodeURIComponent(nft.name);
+                }}
+                onLoad={() => {
+                  console.log('✅ Imagen cargada exitosamente:', nft.image);
+                }}
               />
             </div>
             
