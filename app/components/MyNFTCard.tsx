@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DollarSign, XCircle, Award, Calendar } from 'lucide-react';
 import { ListNFTModal } from './ListNFTModal';
 
@@ -22,6 +23,7 @@ interface MyNFT {
 }
 
 export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
+  const router = useRouter();
   const [showListModal, setShowListModal] = useState(false);
 
   const rarityColors: Record<string, string> = {
@@ -44,9 +46,13 @@ export const MyNFTCard = ({ nft }: { nft: MyNFT }) => {
     alert('Listado cancelado');
   };
 
+  const handleCardClick = () => {
+    router.push(`/nft/${nft.mint}`);
+  };
+
   return (
     <>
-      <div className="glass-card overflow-hidden group">
+      <div className="glass-card overflow-hidden group cursor-pointer" onClick={handleCardClick}>
         {/* Image */}
         <div className="relative h-64 bg-gray-800 overflow-hidden">
           <img

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Calendar, Award, List, X } from 'lucide-react';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { ListNFTModal } from './ListNFTModal';
@@ -23,6 +24,7 @@ interface MarketplaceNFT {
 }
 
 export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
+  const router = useRouter();
   const wallet = useAnchorWallet();
   const [showListModal, setShowListModal] = useState(false);
   const rarityColors: Record<string, string> = {
@@ -54,8 +56,12 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
     alert(`Deslistando ${nft.name}`);
   };
 
+  const handleCardClick = () => {
+    router.push(`/nft/${nft.mint}`);
+  };
+
   return (
-    <div className="glass-card overflow-hidden group">
+    <div className="glass-card overflow-hidden group cursor-pointer" onClick={handleCardClick}>
       {/* Image */}
       <div className="relative h-64 bg-gray-800 overflow-hidden">
         <img
