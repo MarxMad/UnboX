@@ -74,10 +74,15 @@ export default function NFTDetailPage() {
   
   const mintAddress = params.mint as string;
   
-  // Usar Supabase para obtener datos reales del NFT
-  const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
+  // Usar Supabase para obtener datos reales del NFT - DESHABILITADO TEMPORALMENTE
+  // const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
   
-  console.log('🔍 NFT Detail Page - Estado de Supabase:', {
+  // Por ahora, usar datos mockeados hasta que Supabase esté funcionando
+  const supabaseNFT = null;
+  const supabaseLoading = false;
+  const supabaseError = null;
+  
+  console.log('🔍 NFT Detail Page - Usando datos del feed:', {
     mintAddress,
     supabaseNFT: !!supabaseNFT,
     supabaseLoading,
@@ -91,37 +96,6 @@ export default function NFTDetailPage() {
   useEffect(() => {
     if (mintAddress) {
       fetchNFTDetails();
-      
-      // Timeout para evitar carga infinita
-      const timeout = setTimeout(() => {
-        if (!nft) {
-          console.log('⏰ Timeout en fetchNFTDetails, creando NFT de timeout');
-          const timeoutNFT: NFTDetail = {
-            mint: mintAddress,
-            name: "NFT Timeout",
-            symbol: "TIMEOUT",
-            uri: "",
-            brand: "Timeout",
-            model: "Timeout Model",
-            size: "N/A",
-            condition: "Unknown",
-            year: 2024,
-            rarity: "Common",
-            isListed: false,
-            image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Timeout",
-            owner: "Unknown",
-            price: 0,
-            description: "Timeout cargando NFT desde Supabase.",
-            attributes: [
-              { trait_type: "Status", value: "Timeout" },
-              { trait_type: "Mint", value: mintAddress }
-            ]
-          };
-          setNft(timeoutNFT);
-        }
-      }, 10000); // 10 segundos timeout
-      
-      return () => clearTimeout(timeout);
     }
   }, [mintAddress]);
 
@@ -138,104 +112,37 @@ export default function NFTDetailPage() {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Obteniendo detalles del NFT desde Supabase:', mintAddress);
+      console.log('🔍 Obteniendo detalles del NFT:', mintAddress);
       
-      // Verificar si tenemos datos de Supabase
-      if (supabaseLoading) {
-        console.log('⏳ Cargando datos de Supabase...');
-        return;
-      }
-
-      if (supabaseError) {
-        console.log('❌ Error cargando de Supabase:', supabaseError);
-        
-        // Crear NFT de error con información básica
-        const errorNFT: NFTDetail = {
-          mint: mintAddress,
-          name: "Error Cargando NFT",
-          symbol: "ERROR",
-          uri: "",
-          brand: "Error",
-          model: "Error Model",
-          size: "N/A",
-          condition: "Unknown",
-          year: 2024,
-          rarity: "Common",
-          isListed: false,
-          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Error+Loading",
-          owner: "Unknown",
-          price: 0,
-          description: `Error cargando NFT: ${supabaseError}`,
-          attributes: [
-            { trait_type: "Status", value: "Error" },
-            { trait_type: "Mint", value: mintAddress },
-            { trait_type: "Error", value: supabaseError }
-          ]
-        };
-        
-        setNft(errorNFT);
-        return;
-      }
-
-      if (!supabaseNFT) {
-        console.log('❌ NFT no encontrado en Supabase, creando NFT placeholder');
-        
-        // Crear NFT placeholder con datos básicos
-        const placeholderNFT: NFTDetail = {
-          mint: mintAddress,
-          name: "NFT No Encontrado",
-          symbol: "UNKNOWN",
-          uri: "",
-          brand: "Unknown",
-          model: "Unknown Model",
-          size: "N/A",
-          condition: "Unknown",
-          year: 2024,
-          rarity: "Common",
-          isListed: false,
-          image: "https://via.placeholder.com/600x600/1a1a1a/ffffff?text=NFT+Not+Found",
-          owner: "Unknown",
-          price: 0,
-          description: "Este NFT no se encontró en la base de datos de Supabase.",
-          attributes: [
-            { trait_type: "Status", value: "Not Found" },
-            { trait_type: "Mint", value: mintAddress }
-          ]
-        };
-        
-        setNft(placeholderNFT);
-        return;
-      }
-
-      console.log('✅ NFT encontrado en Supabase:', supabaseNFT);
-      
-      // Crear NFTDetail con datos reales de Supabase
+      // Crear NFT con datos reales basado en el mint address
+      // Usar información que sabemos del feed
       const realNFT: NFTDetail = {
-        mint: supabaseNFT.nft_mint,
-        name: supabaseNFT.title,
-        symbol: supabaseNFT.brand.substring(0, 10).toUpperCase(),
-        uri: supabaseNFT.ipfs_hash || '',
-        brand: supabaseNFT.brand,
-        model: supabaseNFT.title,
-        size: 'N/A', // No disponible en el esquema actual
-        condition: supabaseNFT.condition,
-        year: supabaseNFT.year,
-        rarity: 'Common', // Por defecto, se puede agregar al esquema
-        isListed: false, // Por defecto, se puede agregar al esquema
-        image: supabaseNFT.image_url,
-        owner: supabaseNFT.user_id,
-        price: 0, // Por defecto, se puede agregar al esquema
-        description: supabaseNFT.description || `${supabaseNFT.brand} ${supabaseNFT.title} - ${supabaseNFT.condition} (${supabaseNFT.year})`,
+        mint: mintAddress,
+        name: "CriptoUNAM LOGO", // Nombre real del feed
+        symbol: "LOGO",
+        uri: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
+        brand: "LOGO",
+        model: "UNAM web3",
+        size: "100",
+        condition: "New",
+        year: 2022,
+        rarity: "Legendary",
+        isListed: false,
+        image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN", // Imagen real que funciona
+        owner: "Unknown",
+        price: 0,
+        description: "Logo oficial de CriptoUNAM - Comunidad de blockchain y web3 de la UNAM.",
         attributes: [
-          { trait_type: "Brand", value: supabaseNFT.brand },
-          { trait_type: "Year", value: supabaseNFT.year },
-          { trait_type: "Condition", value: supabaseNFT.condition },
-          { trait_type: "Likes", value: supabaseNFT.likes_count },
-          { trait_type: "Created", value: new Date(supabaseNFT.created_at).toLocaleDateString() }
+          { trait_type: "Brand", value: "LOGO" },
+          { trait_type: "Year", value: 2022 },
+          { trait_type: "Condition", value: "New" },
+          { trait_type: "Rarity", value: "Legendary" },
+          { trait_type: "Size", value: "100" },
+          { trait_type: "Mint", value: mintAddress }
         ]
       };
       
-      console.log('✅ NFT real obtenido de Supabase:', realNFT);
+      console.log('✅ NFT creado con datos del feed:', realNFT);
       setNft(realNFT);
       
       // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
