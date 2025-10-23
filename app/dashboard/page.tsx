@@ -147,7 +147,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <a
                 href="/tokenize"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+                className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-3 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transition-all text-white"
               >
                 Tokenizar Más
               </a>

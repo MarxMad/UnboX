@@ -142,7 +142,7 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
             nft.isListed && nft.price ? (
               <button
                 onClick={handleBuy}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 flex items-center space-x-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 rounded-lg font-semibold hover:from-blue-500 hover:to-blue-600 transition-all transform hover:scale-105 flex items-center space-x-2 text-white"
               >
                 <ShoppingCart className="w-4 h-4" />
                 <span>Comprar</span>
