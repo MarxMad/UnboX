@@ -30,72 +30,16 @@ export default function ProfilePage() {
     return null
   }
 
-  // Datos mock para mostrar contenido cuando no hay NFTs reales
-  const userItems = [
-    {
-      id: 1,
-      name: "Supreme Box Logo Hoodie",
-      brand: "Supreme",
-      image: "/supreme-hoodie-streetwear.jpg",
-      price: "USD 850",
-      likes: 234,
-    },
-    {
-      id: 2,
-      name: "Nike Dunk Low Panda",
-      brand: "Nike",
-      image: "/nike-dunk-low-panda-black-white.jpg",
-      price: "USD 220",
-      likes: 189,
-    },
-    {
-      id: 3,
-      name: "KAWS Companion Figure",
-      brand: "KAWS",
-      image: "/kaws-companion-grey-figure-art-toy.jpg",
-      price: "USD 1,200",
-      likes: 456,
-    },
-    {
-      id: 4,
-      name: "Bape Shark Hoodie",
-      brand: "A Bathing Ape",
-      image: "/bape-shark-hoodie-camo-green.jpg",
-      price: "USD 650",
-      likes: 167,
-    },
-    {
-      id: 5,
-      name: "Jordan 1 Retro High OG",
-      brand: "Nike",
-      image: "/air-jordan-1-retro-high-chicago-red.jpg",
-      price: "USD 380",
-      likes: 312,
-    },
-    {
-      id: 6,
-      name: "Off-White Belt",
-      brand: "Off-White",
-      image: "/off-white-industrial-belt-yellow.jpg",
-      price: "USD 180",
-      likes: 145,
-    },
-  ]
-
-  // Combinar NFTs reales del usuario con datos mock
-  const combinedUserItems = [
-    ...(userNFTs || []).map((nft, index) => ({
-      id: `user-${index}`,
-      name: nft.name || "My NFT",
-      brand: nft.brand || "Unknown",
-      image: "/placeholder.svg",
-      price: "USD 0", // Los NFTs del usuario no tienen precio de venta
-      likes: Math.floor(Math.random() * 50),
-      isReal: true
-    })),
-    // Mantener algunos items mock para mostrar contenido
-    ...userItems.slice(0, 3).map(item => ({ ...item, isReal: false }))
-  ]
+  // Solo usar NFTs reales del usuario - sin productos mock
+  const combinedUserItems = (userNFTs || []).map((nft, index) => ({
+    id: `user-${index}`,
+    name: nft.name || "My NFT",
+    brand: nft.brand || "Unknown",
+    image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+    price: nft.isListed && nft.listPrice ? `USD ${nft.listPrice}` : "No listado",
+    likes: Math.floor(Math.random() * 50),
+    isReal: true
+  }))
 
   const handleLike = (itemId: number) => {
     setLikedItems(prev => {

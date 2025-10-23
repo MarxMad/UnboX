@@ -31,100 +31,20 @@ export default function FeedPage() {
     return null
   }
 
-  // Datos mock para mostrar contenido cuando no hay NFTs reales
-  const trendingItems = [
-    {
-      id: 1,
-      name: "Supreme Box Logo Hoodie",
-      brand: "Supreme",
-      year: "2023",
-      condition: "New",
-      price: "USD 850",
-      image: "/supreme-hoodie-streetwear.jpg",
-      likes: 234,
-      verified: true,
-      trending: true,
-    },
-    {
-      id: 2,
-      name: "Nike Dunk Low Panda",
-      brand: "Nike",
-      year: "2024",
-      condition: "Used - Excellent",
-      price: "USD 220",
-      image: "/nike-dunk-low-panda-black-white.jpg",
-      likes: 189,
-      verified: true,
-      trending: false,
-    },
-    {
-      id: 3,
-      name: "KAWS Companion Figure",
-      brand: "KAWS",
-      year: "2022",
-      condition: "New",
-      price: "USD 1,200",
-      image: "/kaws-companion-grey-figure-art-toy.jpg",
-      likes: 456,
-      verified: true,
-      trending: true,
-    },
-    {
-      id: 4,
-      name: "Bape Shark Hoodie",
-      brand: "A Bathing Ape",
-      year: "2023",
-      condition: "New",
-      price: "USD 650",
-      image: "/bape-shark-hoodie-camo-green.jpg",
-      likes: 167,
-      verified: true,
-      trending: false,
-    },
-    {
-      id: 5,
-      name: "Rolex Submariner",
-      brand: "Rolex",
-      year: "2021",
-      condition: "Used - Good",
-      price: "USD 12,500",
-      image: "/rolex-submariner-black-watch-luxury.jpg",
-      likes: 892,
-      verified: true,
-      trending: true,
-    },
-    {
-      id: 6,
-      name: "Jordan 1 Retro High OG",
-      brand: "Nike",
-      year: "2024",
-      condition: "New",
-      price: "USD 380",
-      image: "/air-jordan-1-retro-high-chicago-red.jpg",
-      likes: 312,
-      verified: true,
-      trending: false,
-    },
-  ]
-
-  // Combinar NFTs reales con datos mock para mostrar algo
-  const combinedNFTs = [
-    ...(allNFTs || []).map((nft, index) => ({
-      id: `real-${index}`,
-      name: nft.name || "NFT Item",
-      brand: nft.brand || "Unknown",
-      year: nft.year || "2024",
-      condition: nft.condition || "New",
-      price: "USD 0", // Los NFTs reales no tienen precio por ahora
-      image: "/placeholder.svg",
-      likes: Math.floor(Math.random() * 100),
-      verified: true,
-      trending: Math.random() > 0.7,
-      isReal: true
-    })),
-    // Mantener algunos items mock para mostrar contenido
-    ...trendingItems.slice(0, 3).map(item => ({ ...item, isReal: false }))
-  ]
+  // Solo usar NFTs reales - sin productos mock
+  const combinedNFTs = (allNFTs || []).map((nft, index) => ({
+    id: `real-${index}`,
+    name: nft.name || "NFT Item",
+    brand: nft.brand || "Unknown",
+    year: nft.year || "2024",
+    condition: nft.condition || "New",
+    price: nft.isListed && nft.price ? `USD ${nft.price}` : "No listado",
+    image: nft.image || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
+    likes: Math.floor(Math.random() * 100),
+    verified: true,
+    trending: Math.random() > 0.7,
+    isReal: true
+  }))
 
   const handleLike = (itemId: number) => {
     setLikedItems(prev => {

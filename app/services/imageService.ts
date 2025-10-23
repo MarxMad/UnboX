@@ -83,12 +83,13 @@ export async function getImageFromMetadata(uri: string): Promise<string> {
 
     // Verificar que la imagen sea accesible
     try {
+      console.log('🔍 Verificando accesibilidad de imagen:', imageUrl);
       const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
       if (imageResponse.ok) {
         console.log('✅ Imagen verificada y accesible');
         return imageUrl;
       } else {
-        console.log('❌ Imagen no accesible:', imageResponse.status);
+        console.log('❌ Imagen no accesible:', imageResponse.status, imageResponse.statusText);
         return placeholder;
       }
     } catch (imageError) {
