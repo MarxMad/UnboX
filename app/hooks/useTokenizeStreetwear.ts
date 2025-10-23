@@ -73,12 +73,21 @@ export function useTokenizeStreetwear() {
       throw new Error('Wallet no conectado');
     }
 
-        // Verificar balance antes de proceder
-        console.log('💰 Verificando balance...');
-        const balance = await connection.getBalance(publicKey);
-        console.log('Balance actual:', balance / LAMPORTS_PER_SOL, 'SOL');
-        console.log('Balance en lamports:', balance);
-        console.log('Network endpoint:', connection.rpcEndpoint);
+      // Verificar balance antes de proceder
+      console.log('💰 Verificando balance...');
+      const balance = await connection.getBalance(publicKey);
+      console.log('Balance actual:', balance / LAMPORTS_PER_SOL, 'SOL');
+      console.log('Balance en lamports:', balance);
+      console.log('Network endpoint:', connection.rpcEndpoint);
+      console.log('Wallet address:', publicKey.toString());
+      
+      // Verificar que estamos en devnet
+      const isDevnet = connection.rpcEndpoint?.includes('devnet');
+      console.log('🌐 ¿Estamos en devnet?', isDevnet);
+      
+      if (!isDevnet) {
+        console.warn('⚠️ ADVERTENCIA: No estamos en devnet!');
+      }
         
         // Calcular rent para todas las cuentas que vamos a crear
         const mintRent = await connection.getMinimumBalanceForRentExemption(0);
@@ -202,6 +211,8 @@ export function useTokenizeStreetwear() {
 
       // Obtener PDA del asset
       const [assetPda] = await getAssetPDA(publicKey, mint);
+      console.log('🏠 Asset PDA calculado:', assetPda.toString());
+      console.log('🔍 Seeds para PDA: owner=', publicKey.toString(), 'mint=', mint.toString());
 
       console.log('🔗 8. Obteniendo blockhash...');
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
@@ -263,8 +274,8 @@ export function useTokenizeStreetwear() {
           };
           const rarityBuffer = Buffer.from([rarityMap[params.rarity] || 0]);
           
-          // Crear el buffer de datos completo con serialización correcta
-          // Usar Borsh serialization para strings (4 bytes length + data)
+          // Crear el buffer de datos completo con serialización Borsh correcta
+          // Borsh serialization: discriminator + strings (4 bytes length + data) + primitives
           const serializeString = (str: string) => {
             const strBuffer = Buffer.from(str, 'utf8');
             const lengthBuffer = Buffer.alloc(4);
@@ -272,17 +283,18 @@ export function useTokenizeStreetwear() {
             return Buffer.concat([lengthBuffer, strBuffer]);
           };
           
+          // Serializar en el orden correcto según el IDL
           const dataBuffer = Buffer.concat([
-            discriminator,
-            serializeString(params.name),
-            serializeString(symbol),
-            serializeString(uri),
-            serializeString(params.brand),
-            serializeString(params.model || params.name),
-            serializeString(params.size),
-            serializeString(params.condition),
-            yearBuffer,
-            rarityBuffer,
+            discriminator,                    // 8 bytes discriminator
+            serializeString(params.name),      // string
+            serializeString(symbol),           // string  
+            serializeString(uri),             // string
+            serializeString(params.brand),     // string
+            serializeString(params.model || params.name), // string
+            serializeString(params.size),      // string
+            serializeString(params.condition), // string
+            yearBuffer,                       // u16 (2 bytes)
+            rarityBuffer,                     // enum (1 byte)
           ]);
           
           console.log('📦 Datos serializados:', dataBuffer.toString('hex'));
@@ -334,11 +346,19 @@ export function useTokenizeStreetwear() {
 
           // El mintKeypair también debe firmar la transacción
           console.log('✍️ Firmando con mint keypair...');
+          console.log('🔑 Mint keypair public key:', mintKeypair.publicKey.toString());
           transaction.partialSign(mintKeypair);
+          
+          // Verificar que el mint keypair esté en los signers
+          console.log('🔍 Signers después de partialSign:', transaction.signatures.map(s => s.publicKey.toString()));
 
           // Firmar y enviar la transacción
           console.log('✍️ Firmando transacción con wallet...');
           const signedTransaction = await signTransaction!(transaction);
+          
+          // Verificar todas las firmas
+          console.log('🔍 Signers finales:', signedTransaction.signatures.map(s => s.publicKey.toString()));
+          console.log('🔍 Signatures count:', signedTransaction.signatures.length);
           
           console.log('📤 Enviando transacción firmada...');
           const tx = await connection.sendRawTransaction(signedTransaction.serialize(), {
