@@ -70,7 +70,7 @@ export function useTokenizeStreetwear() {
     });
 
     // Validar año antes de proceder
-    if (params.year < 1990 || params.year > 2024) {
+    if (params.year < 1990 || params.year > 2025) {
       throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y 2024.`);
     }
     
@@ -85,14 +85,6 @@ export function useTokenizeStreetwear() {
       console.log('Balance en lamports:', balance);
       console.log('Network endpoint:', connection.rpcEndpoint);
       console.log('Wallet address:', publicKey.toString());
-      
-      // Verificar que estamos en devnet
-      const isDevnet = connection.rpcEndpoint?.includes('devnet');
-      console.log('🌐 ¿Estamos en devnet?', isDevnet);
-      
-      if (!isDevnet) {
-        console.warn('⚠️ ADVERTENCIA: No estamos en devnet!');
-      }
         
         // Calcular rent para todas las cuentas que vamos a crear
         const mintRent = await connection.getMinimumBalanceForRentExemption(0);
