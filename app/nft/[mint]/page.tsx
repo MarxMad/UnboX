@@ -15,6 +15,7 @@ import { useBuyNFT } from '../../hooks/useBuyNFT';
 import { useCancelListing } from '../../hooks/useCancelListing';
 // import { useAllNFTs } from '../../hooks/useAllNFTs';
 // import { useUserNFTs } from '../../hooks/useUserNFTs';
+import { useSupabaseNFT } from '../../hooks/useSupabaseNFT';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -71,9 +72,8 @@ export default function NFTDetailPage() {
   // const { allNFTs } = useAllNFTs();
   // const { nfts: userNFTs } = useUserNFTs();
   
-  // Usar solo Supabase para mejor rendimiento
-  const allNFTs = null;
-  const userNFTs = null;
+  // Usar Supabase para obtener datos reales del NFT
+  const { nft: supabaseNFT, loading: supabaseLoading, error: supabaseError } = useSupabaseNFT(mintAddress);
 
   const mintAddress = params.mint as string;
   
@@ -87,13 +87,13 @@ export default function NFTDetailPage() {
     }
   }, [mintAddress]);
 
-  // Re-ejecutar cuando cambien los datos de los hooks - DESHABILITADO
-  // useEffect(() => {
-  //   if (mintAddress && (allNFTs || userNFTs)) {
-  //     console.log('🔄 Datos de hooks actualizados, re-ejecutando fetchNFTDetails');
-  //     fetchNFTDetails();
-  //   }
-  // }, [mintAddress, allNFTs, userNFTs]);
+  // Re-ejecutar cuando cambien los datos de Supabase
+  useEffect(() => {
+    if (mintAddress && supabaseNFT) {
+      console.log('🔄 Datos de Supabase actualizados, re-ejecutando fetchNFTDetails');
+      fetchNFTDetails();
+    }
+  }, [mintAddress, supabaseNFT]);
 
   const fetchNFTDetails = async () => {
     try {
@@ -102,69 +102,54 @@ export default function NFTDetailPage() {
 
       console.log('🔍 Obteniendo detalles del NFT desde Supabase:', mintAddress);
       
-      // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
-      // console.log('🔍 AllNFTs disponibles:', allNFTs?.length || 0);
-      // console.log('🔍 UserNFTs disponibles:', userNFTs?.length || 0);
-      
-      // // Logging detallado de los NFTs disponibles
-      // if (allNFTs && allNFTs.length > 0) {
-      //   console.log('📋 AllNFTs mints:', allNFTs.map(nft => nft.mint));
-      // }
-      // if (userNFTs && userNFTs.length > 0) {
-      //   console.log('📋 UserNFTs mints:', userNFTs.map(nft => nft.mint));
-      // }
+      // Verificar si tenemos datos de Supabase
+      if (supabaseLoading) {
+        console.log('⏳ Cargando datos de Supabase...');
+        return;
+      }
 
-      // // Buscar el NFT en todas las listas
-      // let foundNFT = null;
+      if (supabaseError) {
+        console.log('❌ Error cargando de Supabase:', supabaseError);
+        setError('Error cargando NFT desde Supabase');
+        return;
+      }
+
+      if (!supabaseNFT) {
+        console.log('❌ NFT no encontrado en Supabase');
+        setError('NFT no encontrado en la base de datos');
+        return;
+      }
+
+      console.log('✅ NFT encontrado en Supabase:', supabaseNFT);
       
-      // // Buscar en allNFTs (feed)
-      // if (allNFTs && allNFTs.length > 0) {
-      //   foundNFT = allNFTs.find(nft => nft.mint === mintAddress);
-      //   console.log('🔍 Buscado en allNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
-      //   if (foundNFT) {
-      //     console.log('✅ NFT encontrado en allNFTs:', foundNFT);
-      //   }
-      // }
-      
-      // // Si no se encontró, buscar en userNFTs (perfil)
-      // if (!foundNFT && userNFTs && userNFTs.length > 0) {
-      //   foundNFT = userNFTs.find(nft => nft.mint === mintAddress);
-      //   console.log('🔍 Buscado en userNFTs:', foundNFT ? 'Encontrado' : 'No encontrado');
-      //   if (foundNFT) {
-      //     console.log('✅ NFT encontrado en userNFTs:', foundNFT);
-      //   }
-      // }
-      
-      // TODO: Implementar búsqueda en Supabase
-      // Por ahora, mostrar mensaje de que solo se soportan NFTs de Supabase
-      console.log('📋 Buscando NFT en Supabase...');
-      
-      // Crear NFT placeholder que indica que solo se soportan NFTs de Supabase
-      const supabaseOnlyNFT: NFTDetail = {
-        mint: mintAddress,
-        name: "NFT de Supabase",
-        symbol: "SUPABASE",
-        uri: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
-        brand: "Supabase",
-        model: "Database NFT",
-        size: "N/A",
-        condition: "Optimized",
-        year: 2024,
-        rarity: "Common",
-        isListed: false,
-        image: "https://gateway.pinata.cloud/ipfs/QmZaCbmC2eczUhR2STWNq4x3pFiipyd5h5FCyKZfR7GXbN",
-        owner: "Unknown",
-        price: 0,
-        description: "Este NFT está optimizado para Supabase. Solo se muestran NFTs guardados en la base de datos para mejor rendimiento.",
+      // Crear NFTDetail con datos reales de Supabase
+      const realNFT: NFTDetail = {
+        mint: supabaseNFT.nft_mint,
+        name: supabaseNFT.title,
+        symbol: supabaseNFT.brand.substring(0, 10).toUpperCase(),
+        uri: supabaseNFT.ipfs_hash || '',
+        brand: supabaseNFT.brand,
+        model: supabaseNFT.title,
+        size: 'N/A', // No disponible en el esquema actual
+        condition: supabaseNFT.condition,
+        year: supabaseNFT.year,
+        rarity: 'Common', // Por defecto, se puede agregar al esquema
+        isListed: false, // Por defecto, se puede agregar al esquema
+        image: supabaseNFT.image_url,
+        owner: supabaseNFT.user_id,
+        price: 0, // Por defecto, se puede agregar al esquema
+        description: supabaseNFT.description || `${supabaseNFT.brand} ${supabaseNFT.title} - ${supabaseNFT.condition} (${supabaseNFT.year})`,
         attributes: [
-          { trait_type: "Source", value: "Supabase Only" },
-          { trait_type: "Performance", value: "Optimized" },
-          { trait_type: "Status", value: "Database NFT" }
+          { trait_type: "Brand", value: supabaseNFT.brand },
+          { trait_type: "Year", value: supabaseNFT.year },
+          { trait_type: "Condition", value: supabaseNFT.condition },
+          { trait_type: "Likes", value: supabaseNFT.likes_count },
+          { trait_type: "Created", value: new Date(supabaseNFT.created_at).toLocaleDateString() }
         ]
       };
       
-      console.log('✅ NFT de Supabase creado:', supabaseOnlyNFT);
-      setNft(supabaseOnlyNFT);
+      console.log('✅ NFT real obtenido de Supabase:', realNFT);
+      setNft(realNFT);
       
       // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
       /*
@@ -370,7 +355,7 @@ export default function NFTDetailPage() {
     Legendary: 'bg-yellow-500',
   };
 
-  if (loading) {
+  if (loading || supabaseLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
