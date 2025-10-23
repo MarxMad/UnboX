@@ -35,7 +35,7 @@ export default function TokenizePage() {
     model: "",
     size: "",
     condition: "",
-    year: new Date().getFullYear(),
+    year: 2024,
     rarity: "Common",
     description: ""
   })
@@ -362,16 +362,26 @@ export default function TokenizePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="year">Year *</Label>
+                  <Label htmlFor="year">Year * (1990-2024)</Label>
                   <Input 
                     id="year" 
                     type="number" 
                     placeholder="2024" 
                     className="bg-muted/50"
                     value={formData.year}
-                    onChange={(e) => handleInputChange("year", parseInt(e.target.value))}
+                    min="1990"
+                    max="2024"
+                    onChange={(e) => {
+                      const year = parseInt(e.target.value);
+                      if (year >= 1990 && year <= 2024) {
+                        handleInputChange("year", year);
+                      }
+                    }}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Solo artículos de 1990 a 2024
+                  </p>
                 </div>
 
                 <div className="space-y-2">

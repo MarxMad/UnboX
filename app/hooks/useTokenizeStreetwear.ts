@@ -68,6 +68,11 @@ export function useTokenizeStreetwear() {
       rarity: params.rarity,
       image: params.image?.name
     });
+
+    // Validar año antes de proceder
+    if (params.year < 1990 || params.year > 2024) {
+      throw new Error(`Año inválido: ${params.year}. Debe estar entre 1990 y 2024.`);
+    }
     
     if (!publicKey || !connection) {
       throw new Error('Wallet no conectado');
