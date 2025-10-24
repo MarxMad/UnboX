@@ -68,7 +68,39 @@ export function useRealtimeFeed() {
     // Cargar artículos iniciales
     fetchInitialArticles()
 
-    // Configurar suscripción en tiempo real
+    // REALTIME DESHABILITADO TEMPORALMENTE PARA EVITAR PROBLEMAS DE WEBSOCKET
+    console.log('⚠️ Realtime deshabilitado para evitar problemas de WebSocket');
+    
+    // En lugar de realtime, hacer polling cada 30 segundos
+    const pollingInterval = setInterval(async () => {
+      try {
+        console.log('🔄 Polling para actualizar artículos...');
+        const { data: updatedArticles, error } = await supabaseTyped
+          .from('articles_with_likes')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('❌ Error en polling:', error);
+          return;
+        }
+
+        if (updatedArticles) {
+          console.log('✅ Artículos actualizados via polling:', updatedArticles.length);
+          setArticles(updatedArticles);
+        }
+      } catch (err) {
+        console.error('❌ Error en polling:', err);
+      }
+    }, 30000); // 30 segundos
+
+    return () => {
+      console.log('🧹 Limpiando polling');
+      clearInterval(pollingInterval);
+    };
+
+    // CÓDIGO DE REALTIME COMENTADO TEMPORALMENTE
+    /*
     const realtimeChannel = supabaseTyped
       .channel('articles_changes')
       .on(
@@ -134,13 +166,16 @@ export function useRealtimeFeed() {
       .subscribe()
 
     setChannel(realtimeChannel)
+    */
 
-    // Cleanup
+    // Cleanup comentado temporalmente
+    /*
     return () => {
       if (realtimeChannel) {
         supabaseTyped.removeChannel(realtimeChannel)
       }
     }
+    */
   }, [fetchInitialArticles])
 
   const addArticle = useCallback((article: Article) => {
