@@ -101,19 +101,19 @@ export default function RegisterPage() {
     } catch (error) {
       console.error("Registration failed:", error)
       
-      const errorMessage = error instanceof Error ? error.message : "No se pudo crear la cuenta. Inténtalo de nuevo."
+      const errorMessage = error instanceof Error ? error.message : "Unable to create account. Please try again."
       
       // Si el error es que el usuario ya existe, ofrecer limpiar y reintentar
-      if (errorMessage.includes("ya existe")) {
+      if (errorMessage.includes("already exists")) {
         (window as any).addNotification?.({
           type: "error",
-          title: "Usuario ya existe",
-          message: "Ya existe una cuenta con este email. Si olvidaste tu contraseña, ve a la página de login. O usa un email diferente."
+          title: "User Already Exists",
+          message: "An account with this email already exists. If you forgot your password, go to the login page. Or use a different email."
         })
       } else {
         (window as any).addNotification?.({
           type: "error",
-          title: "Error de registro",
+          title: "Registration Error",
           message: errorMessage
         })
       }

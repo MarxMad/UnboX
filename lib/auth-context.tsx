@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userExists = existingUsers.some((user: User) => user.email === email)
     
     if (userExists) {
-      throw new Error("El usuario ya existe con este email")
+      throw new Error("User already exists with this email")
     }
 
     const newUser: User = {
