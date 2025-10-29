@@ -15,7 +15,7 @@ export const Navbar = () => {
   if (!mounted) {
     return (
       <nav className="bg-black/30 backdrop-blur-md border-b border-purple-500/20 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
@@ -27,30 +27,30 @@ export const Navbar = () => {
               </span>
             </Link>
 
-            {/* Navigation Links - Hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-8">
-              <Link 
-                href="/" 
-                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
-              >
-                <Store className="w-5 h-5" />
-                <span>Marketplace</span>
-              </Link>
-              <Link 
-                href="/tokenize" 
-                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
-              >
-                <Shirt className="w-5 h-5" />
-                <span>Tokenizar</span>
-              </Link>
-              <Link 
-                href="/dashboard" 
-                className="hover:text-purple-400 transition-colors flex items-center space-x-2"
-              >
-                <User className="w-5 h-5" />
-                <span>Mi Colección</span>
-              </Link>
-            </div>
+          {/* Navigation Links - Hidden on mobile */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link 
+              href="/" 
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
+            >
+              <Store className="w-6 h-6" />
+              <span>Marketplace</span>
+            </Link>
+            <Link 
+              href="/tokenize" 
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
+            >
+              <Shirt className="w-6 h-6" />
+              <span>Tokenize</span>
+            </Link>
+            <Link 
+              href="/dashboard" 
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
+            >
+              <User className="w-6 h-6" />
+              <span>My Collection</span>
+            </Link>
+          </div>
 
             {/* Wallet Connect Button - Loading */}
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold animate-pulse">
@@ -64,22 +64,22 @@ export const Navbar = () => {
               href="/" 
               className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
             >
-              <Store className="w-5 h-5" />
-              <span className="text-xs">Market</span>
+              <Store className="w-6 h-6" />
+              <span className="text-sm font-medium">Market</span>
             </Link>
             <Link 
               href="/tokenize" 
               className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
             >
-              <Shirt className="w-5 h-5" />
-              <span className="text-xs">Tokenizar</span>
+              <Shirt className="w-6 h-6" />
+              <span className="text-sm font-medium">Tokenizar</span>
             </Link>
             <Link 
               href="/dashboard" 
               className="flex flex-col items-center space-y-1 hover:text-purple-400 transition-colors"
             >
-              <User className="w-5 h-5" />
-              <span className="text-xs">Colección</span>
+              <User className="w-6 h-6" />
+              <span className="text-sm font-medium">Colección</span>
             </Link>
           </div>
         </div>
@@ -89,7 +89,7 @@ export const Navbar = () => {
 
   return (
     <nav className="bg-black/30 backdrop-blur-md border-b border-purple-500/20 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 text-2xl font-bold">
@@ -105,24 +105,24 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/" 
-              className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
             >
-              <Store className="w-5 h-5" />
+              <Store className="w-6 h-6" />
               <span>Marketplace</span>
             </Link>
             <Link 
               href="/tokenize" 
-              className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
             >
-              <Shirt className="w-5 h-5" />
-              <span>Tokenizar</span>
+              <Shirt className="w-6 h-6" />
+              <span>Tokenize</span>
             </Link>
             <Link 
               href="/dashboard" 
-              className="hover:text-purple-400 transition-colors flex items-center space-x-2"
+              className="hover:text-purple-400 transition-colors flex items-center space-x-2 text-base font-medium"
             >
-              <User className="w-5 h-5" />
-              <span>Mi Colección</span>
+              <User className="w-6 h-6" />
+              <span>My Collection</span>
             </Link>
           </div>
 

@@ -72,7 +72,7 @@ export default function FeedPage() {
           year: article.year || "2024",
           condition: article.condition || "New",
           rarity: article.rarity,
-          price: "No listado", // Los artículos de Supabase no tienen precio por ahora
+          price: "Not listed", // Los artículos de Supabase no tienen precio por ahora
           image: article.image_url || "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image",
           likes: article.likes_count || 0,
           verified: true,
@@ -258,8 +258,8 @@ export default function FeedPage() {
                     year: item.year || 2024,
                     condition: item.condition || 'New',
                     rarity: item.rarity || 'Common',
-                    price: typeof item.price === 'string' && item.price !== 'No listado' ? 
-                      item.price : 'No listado',
+                    price: typeof item.price === 'string' && item.price !== 'Not listed' ? 
+                      item.price : 'Not listed',
                     image: item.image,
                     likes: item.likes || 0,
                     verified: item.verified || false,

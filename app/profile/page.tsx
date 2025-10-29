@@ -185,7 +185,7 @@ export default function ProfilePage() {
                     year: 2024,
                     condition: 'New',
                     rarity: 'Common',
-                    price: 'No listado',
+                    price: 'Not listed',
                     image: item.image,
                     likes: item.likes || 0,
                     verified: item.verified || false,

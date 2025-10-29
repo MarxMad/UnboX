@@ -114,11 +114,11 @@ export const NFTCard = ({ nft }: { nft: MarketplaceNFT }) => {
           <div>
             {nft.isListed && nft.price ? (
               <>
-                <div className="text-xs text-gray-400">Precio</div>
+                <div className="text-xs text-gray-400">Price</div>
                 <div className="text-2xl font-bold text-purple-400">{nft.price} SOL</div>
               </>
             ) : (
-              <div className="text-sm text-gray-500">No listado</div>
+              <div className="text-sm text-gray-500">Not listed</div>
             )}
           </div>
           
