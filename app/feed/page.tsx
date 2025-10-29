@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Heart, Share2, Filter, Loader2 } from "lucide-react"
+import { TrendingUp, Heart, Share2, Filter, Loader2, PackageX, Sparkles, ArrowRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 // import { useAllNFTs } from "@/app/hooks/useAllNFTs"
@@ -207,8 +207,35 @@ export default function FeedPage() {
           </div>
         )}
 
+        {/* Empty State */}
+        {!isLoading && filteredNFTs.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 px-4">
+            <div className="max-w-md mx-auto text-center space-y-6">
+              <div className="mx-auto w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
+                <PackageX className="h-12 w-12 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-2">Nothing here yet</h3>
+                <p className="text-muted-foreground">
+                  Be the first to tokenize in the <span className="font-semibold text-primary">{selectedCategory}</span> category!
+                  Start building your digital collection on Solana.
+                </p>
+              </div>
+              <Button 
+                onClick={() => router.push('/tokenize')}
+                size="lg"
+                className="gap-2"
+              >
+                <Sparkles className="h-5 w-5" />
+                Tokenize Your First Item
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Trending Section */}
-        {!isLoading && (
+        {!isLoading && filteredNFTs.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -256,7 +283,7 @@ export default function FeedPage() {
         )}
 
         {/* Recent Drops */}
-        {!isLoading && (
+        {!isLoading && filteredNFTs.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Drops</h2>
