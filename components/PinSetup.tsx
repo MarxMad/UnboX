@@ -23,17 +23,17 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
     e.preventDefault()
     
     if (pin.length !== 4) {
-      setError("El PIN debe tener exactamente 4 dígitos")
+      setError("PIN must be exactly 4 digits")
       return
     }
 
     if (pin !== confirmPin) {
-      setError("Los PINs no coinciden")
+      setError("PINs do not match")
       return
     }
 
     if (pin === "0000" || pin === "1111" || pin === "1234") {
-      setError("Por seguridad, no uses PINs comunes como 0000, 1111 o 1234")
+      setError("For security, do not use common PINs like 0000, 1111, or 1234")
       return
     }
 
@@ -57,16 +57,16 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
             <Shield className="h-8 w-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">🔐 Configurar PIN de Seguridad</h2>
+            <h2 className="text-2xl font-bold">🔐 Set Up Security PIN</h2>
             <p className="text-muted-foreground">
-              Tu PIN protegerá las transacciones importantes. Elige un PIN de 4 dígitos que puedas recordar fácilmente.
+              Your PIN will protect important transactions. Choose a 4-digit PIN that you can easily remember.
             </p>
           </div>
         </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="pin">PIN de Seguridad</Label>
+          <Label htmlFor="pin">Security PIN</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -92,7 +92,7 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPin">Confirmar PIN</Label>
+          <Label htmlFor="confirmPin">Confirm PIN</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -130,7 +130,7 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
             disabled={!isFormValid}
           >
             <Shield className="mr-2 h-4 w-4" />
-            Configurar PIN
+            Set Up PIN
           </Button>
           
           {onSkip && (
@@ -140,18 +140,18 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
               onClick={onSkip}
               className="w-full"
             >
-              Configurar más tarde
+              Set up later
             </Button>
           )}
         </div>
       </form>
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Consejos de Seguridad:</h4>
+        <h4 className="font-medium text-blue-900 mb-2">💡 Security Tips:</h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• No uses fechas de nacimiento o números fáciles</li>
-          <li>• No compartas tu PIN con nadie</li>
-          <li>• Puedes cambiarlo en cualquier momento en Settings</li>
+          <li>• Don't use birth dates or easy numbers</li>
+          <li>• Don't share your PIN with anyone</li>
+          <li>• You can change it anytime in Settings</li>
         </ul>
       </div>
     </Card>
