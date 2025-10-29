@@ -27,6 +27,7 @@ export default function RegisterPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [showPinSetup, setShowPinSetup] = useState(false)
+  const [isWaitingForAuth, setIsWaitingForAuth] = useState(false)
   const { register } = useAuth()
   const { setUserPin } = usePin()
   const { connected, connecting, publicKey } = useWallet()
@@ -34,23 +35,33 @@ export default function RegisterPage() {
   const { signInWithSolana, signInWithGoogle, isSigning, isGoogleLoading } = useHybridAuth()
   const router = useRouter()
 
-  // Detectar cuando el usuario se registra con Google y mostrar PIN setup
+  // Detectar cuando el usuario se registra con Google/Wallet y mostrar PIN setup
   useEffect(() => {
-    const handleGoogleRegistration = () => {
-      // Si hay un usuario logueado pero no hay PIN configurado, mostrar PIN setup
+    const checkForAuthCompletion = () => {
       const user = localStorage.getItem("unbox_user")
       const pin = localStorage.getItem("unbox_user_pin")
       
-      if (user && !pin && !showPinSetup) {
+      // Si hay un usuario logueado pero no hay PIN configurado Y estamos esperando auth
+      if (user && !pin && isWaitingForAuth && !showPinSetup) {
         setShowPinSetup(true)
+        setIsWaitingForAuth(false)
       }
     }
 
-    // Escuchar cambios en localStorage
-    const interval = setInterval(handleGoogleRegistration, 1000)
+    // Escuchar cambios en localStorage más frecuentemente mientras esperamos
+    const interval = setInterval(checkForAuthCompletion, 500)
     
     return () => clearInterval(interval)
-  }, [showPinSetup])
+  }, [showPinSetup, isWaitingForAuth])
+
+  // Cuando el wallet se conecta después de abrir el modal
+  useEffect(() => {
+    if (connected && isWaitingForAuth && !showPinSetup) {
+      // El usuario conectó el wallet después de abrir el modal
+      // Ya estamos esperando la autenticación, no necesitamos hacer nada más
+      // porque el flujo se completará automáticamente cuando se guarde el usuario
+    }
+  }, [connected, isWaitingForAuth, showPinSetup])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -115,15 +126,16 @@ export default function RegisterPage() {
     try {
       if (connected) {
         // Si ya está conectado, proceder con SIWS
+        setIsWaitingForAuth(true) // Esperar que se complete la autenticación
         await signInWithSolana()
-        // Después del registro exitoso, mostrar PIN setup
-        setShowPinSetup(true)
+        // El PIN se mostrará automáticamente cuando se complete la auth (vía useEffect)
       } else {
         // Mostrar modal de selección de wallet
         setVisible(true)
       }
     } catch (error) {
       console.error("Wallet connection failed:", error)
+      setIsWaitingForAuth(false) // Cancelar espera
       (window as any).addNotification?.({
         type: "error",
         title: "Error de conexión",
@@ -200,7 +212,10 @@ export default function RegisterPage() {
               <Button
                 variant="outline"
                 className="w-full h-12 text-base bg-transparent border-red-200 hover:bg-red-50"
-                onClick={signInWithGoogle}
+                onClick={() => {
+                  setIsWaitingForAuth(true)
+                  signInWithGoogle()
+                }}
                 disabled={isGoogleLoading}
               >
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">

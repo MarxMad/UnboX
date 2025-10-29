@@ -65,8 +65,8 @@ Este mensaje no tiene costo y no requiere transacciones.`
         message: `Has iniciado sesión con tu wallet ${publicKey.toBase58().slice(0, 8)}...`
       })
 
-      // Redirigir al feed
-      router.push("/feed")
+      // NO redirigir automáticamente - permitir que el componente padre maneje el flujo
+      // router.push("/feed")
 
     } catch (error) {
       console.error("Error en Sign In With Solana:", error)
@@ -183,7 +183,7 @@ Este mensaje no tiene costo y no requiere transacciones.`
         message: `Bienvenido ${googleUser.name}, tu cuenta de Google ha sido vinculada.`
       })
 
-      // No redirigir automáticamente - permitir que el componente padre maneje el flujo
+      // NO redirigir automáticamente - permitir que el componente padre maneje el flujo
 
     } catch (error) {
       console.error("Registration failed:", error)
