@@ -283,7 +283,7 @@ export default function FeedPage() {
         )}
 
         {/* Recent Drops */}
-        {!isLoading && filteredNFTs.length > 0 && (
+        {!isLoading && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Drops</h2>
