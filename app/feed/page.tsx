@@ -293,9 +293,9 @@ export default function FeedPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {combinedNFTs.slice(0, 6).map((item) => (
+            {combinedNFTs.slice(0, 6).map((item, index) => (
               <SupabaseNFTCard
-                key={`recent-${item.id}`}
+                key={`recent-${item.id}-${index}`}
                 nft={{
                   id: item.id,
                   mint: item.id.replace('real-', ''), // Extraer el mint del ID

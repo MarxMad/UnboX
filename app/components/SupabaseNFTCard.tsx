@@ -64,6 +64,13 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
   // Reset image loading when image URL changes
   useEffect(() => {
     setImageLoading(true)
+    
+    // Timeout de seguridad para ocultar loading si la imagen no carga
+    const timeout = setTimeout(() => {
+      setImageLoading(false)
+    }, 5000) // 5 segundos máximo
+    
+    return () => clearTimeout(timeout)
   }, [nft.image])
 
   const handleLike = async () => {
