@@ -20,8 +20,8 @@ export function PinModal({
   isOpen, 
   onClose, 
   onVerify, 
-  title = "Confirmar Transacción",
-  description = "Ingresa tu PIN para continuar con esta operación",
+  title = "Confirm Transaction",
+  description = "Enter your PIN to continue with this operation",
   maxAttempts = 3
 }: PinModalProps) {
   const [pin, setPin] = useState("")
@@ -46,7 +46,7 @@ export function PinModal({
     e.preventDefault()
     
     if (pin.length !== 4) {
-      setError("El PIN debe tener 4 dígitos")
+      setError("PIN must be 4 digits")
       return
     }
 
@@ -66,12 +66,12 @@ export function PinModal({
       setAttempts(newAttempts)
       
       if (newAttempts >= maxAttempts) {
-        setError(`PIN incorrecto. Máximo de intentos alcanzado (${maxAttempts})`)
+        setError(`Incorrect PIN. Maximum attempts reached (${maxAttempts})`)
         setTimeout(() => {
           onClose()
         }, 2000)
       } else {
-        setError(`PIN incorrecto. Intentos restantes: ${maxAttempts - newAttempts}`)
+        setError(`Incorrect PIN. Remaining attempts: ${maxAttempts - newAttempts}`)
         setPin("")
       }
     }
@@ -109,7 +109,7 @@ export function PinModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="pin" className="text-sm font-medium">
-                PIN de Seguridad
+                Security PIN
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -143,21 +143,21 @@ export function PinModal({
                 className="flex-1"
                 disabled={isLoading}
               >
-                Cancelar
+                Cancel
               </Button>
               <Button
                 type="submit"
                 className="flex-1"
                 disabled={pin.length !== 4 || isLoading}
               >
-                {isLoading ? "Verificando..." : "Confirmar"}
+                {isLoading ? "Verifying..." : "Confirm"}
               </Button>
             </div>
           </form>
 
           {attempts > 0 && attempts < maxAttempts && (
             <div className="text-center text-sm text-muted-foreground">
-              Intentos: {attempts}/{maxAttempts}
+              Attempts: {attempts}/{maxAttempts}
             </div>
           )}
         </div>

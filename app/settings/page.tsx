@@ -65,8 +65,8 @@ export default function SettingsPage() {
     setShowPinSetup(false)
     (window as any).addNotification?.({
       type: "success",
-      title: "PIN configurado",
-      message: "Tu PIN de seguridad ha sido configurado exitosamente"
+      title: "PIN Set Up",
+      message: "Your security PIN has been set up successfully"
     })
   }
 
@@ -90,12 +90,12 @@ export default function SettingsPage() {
   }
 
   const handleRemovePin = () => {
-    if (confirm("¿Estás seguro de que quieres eliminar tu PIN? Esto reducirá la seguridad de tus transacciones.")) {
+      if (confirm("Are you sure you want to remove your PIN? This will reduce the security of your transactions.")) {
       clearPin()
       (window as any).addNotification?.({
         type: "warning",
-        title: "PIN eliminado",
-        message: "Tu PIN ha sido eliminado. Te recomendamos configurar uno nuevo."
+        title: "PIN Removed",
+        message: "Your PIN has been removed. We recommend setting up a new one."
       })
     }
   }
@@ -151,29 +151,29 @@ export default function SettingsPage() {
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">PIN de Seguridad</h3>
+                <h3 className="text-lg font-semibold">Security PIN</h3>
               </div>
               
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">Estado del PIN</p>
+                    <p className="font-medium">PIN Status</p>
                     <p className="text-sm text-muted-foreground">
-                      {isPinSet ? "PIN configurado" : "PIN no configurado"}
+                      {isPinSet ? "PIN set up" : "PIN not set up"}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     {!isPinSet ? (
                       <Button size="sm" onClick={handleSetupPin}>
-                        Configurar PIN
+                        Set Up PIN
                       </Button>
                     ) : (
                       <>
                         <Button size="sm" variant="outline" onClick={handleChangePin}>
-                          Cambiar PIN
+                          Change PIN
                         </Button>
                         <Button size="sm" variant="destructive" onClick={handleRemovePin}>
-                          Eliminar PIN
+                          Remove PIN
                         </Button>
                       </>
                     )}
@@ -183,7 +183,7 @@ export default function SettingsPage() {
                 {isPinSet && (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      ✅ Tu PIN está configurado y protege tus transacciones importantes.
+                      ✅ Your PIN is set up and protects your important transactions.
                     </p>
                   </div>
                 )}

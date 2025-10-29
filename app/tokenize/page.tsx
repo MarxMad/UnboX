@@ -131,8 +131,8 @@ export default function TokenizePage() {
     setShowPinModal(true)
     ;(window as any).addNotification?.({
       type: "success",
-      title: "¡PIN configurado!",
-      message: "Tu PIN de seguridad ha sido configurado. Ahora puedes proceder con la tokenización."
+      title: "PIN Set Up!",
+      message: "Your security PIN has been set up. You can now proceed with tokenization."
     })
   }
 
@@ -140,8 +140,8 @@ export default function TokenizePage() {
     setShowPinSetup(false)
     ;(window as any).addNotification?.({
       type: "warning",
-      title: "PIN requerido",
-      message: "Necesitas configurar un PIN para proteger tus transacciones de tokenización."
+      title: "PIN Required",
+      message: "You need to set up a PIN to protect your tokenization transactions."
     })
   }
 
@@ -161,16 +161,16 @@ export default function TokenizePage() {
     try {
       console.log('🚀 Iniciando performTokenization...');
       setIsSuccess(false)
-      setMintingStep("Subiendo imagen a IPFS...")
+      setMintingStep("Uploading image to IPFS...")
       
       // Simular progreso del minteo
       const steps = [
-        "Subiendo imagen a IPFS...",
-        "Creando metadata...",
-        "Generando mint...",
-        "Firmando transacción...",
-        "Confirmando en blockchain...",
-        "¡Tokenización completada!"
+        "Uploading image to IPFS...",
+        "Creating metadata...",
+        "Generating mint...",
+        "Signing transaction...",
+        "Confirming on blockchain...",
+        "Tokenization completed!"
       ]
 
       for (let i = 0; i < steps.length; i++) {
@@ -234,8 +234,8 @@ export default function TokenizePage() {
       // También mostrar notificación
       (window as any).addNotification?.({
         type: "success",
-        title: "¡Tokenización Exitosa!",
-        message: `Tu ${formData.brand} ${formData.name} ha sido tokenizado en Solana y guardado en Supabase`,
+        title: "Tokenization Successful!",
+        message: `Your ${formData.brand} ${formData.name} has been tokenized on Solana and saved in Supabase`,
         duration: 10000
       })
       
@@ -247,8 +247,8 @@ export default function TokenizePage() {
       
       (window as any).addNotification?.({
         type: "error",
-        title: "Error en Tokenización",
-        message: "Hubo un problema al tokenizar tu item. Inténtalo de nuevo."
+        title: "Tokenization Error",
+        message: "There was a problem tokenizing your item. Please try again."
       })
     }
   }
@@ -272,10 +272,10 @@ export default function TokenizePage() {
               <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  Wallet no conectado
+                  Wallet not connected
                 </p>
                 <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
-                  Necesitas conectar tu wallet para tokenizar artículos
+                  You need to connect your wallet to tokenize articles
                 </p>
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function TokenizePage() {
                   Wallet: {publicKey?.toString().slice(0, 8)}...{publicKey?.toString().slice(-8)}
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                  ⚠️ Asegúrate de estar en <span className="font-bold">DEVNET</span> y tener al menos 0.02 SOL
+                  ⚠️ Make sure you are on <span className="font-bold">DEVNET</span> and have at least 0.02 SOL
                 </p>
               </div>
               <a 
@@ -302,7 +302,7 @@ export default function TokenizePage() {
                 rel="noopener noreferrer"
                 className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 whitespace-nowrap"
               >
-                <span>Obtener SOL</span>
+                <span>Get SOL</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
@@ -517,19 +517,19 @@ export default function TokenizePage() {
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out"
                   style={{ 
-                    width: mintingStep.includes("completada") ? "100%" : 
-                           mintingStep.includes("Subiendo") ? "16%" :
-                           mintingStep.includes("Creando") ? "33%" :
-                           mintingStep.includes("Generando") ? "50%" :
-                           mintingStep.includes("Firmando") ? "66%" :
-                           mintingStep.includes("Confirmando") ? "83%" : "0%"
+                    width: mintingStep.includes("completed") ? "100%" : 
+                           mintingStep.includes("Uploading") ? "16%" :
+                           mintingStep.includes("Creating") ? "33%" :
+                           mintingStep.includes("Generating") ? "50%" :
+                           mintingStep.includes("Signing") ? "66%" :
+                           mintingStep.includes("Confirming") ? "83%" : "0%"
                   }}
                 ></div>
               </div>
             )}
             
             {/* Mostrar paso actual */}
-            {mintingStep && !mintingStep.includes("completada") && (
+            {mintingStep && !mintingStep.includes("completed") && (
               <div className="text-center text-sm text-blue-600 mb-4">
                 {mintingStep}
               </div>
@@ -539,8 +539,8 @@ export default function TokenizePage() {
             {isSuccess && (
               <div className="text-center text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                <p className="font-semibold">¡Tokenización Exitosa!</p>
-                <p>Tu item ha sido tokenizado y aparecerá en tu perfil en unos segundos...</p>
+                <p className="font-semibold">Tokenization Successful!</p>
+                <p>Your item has been tokenized and will appear in your profile in a few seconds...</p>
               </div>
             )}
 
@@ -557,7 +557,7 @@ export default function TokenizePage() {
               ) : isSuccess ? (
                 <>
                   <CheckCircle className="h-5 w-5" />
-                  ¡Tokenizado Exitosamente!
+                  Tokenized Successfully!
                 </>
               ) : (
                 <>
@@ -570,13 +570,13 @@ export default function TokenizePage() {
             {/* Mostrar estado del wallet */}
             {!connected && (
               <div className="text-center text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                ⚠️ Conecta tu wallet para tokenizar
+                ⚠️ Connect your wallet to tokenize
               </div>
             )}
             
             {connected && (
               <div className="text-center text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-3">
-                ✅ Wallet conectado: {publicKey?.toString().slice(0, 8)}...
+                ✅ Wallet connected: {publicKey?.toString().slice(0, 8)}...
               </div>
             )}
             
@@ -595,8 +595,8 @@ export default function TokenizePage() {
         isOpen={showPinModal}
         onClose={() => setShowPinModal(false)}
         onVerify={handlePinVerify}
-        title="Confirmar Tokenización"
-        description="Ingresa tu PIN para confirmar la tokenización de tu artículo"
+        title="Confirm Tokenization"
+        description="Enter your PIN to confirm the tokenization of your item"
       />
 
       {/* PIN Setup Modal */}

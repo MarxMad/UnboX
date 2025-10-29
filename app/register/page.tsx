@@ -138,8 +138,8 @@ export default function RegisterPage() {
       setIsWaitingForAuth(false) // Cancelar espera
       (window as any).addNotification?.({
         type: "error",
-        title: "Error de conexión",
-        message: "No se pudo conectar el wallet. Inténtalo de nuevo."
+        title: "Connection Error",
+        message: "Could not connect wallet. Please try again."
       })
     }
   }
@@ -152,8 +152,8 @@ export default function RegisterPage() {
     setTimeout(() => {
       (window as any).addNotification?.({
         type: "success",
-        title: "¡Cuenta creada exitosamente!",
-        message: "Tu PIN de seguridad ha sido configurado. Ya puedes empezar a tokenizar."
+        title: "Account Created Successfully!",
+        message: "Your security PIN has been set up. You can now start tokenizing."
       })
       
       // Navegar al feed
@@ -171,8 +171,8 @@ export default function RegisterPage() {
     setTimeout(() => {
       (window as any).addNotification?.({
         type: "warning",
-        title: "PIN no configurado",
-        message: "Recuerda configurar tu PIN en Settings para proteger tus transacciones."
+        title: "PIN Not Set Up",
+        message: "Remember to set up your PIN in Settings to protect your transactions."
       })
       
       if (router && typeof router.push === 'function') {
