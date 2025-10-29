@@ -57,7 +57,7 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
             <Shield className="h-8 w-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">🔐 Set Up Security PIN</h2>
+            <h2 className="text-2xl font-bold">Set Up Security PIN</h2>
             <p className="text-muted-foreground">
               Your PIN will protect important transactions. Choose a 4-digit PIN that you can easily remember.
             </p>
@@ -147,7 +147,7 @@ export function PinSetup({ onComplete, onSkip }: PinSetupProps) {
       </form>
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Security Tips:</h4>
+        <h4 className="font-medium text-blue-900 mb-2">Security Tips:</h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• Don't use birth dates or easy numbers</li>
           <li>• Don't share your PIN with anyone</li>
