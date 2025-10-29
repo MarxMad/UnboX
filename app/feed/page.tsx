@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Heart, Share2, Filter } from "lucide-react"
+import { TrendingUp, Heart, Share2, Filter, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 // import { useAllNFTs } from "@/app/hooks/useAllNFTs"
@@ -199,7 +199,16 @@ export default function FeedPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Loading items...</p>
+          </div>
+        )}
+
         {/* Trending Section */}
+        {!isLoading && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -244,8 +253,10 @@ export default function FeedPage() {
             })}
           </div>
         </div>
+        )}
 
         {/* Recent Drops */}
+        {!isLoading && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Drops</h2>
@@ -289,6 +300,7 @@ export default function FeedPage() {
             ))}
           </div>
         </div>
+        )}
       </main>
     </div>
   )

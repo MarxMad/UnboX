@@ -35,7 +35,7 @@ interface Article {
 
 export function useRealtimeFeed() {
   const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true) // Iniciar en true para mostrar loading al inicio
   const [error, setError] = useState<string | null>(null)
   const [channel, setChannel] = useState<RealtimeChannel | null>(null)
 

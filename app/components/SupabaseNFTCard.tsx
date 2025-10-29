@@ -49,6 +49,7 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(nft.likes)
   const [isCheckingLike, setIsCheckingLike] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
 
   // Verificar si el usuario le dio like cuando se monta el componente
   useEffect(() => {
@@ -59,6 +60,11 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
         .finally(() => setIsCheckingLike(false))
     }
   }, [walletAddress, nft.id, nft.isSupabase, checkUserLiked])
+
+  // Reset image loading when image URL changes
+  useEffect(() => {
+    setImageLoading(true)
+  }, [nft.image])
 
   const handleLike = async () => {
     if (!walletAddress || !nft.isSupabase) {
@@ -105,11 +111,18 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
       onClick={handleCardClick}
     >
       <div className="relative">
+        {imageLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
         <img
           src={nft.image}
           alt={nft.name}
-          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+          className={`w-full h-48 object-cover transition-all duration-300 group-hover:scale-105 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+          onLoad={() => setImageLoading(false)}
           onError={(e) => {
+            setImageLoading(false)
             e.currentTarget.src = "https://via.placeholder.com/400x300/1a1a1a/ffffff?text=No+Image"
           }}
         />
