@@ -136,19 +136,19 @@ export default function ProfilePage() {
 
               <div className="flex items-center gap-6 text-sm">
                 <div>
-                  <span className="font-bold text-lg">24</span>
+                  <span className="font-bold text-lg">{myArticlesLoading ? '…' : (myArticles?.length || 0)}</span>
                   <span className="text-muted-foreground ml-1">Items</span>
                 </div>
                 <div>
-                  <span className="font-bold text-lg">1.2K</span>
+                  <span className="font-bold text-lg">—</span>
                   <span className="text-muted-foreground ml-1">Followers</span>
                 </div>
                 <div>
-                  <span className="font-bold text-lg">456</span>
+                  <span className="font-bold text-lg">—</span>
                   <span className="text-muted-foreground ml-1">Following</span>
                 </div>
                 <div>
-                  <span className="font-bold text-lg text-primary">$18.5K</span>
+                  <span className="font-bold text-lg text-primary">Not available</span>
                   <span className="text-muted-foreground ml-1">Collection Value</span>
                 </div>
               </div>
