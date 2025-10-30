@@ -44,7 +44,7 @@ export function useLikeArticle() {
         .select('id')
         .eq('user_id', userId)
         .eq('article_id', articleId)
-        .single()
+        .maybeSingle()
 
       if (existingLike) {
         return {

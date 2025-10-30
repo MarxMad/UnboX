@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { useSupabaseAuth } from "@/app/hooks/useSupabaseAuth"
-import { supabaseTyped } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
 
 interface SupabaseContextType {
   isSupabaseReady: boolean
@@ -38,7 +38,7 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
 
   const value = {
     isSupabaseReady,
-    supabase: supabaseTyped,
+    supabase,
     supabaseUser,
     userPreferences,
     walletAddress,

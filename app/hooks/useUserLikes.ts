@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from 'react'
-import { supabaseTyped } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface LikedArticle {
   id: string
@@ -29,7 +29,7 @@ export function useUserLikes(walletAddress: string | undefined) {
 
     try {
       // Obtener user_id por wallet
-      const { data: userRows, error: userErr } = await supabaseTyped
+      const { data: userRows, error: userErr } = await supabase
         .from('users')
         .select('id')
         .eq('wallet_address', walletAddress)
@@ -44,7 +44,7 @@ export function useUserLikes(walletAddress: string | undefined) {
       }
 
       // Obtener artículos con like del usuario
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('likes')
         .select(`
           article:articles!inner (
@@ -110,7 +110,7 @@ export function useUserArticles(walletAddress: string | undefined) {
 
     try {
       // Obtener user_id por wallet
-      const { data: userRows, error: userErr } = await supabaseTyped
+      const { data: userRows, error: userErr } = await supabase
         .from('users')
         .select('id')
         .eq('wallet_address', walletAddress)
@@ -125,7 +125,7 @@ export function useUserArticles(walletAddress: string | undefined) {
       }
 
       // Traer artículos del usuario con conteo de likes
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('articles_with_likes')
         .select('*')
         .eq('user_id', userId)

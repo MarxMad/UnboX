@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabaseTyped } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
 interface Article {
@@ -44,7 +44,7 @@ export function useRealtimeFeed() {
     setError(null)
 
     try {
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('articles_with_likes')
         .select('*')
         .order('created_at', { ascending: false })
@@ -75,7 +75,7 @@ export function useRealtimeFeed() {
     const pollingInterval = setInterval(async () => {
       try {
         console.log('🔄 Polling para actualizar artículos...');
-        const { data: updatedArticles, error } = await supabaseTyped
+        const { data: updatedArticles, error } = await supabase
           .from('articles_with_likes')
           .select('*')
           .order('created_at', { ascending: false });
@@ -217,7 +217,7 @@ export function useRealtimeLikes(articleId: string) {
 
     try {
       // Obtener conteo de likes
-      const { count } = await supabaseTyped
+      const { count } = await supabase
         .from('likes')
         .select('*', { count: 'exact', head: true })
         .eq('article_id', articleId)
@@ -239,7 +239,7 @@ export function useRealtimeLikes(articleId: string) {
     fetchLikesData()
 
     // Configurar suscripción en tiempo real para likes
-    const likesChannel = supabaseTyped
+    const likesChannel = supabase
       .channel(`likes_${articleId}`)
       .on(
         'postgres_changes',
@@ -274,7 +274,7 @@ export function useRealtimeLikes(articleId: string) {
     // Cleanup
     return () => {
       if (likesChannel) {
-        supabaseTyped.removeChannel(likesChannel)
+        supabase.removeChannel(likesChannel)
       }
     }
   }, [articleId, fetchLikesData])
@@ -294,7 +294,7 @@ export function useRealtimeNotifications() {
 
   useEffect(() => {
     // Configurar suscripción para notificaciones
-    const notificationsChannel = supabaseTyped
+    const notificationsChannel = supabase
       .channel('notifications')
       .on(
         'postgres_changes',
@@ -316,7 +316,7 @@ export function useRealtimeNotifications() {
     // Cleanup
     return () => {
       if (notificationsChannel) {
-        supabaseTyped.removeChannel(notificationsChannel)
+        supabase.removeChannel(notificationsChannel)
       }
     }
   }, [])

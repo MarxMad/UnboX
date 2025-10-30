@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { supabaseTyped } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface SupabaseUser {
   id: string
@@ -64,7 +64,7 @@ export function useSupabaseAuth() {
 
       try {
         // Obtener o crear usuario en Supabase
-        const { data: userData, error: userError } = await supabaseTyped
+        const { data: userData, error: userError } = await supabase
           .rpc('get_or_create_user_preferences', {
             user_wallet: walletAddress
           })
@@ -98,7 +98,7 @@ export function useSupabaseAuth() {
               wallet: walletAddress,
               publicKey: walletAddress,
               username: userData?.[0]?.username || `user_${walletAddress.slice(0, 8)}`,
-              display_name: userData?.[0]?.display_name || `Usuario ${walletAddress.slice(0, 8)}`
+              // evitar campos no tipados en el auth context
             }
           )
         }
@@ -131,11 +131,11 @@ export function useSupabaseAuth() {
 
     try {
       // Configurar usuario actual para RLS
-      await supabaseTyped.rpc('set_current_user_wallet', {
+      await supabase.rpc('set_current_user_wallet', {
         wallet_address: supabaseUser.wallet_address
       })
 
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .from('users')
         .update({
           ...updateData,
@@ -169,7 +169,7 @@ export function useSupabaseAuth() {
     setError(null)
 
     try {
-      const { data, error } = await supabaseTyped
+      const { data, error } = await supabase
         .rpc('update_user_preference', {
           user_wallet: supabaseUser.wallet_address,
           preference_key: preferenceKey,
