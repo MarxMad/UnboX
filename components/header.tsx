@@ -50,12 +50,14 @@ export function Header() {
     }
   }
 
+  const logoHref = user ? "/feed" : "/"
+
   return (
     <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <Link href={logoHref} className="flex items-center gap-2 flex-shrink-0">
             <Box className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold tracking-tight">UnboX</span>
           </Link>
