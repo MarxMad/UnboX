@@ -236,13 +236,13 @@ export default function ProfilePage() {
           <TabsContent value="liked">
             {likedLoading ? (
               <div className="text-center py-12">
-                <h3 className="text-sm text-muted-foreground">Cargando likes…</h3>
+                <h3 className="text-sm text-muted-foreground">Loading likes…</h3>
               </div>
             ) : likedArticles.length === 0 ? (
               <div className="text-center py-12">
                 <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Aún no tienes likes</h3>
-                <p className="text-muted-foreground">Explora y da like a tus artículos favoritos</p>
+                <h3 className="text-xl font-semibold mb-2">No liked items yet</h3>
+                <p className="text-muted-foreground">Explore and like your favorite items</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl-grid-cols-6 gap-4">
