@@ -21,12 +21,7 @@ export function useLikeArticle() {
     setError(null)
 
     try {
-      // 1. Configurar usuario actual para RLS
-      await supabase.rpc('set_current_user_wallet', {
-        wallet_address: walletAddress
-      })
-
-      // 2. Obtener o crear usuario
+      // 1. Obtener o crear usuario
       const { data: userData, error: userError } = await supabase
         .rpc('get_or_create_user_preferences', {
           user_wallet: walletAddress
@@ -36,44 +31,21 @@ export function useLikeArticle() {
         throw new Error('Error obteniendo usuario')
       }
 
-      const userId = userData[0].user_id
+      // 2. Usar RPC segura que maneja RLS internamente
+      const { data: rpcData, error: rpcError } = await supabase
+        .rpc('like_article', { user_wallet: walletAddress, article_uuid: articleId })
 
-      // 3. Verificar si ya le dio like
-      const { data: existingLike } = await supabase
-        .from('likes')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('article_id', articleId)
-        .maybeSingle()
-
-      if (existingLike) {
-        return {
-          success: false,
-          error: 'Ya le diste like a este artículo'
-        }
+      if (rpcError) {
+        throw rpcError
       }
 
-      // 4. Dar like
-      const { error: likeError } = await supabase
-        .from('likes')
-        .insert({
-          user_id: userId,
-          article_id: articleId
-        })
-
-      if (likeError) {
-        throw likeError
-      }
-
-      // 5. Obtener nuevo conteo de likes
-      const { count: likesCount } = await supabase
-        .from('likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('article_id', articleId)
+      const likesCount = Array.isArray(rpcData) && rpcData[0]?.likes_count != null
+        ? Number(rpcData[0].likes_count)
+        : 0
 
       return {
         success: true,
-        likesCount: likesCount || 0
+        likesCount
       }
 
     } catch (err) {
@@ -107,12 +79,7 @@ export function useUnlikeArticle() {
     setError(null)
 
     try {
-      // 1. Configurar usuario actual para RLS
-      await supabase.rpc('set_current_user_wallet', {
-        wallet_address: walletAddress
-      })
-
-      // 2. Obtener usuario
+      // 1. Obtener o crear usuario (garantiza existencia)
       const { data: userData, error: userError } = await supabase
         .rpc('get_or_create_user_preferences', {
           user_wallet: walletAddress
@@ -122,28 +89,21 @@ export function useUnlikeArticle() {
         throw new Error('Error obteniendo usuario')
       }
 
-      const userId = userData[0].user_id
+      // 2. Usar RPC segura para eliminar like
+      const { data: rpcData, error: rpcError } = await supabase
+        .rpc('unlike_article', { user_wallet: walletAddress, article_uuid: articleId })
 
-      // 3. Eliminar like
-      const { error: unlikeError } = await supabase
-        .from('likes')
-        .delete()
-        .eq('user_id', userId)
-        .eq('article_id', articleId)
-
-      if (unlikeError) {
-        throw unlikeError
+      if (rpcError) {
+        throw rpcError
       }
 
-      // 4. Obtener nuevo conteo de likes
-      const { count: likesCount } = await supabase
-        .from('likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('article_id', articleId)
+      const likesCount = Array.isArray(rpcData) && rpcData[0]?.likes_count != null
+        ? Number(rpcData[0].likes_count)
+        : 0
 
       return {
         success: true,
-        likesCount: likesCount || 0
+        likesCount
       }
 
     } catch (err) {
