@@ -12,6 +12,8 @@ import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 // import { useUserNFTs } from "@/app/hooks/useUserNFTs"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { useSupabaseContext } from "../components/SupabaseProvider"
+import { useUserArticles, useUserLikes } from "../hooks/useUserLikes"
 import { SupabaseNFTCard } from "../components/SupabaseNFTCard"
 
 export default function ProfilePage() {
@@ -19,6 +21,9 @@ export default function ProfilePage() {
   const router = useRouter()
   const { connected, publicKey } = useWallet()
   // const { nfts: userNFTs, loading: userNFTsLoading } = useUserNFTs()
+  const { walletAddress } = useSupabaseContext()
+  const { articles: myArticles, loading: myArticlesLoading } = useUserArticles(walletAddress)
+  const { likedArticles, loading: likedLoading, refetch: refetchLiked } = useUserLikes(walletAddress)
   
   // Usar solo Supabase para mejor rendimiento
   const userNFTs = null;
@@ -35,9 +40,20 @@ export default function ProfilePage() {
     return null
   }
 
-  // Solo usar NFTs de Supabase para mejor rendimiento
-  // TODO: Implementar búsqueda de NFTs del usuario en Supabase
-  const combinedUserItems: any[] = []
+  // Datos reales desde Supabase
+  const combinedUserItems: any[] = (myArticles || []).map(a => ({
+    id: a.id,
+    mint: a.nft_mint,
+    name: a.title,
+    brand: a.brand,
+    image: a.image_url,
+    likes: a.likes_count,
+    verified: true,
+    isSupabase: true,
+    username: a.username,
+    display_name: a.display_name,
+    avatar_url: a.avatar_url
+  }))
   
   // CÓDIGO DE BLOCKCHAIN COMENTADO PARA MEJOR RENDIMIENTO
   // const combinedUserItems = (userNFTs || []).map((nft, index) => ({
@@ -177,7 +193,7 @@ export default function ProfilePage() {
                   key={item.id}
                   nft={{
                     id: item.id,
-                    mint: item.id.replace('user-', ''), // Extraer el mint del ID
+                    mint: item.mint || item.id,
                     name: item.name,
                     brand: item.brand,
                     model: item.name, // Usar name como model si no hay model específico
@@ -190,7 +206,7 @@ export default function ProfilePage() {
                     likes: item.likes || 0,
                     verified: item.verified || false,
                     trending: item.trending || false,
-                    isSupabase: item.isSupabase || false,
+                    isSupabase: true,
                     username: item.username,
                     display_name: item.display_name,
                     avatar_url: item.avatar_url,
@@ -210,6 +226,7 @@ export default function ProfilePage() {
                       }
                       return newSet
                     })
+                    refetchLiked()
                   }}
                 />
               ))}
@@ -217,11 +234,51 @@ export default function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="liked">
-            <div className="text-center py-12">
-              <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No liked items yet</h3>
-              <p className="text-muted-foreground">Start exploring and like items you love</p>
-            </div>
+            {likedLoading ? (
+              <div className="text-center py-12">
+                <h3 className="text-sm text-muted-foreground">Cargando likes…</h3>
+              </div>
+            ) : likedArticles.length === 0 ? (
+              <div className="text-center py-12">
+                <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Aún no tienes likes</h3>
+                <p className="text-muted-foreground">Explora y da like a tus artículos favoritos</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl-grid-cols-6 gap-4">
+                {likedArticles.map((a) => (
+                  <SupabaseNFTCard
+                    key={`liked-${a.id}`}
+                    nft={{
+                      id: a.id,
+                      mint: a.nft_mint || a.id,
+                      name: a.title,
+                      brand: a.brand,
+                      model: a.title,
+                      size: 'N/A',
+                      year: a.year || 2024,
+                      condition: a.condition || 'New',
+                      rarity: 'Common',
+                      price: 'Not listed',
+                      image: a.image_url,
+                      likes: a.likes_count || 0,
+                      verified: true,
+                      trending: (a.likes_count || 0) > 5,
+                      isSupabase: true,
+                      username: a.username || undefined,
+                      display_name: a.display_name || undefined,
+                      avatar_url: a.avatar_url || undefined,
+                      data_source: 'supabase',
+                      sync_status: 'synced'
+                    }}
+                    onLike={() => {
+                      // Tras dar like/unlike, refrescar lista
+                      refetchLiked()
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="activity">

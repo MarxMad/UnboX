@@ -16,6 +16,8 @@ import { useCancelListing } from '../../hooks/useCancelListing';
 // import { useAllNFTs } from '../../hooks/useAllNFTs';
 // import { useUserNFTs } from '../../hooks/useUserNFTs';
 import { useSupabaseNFT } from '../../hooks/useSupabaseNFT';
+import { useSupabaseContext } from '../../components/SupabaseProvider';
+import { useLikeArticle, useUnlikeArticle, useCheckUserLiked } from '../../hooks/useLikes';
 import { useSupabaseTest } from '../../hooks/useSupabaseTest'; // RESTAURADO
 import { 
   ArrowLeft, 
@@ -63,6 +65,11 @@ export default function NFTDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showListModal, setShowListModal] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState<number>(0);
+  const { walletAddress } = useSupabaseContext();
+  const { likeArticle, loading: likeLoading } = useLikeArticle();
+  const { unlikeArticle, loading: unlikeLoading } = useUnlikeArticle();
+  const { checkUserLiked } = useCheckUserLiked();
   
   // Hooks para funciones del contrato
   const { listNFT, loading: listLoading, error: listError } = useListNFT();
@@ -213,6 +220,7 @@ export default function NFTDetailPage() {
       
       console.log('✅ NFT real obtenido de Supabase:', realNFT);
       setNft(realNFT);
+      setLikesCount(supabaseNFT.likes_count || 0);
     } catch (err) {
       console.error('Error fetching NFT details:', err);
       setError('Error loading NFT details');
@@ -265,8 +273,39 @@ export default function NFTDetailPage() {
     }
   };
 
-  const handleLike = () => {
-    setLiked(!liked);
+  useEffect(() => {
+    const initLikeState = async () => {
+      if (!walletAddress || !supabaseNFT) return;
+      const hasLiked = await checkUserLiked(walletAddress, supabaseNFT.id);
+      setLiked(!!hasLiked);
+    };
+    initLikeState();
+  }, [walletAddress, supabaseNFT, checkUserLiked]);
+
+  const handleLike = async () => {
+    if (!supabaseNFT) return;
+    if (!walletAddress) {
+      alert('Conecta tu wallet para dar like y que se guarde.');
+      return;
+    }
+
+    try {
+      if (liked) {
+        const res = await unlikeArticle(walletAddress, supabaseNFT.id);
+        if (res.success) {
+          setLiked(false);
+          setLikesCount(res.likesCount ?? Math.max(0, likesCount - 1));
+        }
+      } else {
+        const res = await likeArticle(walletAddress, supabaseNFT.id);
+        if (res.success) {
+          setLiked(true);
+          setLikesCount(res.likesCount ?? (likesCount + 1));
+        }
+      }
+    } catch (e) {
+      console.error('Error al togglear like:', e);
+    }
   };
 
   const handleShare = () => {
@@ -369,10 +408,11 @@ export default function NFTDetailPage() {
                 variant="outline" 
                 size="sm"
                 onClick={handleLike}
+                disabled={likeLoading || unlikeLoading}
                 className={liked ? "text-red-500 border-red-500" : ""}
               >
                 <Heart className={`w-4 h-4 mr-2 ${liked ? "fill-current" : ""}`} />
-                {liked ? "Liked" : "Like"}
+                {liked ? `Liked (${likesCount})` : `Like (${likesCount})`}
               </Button>
               <Button variant="outline" size="sm" onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />

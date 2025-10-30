@@ -41,9 +41,8 @@ export default function FeedPage() {
     }
   }, [user, authLoading, router])
 
-  if (authLoading || !user) {
-    return null
-  }
+  // Importante: no hacer return temprano antes de declarar todos los hooks,
+  // para mantener el orden de hooks consistente entre renders.
 
   // Estado de loading combinado - SOLO SUPABASE
   const isLoading = supabaseLoading

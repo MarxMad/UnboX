@@ -74,8 +74,12 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
   }, [nft.image])
 
   const handleLike = async () => {
-    if (!walletAddress || !nft.isSupabase) {
-      // Fallback al sistema anterior
+    if (!walletAddress) {
+      alert('Conecta tu wallet para dar like y que se guarde.');
+      return
+    }
+    if (!nft.isSupabase) {
+      // Fallback al sistema anterior para items no-Supabase
       onLike?.(nft.id)
       return
     }
