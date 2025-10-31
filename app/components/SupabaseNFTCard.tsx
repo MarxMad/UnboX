@@ -145,28 +145,6 @@ export function SupabaseNFTCard({ nft, onLike }: SupabaseNFTCardProps) {
               ✓ Verified
             </Badge>
           )}
-          {nft.trending && (
-            <Badge variant="secondary" className="text-xs bg-orange-500/90 text-white">
-              🔥 Trending
-            </Badge>
-          )}
-          {nft.isSupabase && (
-            <Badge variant="secondary" className="text-xs bg-blue-500/90 text-white">
-              ⚡ Live
-            </Badge>
-          )}
-          {/* Badge híbrido */}
-          {nft.data_source === 'hybrid' && (
-            <Badge variant="secondary" className="text-xs bg-purple-500/90 text-white">
-              🔗 Hybrid
-            </Badge>
-          )}
-          {/* Badge de sincronización */}
-          {nft.sync_status === 'synced' && (
-            <Badge variant="secondary" className="text-xs bg-green-600/90 text-white">
-              ✅ Synced
-            </Badge>
-          )}
         </div>
 
         {/* Like Button */}
