@@ -171,7 +171,7 @@ export function useTokenizeWithSupabase() {
         return {
           success: true,
           nftMint: nftResult.mint,
-          error: 'NFT creado exitosamente, pero hubo un error guardando en la base de datos'
+          error: 'NFT created successfully, but there was an error saving to the database'
         }
       }
 

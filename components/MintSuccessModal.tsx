@@ -33,8 +33,8 @@ export function MintSuccessModal({
     navigator.clipboard.writeText(text)
     ;(window as any).addNotification?.({
       type: "success",
-      title: "Copiado",
-      message: `${label} copiado al portapapeles`
+      title: "Copied",
+      message: `${label} copied to clipboard`
     })
   }
 
@@ -58,9 +58,9 @@ export function MintSuccessModal({
 
           {/* Title */}
           <div>
-            <h2 className="text-2xl font-bold">¡NFT Creado Exitosamente! 🎉</h2>
+            <h2 className="text-2xl font-bold">NFT Created Successfully! 🎉</h2>
             <p className="text-muted-foreground mt-2">
-              Tu {brand} {name} ha sido tokenizado en Solana
+              Your {brand} {name} has been tokenized on Solana
             </p>
           </div>
 
@@ -122,7 +122,7 @@ export function MintSuccessModal({
               onClick={() => window.open(mintExplorerUrl, '_blank')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Ver NFT en Explorer
+              View NFT on Explorer
             </Button>
             <Button
               variant="outline"
@@ -130,7 +130,7 @@ export function MintSuccessModal({
               onClick={() => window.open(explorerUrl, '_blank')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Ver Transacción
+              View Transaction
             </Button>
           </div>
 
@@ -138,7 +138,7 @@ export function MintSuccessModal({
             className="w-full mt-4 bg-primary hover:bg-primary/90"
             onClick={onClose}
           >
-            Cerrar
+            Close
           </Button>
         </div>
       </Card>

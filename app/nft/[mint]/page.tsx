@@ -243,14 +243,14 @@ export default function NFTDetailPage() {
       const result = await buyNFT(nft.mint, nft.owner);
       console.log('✅ Compra exitosa:', result);
       
-      // Mostrar notificación de éxito
-      alert(`¡NFT comprado exitosamente! Transaction: ${result.signature}`);
+      // Show success notification
+      alert(`NFT purchased successfully! Transaction: ${result.signature}`);
       
-      // Refrescar datos del NFT
+      // Refresh NFT data
       fetchNFTDetails();
     } catch (error) {
-      console.error('Error comprando NFT:', error);
-      alert(`Error al comprar NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('Error buying NFT:', error);
+      alert(`Error buying NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -262,14 +262,14 @@ export default function NFTDetailPage() {
       const result = await cancelListing(nft.mint);
       console.log('✅ Listado cancelado:', result);
       
-      // Mostrar notificación de éxito
-      alert(`¡Listado cancelado exitosamente! Transaction: ${result.signature}`);
+      // Show success notification
+      alert(`Listing cancelled successfully! Transaction: ${result.signature}`);
       
-      // Refrescar datos del NFT
+      // Refresh NFT data
       fetchNFTDetails();
     } catch (error) {
-      console.error('Error cancelando listado:', error);
-      alert(`Error al cancelar listado: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('Error cancelling listing:', error);
+      alert(`Error cancelling listing: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -605,15 +605,15 @@ export default function NFTDetailPage() {
               const result = await listNFT(nft.mint, price);
               console.log('✅ NFT listado exitosamente:', result);
               
-              // Mostrar notificación de éxito
-              alert(`¡NFT listado exitosamente! Transaction: ${result.signature}`);
+              // Show success notification
+              alert(`NFT listed successfully! Transaction: ${result.signature}`);
               
               setShowListModal(false);
               // Refresh NFT data
               fetchNFTDetails();
             } catch (error) {
-              console.error('Error listando NFT:', error);
-              alert(`Error al listar NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+              console.error('Error listing NFT:', error);
+              alert(`Error listing NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           }}
         />

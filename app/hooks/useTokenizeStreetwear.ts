@@ -406,33 +406,33 @@ export function useTokenizeStreetwear() {
     } catch (err: unknown) {
       console.error('❌ Error tokenizing:', err);
       
-      let errorMessage = 'Error al tokenizar';
+      let errorMessage = 'Error tokenizing';
       
       if (err instanceof Error) {
         errorMessage = err.message;
         
-        // Mejorar mensajes de error comunes
+        // Improve common error messages
         if (err.message.includes('Failed to fetch')) {
-          errorMessage = 'Error de conexión: No se pudo conectar a Solana. Verifica tu conexión a internet.';
+          errorMessage = 'Connection error: Could not connect to Solana. Please check your internet connection.';
         } else if (err.message.includes('User rejected')) {
-          errorMessage = 'Transacción cancelada por el usuario';
+          errorMessage = 'Transaction cancelled by user';
         } else if (err.message.includes('Wallet not connected')) {
-          errorMessage = 'Wallet no conectado. Por favor conecta tu wallet.';
+          errorMessage = 'Wallet not connected. Please connect your wallet.';
         } else if (err.message.includes('insufficient funds')) {
-          errorMessage = 'Fondos insuficientes para completar la transacción';
+          errorMessage = 'Insufficient funds to complete the transaction';
         } else if (err.message.includes('TransactionExpiredBlockheightExceededError') || err.message.includes('block height exceeded')) {
-          errorMessage = 'La transacción expiró. Por favor intenta de nuevo. Esto puede ocurrir cuando hay demoras en la red.';
+          errorMessage = 'Transaction expired. Please try again. This can occur when there are network delays.';
         } else if (err.message.includes('Signature')) {
-          errorMessage = 'Error en la firma de la transacción. Por favor intenta de nuevo.';
+          errorMessage = 'Error signing the transaction. Please try again.';
         }
       }
       
       setError(errorMessage);
       
-      // Mostrar notificación de error
+      // Show error notification
       ;(window as any).addNotification?.({
         type: "error",
-        title: "Error en tokenización",
+        title: "Tokenization Error",
         message: errorMessage,
         duration: 8000
       });

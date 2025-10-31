@@ -40,16 +40,16 @@ export const ListNFTModal = ({ isOpen, onClose, nft, onSuccess }: ListNFTModalPr
 
       console.log('✅ NFT listado exitosamente:', result);
       
-      // Mostrar éxito
-      alert(`¡NFT listado exitosamente por ${priceValue} SOL!\n\nTransacción: ${result.signature}`);
+      // Show success
+      alert(`NFT listed successfully for ${priceValue} SOL!\n\nTransaction: ${result.signature}`);
       
-      // Cerrar modal y refrescar
+      // Close modal and refresh
       onClose();
       onSuccess();
       
     } catch (error) {
-      console.error('❌ Error listando NFT:', error);
-      alert(`Error al listar NFT: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('❌ Error listing NFT:', error);
+      alert(`Error listing NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
