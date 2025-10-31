@@ -155,15 +155,23 @@ export default function FeedPage() {
   const filteredNFTs = selectedCategory === "All" 
     ? combinedNFTs 
     : combinedNFTs.filter(item => {
-        // Mapear categorías a tipos de items
+        // Mapear categorías a tipos de items (normalizado para búsqueda flexible)
         const categoryMap: { [key: string]: string[] } = {
-          "Sneakers": ["Nike", "Jordan", "Adidas"],
-          "Streetwear": ["Supreme", "Bape", "Off-White"],
-          "Art Toys": ["KAWS", "Bearbrick"],
-          "Watches": ["Rolex", "Omega"],
-          "Accessories": ["Gucci", "Louis Vuitton"]
+          "Sneakers": ["nike", "jordan", "adidas"],
+          "Streetwear": ["supreme", "bape", "off-white", "off white"],
+          "Art Toys": ["kaws", "bearbrick"],
+          "Watches": ["rolex", "omega"],
+          "Accessories": ["gucci", "louis vuitton"]
         }
-        return categoryMap[selectedCategory]?.includes(item.brand) || false
+        
+        const brands = categoryMap[selectedCategory]
+        if (!brands || !item.brand) return false
+        
+        // Normalizar la marca del item (trim + lowercase)
+        const normalizedBrand = item.brand.trim().toLowerCase()
+        
+        // Buscar si alguna de las marcas de la categoría está contenida en la marca del item
+        return brands.some(brand => normalizedBrand.includes(brand))
       })
 
   const categories = ["All", "Sneakers", "Streetwear", "Art Toys", "Watches", "Accessories"]
