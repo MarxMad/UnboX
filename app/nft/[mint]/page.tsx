@@ -385,8 +385,8 @@ export default function NFTDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
           {/* Image Section */}
-          <div className="space-y-3">
-            <div className="aspect-square rounded-lg overflow-hidden bg-muted max-w-md mx-auto lg:max-w-sm">
+          <div className="space-y-3 max-w-md mx-auto lg:max-w-sm">
+            <div className="aspect-square rounded-lg overflow-hidden bg-muted">
               <img 
                 src={nft.image} 
                 alt={nft.name}
@@ -403,18 +403,18 @@ export default function NFTDetailPage() {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex space-x-2 justify-center lg:justify-start">
+            <div className="flex space-x-2">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleLike}
                 disabled={likeLoading || unlikeLoading}
-                className={liked ? "text-red-500 border-red-500" : ""}
+                className={`flex-1 ${liked ? "text-red-500 border-red-500" : ""}`}
               >
                 <Heart className={`w-4 h-4 mr-2 ${liked ? "fill-current" : ""}`} />
                 {liked ? `Liked (${likesCount})` : `Like (${likesCount})`}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleShare}>
+              <Button variant="outline" size="sm" onClick={handleShare} className="flex-1">
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
               </Button>
