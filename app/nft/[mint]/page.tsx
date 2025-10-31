@@ -372,21 +372,21 @@ export default function NFTDetailPage() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Back Button */}
         <Button 
           variant="ghost" 
           onClick={() => router.back()}
-          className="mb-6"
+          className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
           {/* Image Section */}
-          <div className="space-y-4">
-            <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+          <div className="space-y-3">
+            <div className="aspect-square rounded-lg overflow-hidden bg-muted max-w-md mx-auto lg:max-w-sm">
               <img 
                 src={nft.image} 
                 alt={nft.name}
@@ -394,7 +394,7 @@ export default function NFTDetailPage() {
                 onError={(e) => {
                   console.log('❌ Error cargando imagen:', nft.image);
                   // Fallback a imagen placeholder
-                  e.currentTarget.src = 'https://via.placeholder.com/600x600/1a1a1a/ffffff?text=' + encodeURIComponent(nft.name);
+                  e.currentTarget.src = 'https://via.placeholder.com/400x400/1a1a1a/ffffff?text=' + encodeURIComponent(nft.name);
                 }}
                 onLoad={() => {
                   console.log('✅ Imagen cargada exitosamente:', nft.image);
@@ -403,7 +403,7 @@ export default function NFTDetailPage() {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 justify-center lg:justify-start">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -422,35 +422,35 @@ export default function NFTDetailPage() {
           </div>
 
           {/* Details Section */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Title and Basic Info */}
             <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <h1 className="text-3xl font-bold">{nft.name}</h1>
+              <div className="flex items-center space-x-2 mb-1">
+                <h1 className="text-2xl font-bold">{nft.name}</h1>
                 <Badge className={`${rarityColors[nft.rarity]} text-white`}>
                   <Award className="w-3 h-3 mr-1" />
                   {nft.rarity}
                 </Badge>
               </div>
-              <p className="text-xl text-muted-foreground">{nft.brand} {nft.model}</p>
+              <p className="text-lg text-muted-foreground">{nft.brand} {nft.model}</p>
               <p className="text-sm text-muted-foreground">Size: {nft.size} • {nft.condition}</p>
             </div>
 
             <Separator />
 
             {/* Price and Status */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Price</p>
+                  <p className="text-xs text-muted-foreground">Price</p>
                   {nft.isListed && nft.price ? (
-                    <p className="text-3xl font-bold text-primary">{nft.price} SOL</p>
+                    <p className="text-2xl font-bold text-primary">{nft.price} SOL</p>
                   ) : (
-                    <p className="text-lg text-muted-foreground">Not listed for sale</p>
+                    <p className="text-base text-muted-foreground">Not listed for sale</p>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-xs text-muted-foreground">Status</p>
                   <Badge variant={nft.isListed ? "default" : "secondary"}>
                     {nft.isListed ? "For Sale" : "Not Listed"}
                   </Badge>
@@ -507,20 +507,20 @@ export default function NFTDetailPage() {
             {/* Description */}
             {nft.description && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-muted-foreground">{nft.description}</p>
+                <h3 className="text-base font-semibold mb-1">Description</h3>
+                <p className="text-sm text-muted-foreground">{nft.description}</p>
               </div>
             )}
 
             {/* Attributes */}
             {nft.attributes && nft.attributes.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4">Attributes</h3>
+                <h3 className="text-base font-semibold mb-2">Attributes</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {nft.attributes.map((attr, index) => (
-                    <div key={index} className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">{attr.trait_type}</p>
-                      <p className="font-semibold">{attr.value}</p>
+                    <div key={index} className="p-2 bg-muted rounded-lg">
+                      <p className="text-xs text-muted-foreground">{attr.trait_type}</p>
+                      <p className="text-sm font-semibold">{attr.value}</p>
                     </div>
                   ))}
                 </div>
